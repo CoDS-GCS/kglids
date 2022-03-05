@@ -1,0 +1,6 @@
+datasource: "toy"
+datasets:
+- name: "smallerReal"
+  type: "csv"
+  path: "/Users/shubhamvashisth/Documents/data/toy/"
+  origin: "mock"

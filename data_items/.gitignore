@@ -1,10 +1,9 @@
 
-/storage
 
+.idea/
 data/
 elasticsearch-7.10.2/
 
-.idea/
 __pycache__/
 *.py[cod]
 *$py.class
