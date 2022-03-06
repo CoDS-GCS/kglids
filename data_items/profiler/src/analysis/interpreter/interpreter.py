@@ -11,6 +11,9 @@ import re
 class Interpreter:
 
     def __init__(self, table: ITable):
+        # TODO: [Refactoring] spark shouldn't be initialized here
+        # TODO: [Refactoring] why is there max columns?
+        # TODO: [Refactoring] why is there a filter for the column name?
         self.spark = init_spark()
         self.table = table
         self.tableDF = self.spark.read.option("maxColumns", 100000).csv(table.get_table_path(), inferSchema=True,

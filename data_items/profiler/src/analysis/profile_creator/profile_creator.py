@@ -27,7 +27,8 @@ class ProfileCreator:
             pid = generate_id(datasource, dataset_name, table_name, column_name)
             profile_info = profiles_info[column_name]
             profile = DataProfile(pid, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
-                                  datasource, 'N',
+                                  datasource, 
+                                  'N',      # TODO: [Refactoring] use more descriptive names for data types
                                   float(profile_info['count']),
                                   float(profile_info['distinct_values_count']),
                                   float(profile_info['missing_values_count']),
@@ -52,7 +53,8 @@ class ProfileCreator:
             pid = generate_id(datasource, dataset_name, table_name, column_name)
             profile_info = profiles_info[column_name]
             profile = DataProfile(pid, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
-                                  datasource, str(profile_info['string_subtype']),
+                                  datasource, 
+                                  str(profile_info['string_subtype']), # TODO: [Refactoring] use more descriptive names for data types
                                   float(profile_info['count']),
                                   float(profile_info['distinct_values_count']),
                                   float(profile_info['missing_values_count']),
@@ -75,7 +77,8 @@ class ProfileCreator:
             pid = generate_id(datasource, dataset_name, table_name, column_name)
             profile_info = profiles_info[column_name]
             profile = DataProfile(pid, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
-                                  datasource, 'B',
+                                  datasource, 
+                                  'B', # TODO: [Refactoring] use more descriptive names for data types
                                   float(profile_info['count']),
                                   float(profile_info['distinct_values_count']),
                                   float(profile_info['missing_values_count']),

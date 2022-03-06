@@ -23,28 +23,18 @@ class Worker(threading.Thread):
             interpreter = Interpreter(table)
             profile_creator = ProfileCreator(table)
 
-            self.screenLock.acquire()
-            print(self.name + " is interpreting " + table.get_table_name())
-            self.screenLock.release()
+
             # Interpret the tables
             textual_columns = interpreter.get_textual_columns()
             numerical_columns = interpreter.get_numerical_columns()
             boolean_columns = interpreter.get_boolean_columns()
-            self.screenLock.acquire()
-            print(self.name + " finished interpreting " + table.get_table_name())
-            self.screenLock.release()
+            
             # Create profiles
-
-            self.screenLock.acquire()
-            print(self.name + " is profiling " + table.get_table_name())
-            self.screenLock.release()
             numerical_profiles_iterator = profile_creator.create_numerical_profiles(numerical_columns)
             textual_profiles_iterator = profile_creator.create_textual_profiles(textual_columns)
             booleab_profiles_iterator = profile_creator.create_boolean_profiles(boolean_columns)
 
-            self.screenLock.acquire()
             print(self.name + " finished profiling " + table.get_table_name())
-            self.screenLock.release()
 
             # store profiles on disk
             self.document_db_disk.store_profiles_disk(numerical_profiles_iterator)
@@ -55,7 +45,7 @@ class Worker(threading.Thread):
             #self.document_db_disk.store_data_disk(raw_data_iterator)
 
             self.tables.task_done()
-            self.screenLock.acquire()
-
-            print(self.name + " Remaining tables " + str(self.tables.qsize()))
-            self.screenLock.release()
+            # self.screenLock.acquire()
+            # 
+            # print(self.name + " Remaining tables " + str(self.tables.qsize()))
+            # self.screenLock.release()

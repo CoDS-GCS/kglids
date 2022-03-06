@@ -4,6 +4,7 @@ from logger import Logger
 from storage.i_documentDB_disk import IDocumentDB_disk
 from storage.utils import serialize_profiles#, serialize_rawData,
 import json
+import os
 
 logger = Logger(__name__).create_console_logger()
 
@@ -29,13 +30,15 @@ class DiskDB(IDocumentDB_disk):
     '''
     def store_profiles_disk(self, profiles: list):
         profiles = serialize_profiles(profiles)
-        for p in profiles:
+        for idx, profile in enumerate(profiles):
             self.col_count = self.col_count + 1
             #col_name = p['_source']['columnName'].strip('/.,"` ')
             #col_id = p['_source']['id']
-            f = open('storage/meta_data/profiles/{}_column.json'.format(self.col_count), 'w')
-            json.dump(p, f, ensure_ascii=False, indent=4)
-            f.close()
+            # TODO: [Refactoring] save path should be supplied as an argument taken from project config.
+            os.makedirs(f'storage/meta_data/profiles/{profile["_source"]["dataType"]}', exist_ok=True)
+            with open(f'storage/meta_data/profiles/{profile["_source"]["dataType"]}/column_{idx}.json', 'w') as f:
+                json.dump(profile, f, ensure_ascii=False, indent=4)
+
 
         '''
         s = serialize_profiles(profiles)
