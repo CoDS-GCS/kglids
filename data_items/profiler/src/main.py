@@ -1,28 +1,31 @@
-import time
-import glob
 import os
+import glob
+import shutil
+from datetime import datetime
 import warnings
 warnings.filterwarnings('ignore')
 from orchestration.orchestrator import Orchestrator
 
 
 def start_profiling():
-    start_time = time.time()
-    if not os.path.exists('storage/meta_data/profiles'):
-        os.makedirs('storage/meta_data/profiles')
-    elif os.listdir('storage/meta_data/profiles/') != 0:
-        files = glob.glob('storage/meta_data/profiles/*.json')
-        print('Refreshing meta data!')
-        for f in files:
-            os.remove(f)
-
+    start_time = datetime.now()
+    # TODO: [Refactor] make config.py file containing configuration for the whole project
+    # TODO: [Refactor] use config file for this path
+    
+    if os.path.exists('storage/meta_data/profiles'):
+        print('Deleting existing column profiles')
+        shutil.rmtree('storage/meta_data/profiles')
+    
+    os.makedirs('storage/meta_data/profiles', exist_ok=True)
+    
     orchestrator = Orchestrator()
     print('Creating tables')
+    # TODO: [Refactor] use a more robust path to the config and add this configuration to global config.py
     orchestrator.create_tables('../config/config.yml')
     print('Processing tables')
-    orchestrator.process_tables(10)
-    print('\n{} columns profiled!'.format(len(glob.glob('storage/meta_data/profiles/*.json'))))
-    print('Time to profile: ', time.time() - start_time)
+    orchestrator.process_tables(num_threads=10)
+    print('\n{} columns profiled!'.format(len(glob.glob('storage/meta_data/profiles/**/*.json'))))
+    print('Time to profile: ', datetime.now() - start_time)
 
 
 start_profiling()
