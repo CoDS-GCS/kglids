@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, '../../src')
 from storage.elasticsearchDB import ElasticSearchDB
 from data.raw_data import RawData
-from data.data_profile import DataProfile
+from data.column_profile import ColumnProfile
 
 client = ElasticSearchDB(host='localhost', port=9200)
 
@@ -21,9 +21,9 @@ def test_data_storing():
 
 
 def test_profile_storing():
-    profile1 = DataProfile(123456789, 'test', 'dataset1', 'usr/src/data', 'table1',
+    profile1 = ColumnProfile(123456789, 'test', 'dataset1', 'usr/src/data', 'table1',
                            'column1', 'type1', 1000, 50, 9, 0, 10, 5, 4, 3, [2021, 2020, 2019])
-    profile2 = DataProfile(987654321, 'test', 'dataset2', 'usr/src/data', 'table2',
+    profile2 = ColumnProfile(987654321, 'test', 'dataset2', 'usr/src/data', 'table2',
                            'column2', 'type2', 1000, 50, 9, 0, 10, 5, 4, 3, [2022, 2002, 2091])
 
     profiles = [profile1, profile2]

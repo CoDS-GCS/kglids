@@ -3,11 +3,11 @@ import sys
 sys.path.insert(0, '../../src')
 from storage.utils import serialize_profiles, serialize_rawData
 from data.raw_data import RawData
-from data.data_profile import DataProfile
+from data.column_profile import ColumnProfile
 
 
 def test_profile_serialization():
-    profile = DataProfile(123456789, 'test', 'dataset1', 'usr/src/data', 'table1',
+    profile = ColumnProfile(123456789, 'test', 'dataset1', 'usr/src/data', 'table1',
                           'column1', 'type1', 1000, 50, 9, 0, 10, 5, 4, 3, [2021, 2020, 2019])
     serializedProfile = serialize_profiles([profile])
     actual_serialization = {'_index': 'profiles',
