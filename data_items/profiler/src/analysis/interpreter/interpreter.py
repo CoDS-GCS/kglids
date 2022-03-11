@@ -11,9 +11,10 @@ import re
 class Interpreter:
 
     def __init__(self, table: ITable):
-        # TODO: [Refactoring] spark shouldn't be initialized here
-        # TODO: [Refactoring] why is there max columns?
-        # TODO: [Refactoring] why is there a filter for the column name?
+        # TODO: [Implement] spark shouldn't be initialized here
+        # TODO: [Implement] why is there max columns?
+        # TODO: [Implement] why is there a filter for the column name?
+        # TODO: [Implement] [Bug] some numerical columns are inferred as strings. (especially if there a NaN)
         self.spark = init_spark()
         self.table = table
         self.tableDF = self.spark.read.option("maxColumns", 100000).csv(table.get_table_path(), inferSchema=True,

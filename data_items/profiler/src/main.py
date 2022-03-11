@@ -9,7 +9,7 @@ from orchestration.orchestrator import Orchestrator
 
 def start_profiling():
     start_time = datetime.now()
-    # TODO: [Refactor] make config.py file containing configuration for the whole project
+    # TODO: [Implement] make config.py file containing configuration for the whole project
     # TODO: [Refactor] use config file for this path
     
     if os.path.exists('storage/meta_data/profiles'):

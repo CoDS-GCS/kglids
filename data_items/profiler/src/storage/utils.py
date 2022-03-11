@@ -20,10 +20,10 @@ import json
 
 
 def serialize_profiles(profiles: list):
-    # TODO: [Refactoring] move this method to the profile object (e.g. to_json() or to_dict())
-    # TODO: [Refactoring] rename these keys
-    # TODO: [Refactoring] remove "_source" entry
-    # TODO: [Refactoring] remove generator
+    # TODO: [Refactor] move this method to the profile object (e.g. to_json() or to_dict())
+    # TODO: [Refactor] rename these keys
+    # TODO: [Refactor] remove "_source" entry
+    # TODO: [Refactor] remove generator
     for p in profiles:
         action = {'_index': 'profiles'}
         data = {'id': p.get_pid(), 'origin': p.get_origin(), 'datasetName': p.get_dataset_name(), 'datasetid': p.get_dataset_id(), 'path': p.get_path(),
@@ -32,7 +32,9 @@ def serialize_profiles(profiles: list):
                 'distinctValuesCount': p.get_distinct_values_count(),
                 'missingValuesCount': p.get_missing_values_count(),
                 'minValue': p.get_min_value(), 'maxValue': p.get_max_value(), 'avgValue': p.get_mean(),
-                'median': p.get_median(), 'iqr': p.get_iqr(), 'minhash': json.dumps(p.get_minhash()), 'deep_embeddings': json.dumps(p.get_deep_embeddings())}
+                'median': p.get_median(), 'iqr': p.get_iqr(), 
+                'minhash': p.get_minhash(),
+                'deep_embeddings': p.get_deep_embeddings()}
         action['_source'] = data
         # yield action
         #if not (action is None):

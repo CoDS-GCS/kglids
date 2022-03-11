@@ -5,13 +5,14 @@ from storage.i_documentDB_disk import IDocumentDB_disk
 from storage.utils import serialize_profiles#, serialize_rawData,
 import json
 import os
+import random
+import string
 
 logger = Logger(__name__).create_console_logger()
 
 
 
 class DiskDB(IDocumentDB_disk):
-    col_count = 0
 
     # def __init__(self, host: str = 'localhost', port: int = 9200):
     #     # self.f = open('data.json', 'a+', encoding='utf-8')
@@ -30,13 +31,14 @@ class DiskDB(IDocumentDB_disk):
     '''
     def store_profiles_disk(self, profiles: list):
         profiles = serialize_profiles(profiles)
-        for idx, profile in enumerate(profiles):
-            self.col_count = self.col_count + 1
+        for profile in profiles:
+
             #col_name = p['_source']['columnName'].strip('/.,"` ')
             #col_id = p['_source']['id']
             # TODO: [Refactoring] save path should be supplied as an argument taken from project config.
             os.makedirs(f'storage/meta_data/profiles/{profile["_source"]["dataType"]}', exist_ok=True)
-            with open(f'storage/meta_data/profiles/{profile["_source"]["dataType"]}/column_{idx}.json', 'w') as f:
+            profile_name = ''.join(random.choices(string.ascii_letters + string.digits, k=10))  # random generated name to avoid synchronization between threads
+            with open(f'storage/meta_data/profiles/{profile["_source"]["dataType"]}/{profile_name}.json', 'w') as f:
                 json.dump(profile, f, ensure_ascii=False, indent=4)
 
 

@@ -28,7 +28,7 @@ class ProfileCreator:
             profile_info = profiles_info[column_name]
             profile = DataProfile(pid, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
                                   datasource, 
-                                  'N',      # TODO: [Refactoring] use more descriptive names for data types
+                                  'N',      # TODO: [Refactor] use more descriptive names for data types
                                   float(profile_info['count']),
                                   float(profile_info['distinct_values_count']),
                                   float(profile_info['missing_values_count']),
@@ -78,7 +78,7 @@ class ProfileCreator:
             profile_info = profiles_info[column_name]
             profile = DataProfile(pid, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
                                   datasource, 
-                                  'B', # TODO: [Refactoring] use more descriptive names for data types
+                                  'B', # TODO: [Refactor] use more descriptive names for data types
                                   float(profile_info['count']),
                                   float(profile_info['distinct_values_count']),
                                   float(profile_info['missing_values_count']),
