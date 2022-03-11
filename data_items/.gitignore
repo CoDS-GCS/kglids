@@ -1,9 +1,0 @@
-
-
-.idea/
-data/
-elasticsearch-7.10.2/
-
-__pycache__/
-*.py[cod]
-*$py.class
