@@ -13,3 +13,5 @@ __pycache__/
 data_items/profiler/src/storage/meta_data/
 
 data_items/profiler/src/temp_spark/
+
+data_items/profiler/src/storage/metadata/

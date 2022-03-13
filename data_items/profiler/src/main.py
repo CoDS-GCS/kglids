@@ -12,11 +12,11 @@ def start_profiling():
     # TODO: [Implement] make config.py file containing configuration for the whole project
     # TODO: [Refactor] use config file for this path
     
-    if os.path.exists('storage/meta_data/profiles'):
+    if os.path.exists('storage/metadata/profiles'):
         print('Deleting existing column profiles')
-        shutil.rmtree('storage/meta_data/profiles')
+        shutil.rmtree('storage/metadata/profiles')
     
-    os.makedirs('storage/meta_data/profiles', exist_ok=True)
+    os.makedirs('storage/metadata/profiles', exist_ok=True)
     
     orchestrator = Orchestrator()
     print('Creating tables')
@@ -24,7 +24,7 @@ def start_profiling():
     orchestrator.create_tables('../config/config.yml')
     print('Processing tables')
     orchestrator.process_tables(num_threads=10)
-    print('\n{} columns profiled!'.format(len(glob.glob('storage/meta_data/profiles/**/*.json'))))
+    print('\n{} columns profiled!'.format(len(glob.glob('storage/metadata/profiles/**/*.json'))))
     print('Time to profile: ', datetime.now() - start_time)
 
 

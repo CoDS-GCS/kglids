@@ -24,9 +24,9 @@ class ProfileCreator:
         path = self.table.get_table_path()
         origin = self.table.get_origin()
         for column_name in numerical_cols_df.columns:
-            pid = generate_id(datasource, dataset_name, table_name, column_name)
+            column_id = generate_id(datasource, dataset_name, table_name, column_name)
             profile_info = profiles_info[column_name]
-            profile = ColumnProfile(pid, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
+            profile = ColumnProfile(column_id, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
                                     datasource, 
                                   'N',  # TODO: [Refactor] use more descriptive names for data types
                                     float(profile_info['count']),
@@ -50,9 +50,9 @@ class ProfileCreator:
         path = self.table.get_table_path()
         origin = self.table.get_origin()
         for column_name in textual_cols_df.columns:
-            pid = generate_id(datasource, dataset_name, table_name, column_name)
+            column_id = generate_id(datasource, dataset_name, table_name, column_name)
             profile_info = profiles_info[column_name]
-            profile = ColumnProfile(pid, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
+            profile = ColumnProfile(column_id, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
                                     datasource,
                                     str(profile_info['string_subtype']),  # TODO: [Refactoring] use more descriptive names for data types
                                     float(profile_info['count']),
@@ -74,9 +74,9 @@ class ProfileCreator:
         path = self.table.get_table_path()
         origin = self.table.get_origin()
         for column_name in boolean_cols_df.columns:
-            pid = generate_id(datasource, dataset_name, table_name, column_name)
+            column_id = generate_id(datasource, dataset_name, table_name, column_name)
             profile_info = profiles_info[column_name]
-            profile = ColumnProfile(pid, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
+            profile = ColumnProfile(column_id, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
                                     datasource, 
                                   'B',  # TODO: [Refactor] use more descriptive names for data types
                                     float(profile_info['count']),

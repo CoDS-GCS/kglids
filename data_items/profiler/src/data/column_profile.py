@@ -6,12 +6,12 @@ import string
 class ColumnProfile:
     # TODO: [Refactor] remove unneeded stats
     # TODO: [Refactor] combine minhash and deep_embedding attribute to embedding (minhash for strings and DDE for numerical)    
-    def __init__(self, pid: float, origin: str, dataset_name: str, dataset_id: str, path: str, table_name: str, 
+    def __init__(self, column_id: float, origin: str, dataset_name: str, dataset_id: str, path: str, table_name: str,
                  table_id: str, column_name: str, datasource: str, data_type: str,
                  total_values: float, distinct_values_count: float, missing_values_count: float, min_value: float,
                  max_value: float, mean: float, median: float, iqr: float,
                  minhash: list, deep_embeddings: list):
-        self.pid = pid
+        self.column_id = column_id
         self.origin = origin
         self.dataset_name = dataset_name
         self.dataset_id = dataset_id
@@ -34,7 +34,7 @@ class ColumnProfile:
 
     def to_dict(self):
         # TODO: [Refactor] rename these keys
-        profile_dict = {'id': self.get_pid(), 
+        profile_dict = {'column_id': self.get_column_id(), 
                         'origin': self.get_origin(), 
                         'datasetName': self.get_dataset_name(),
                         'datasetid': self.get_dataset_id(), 
@@ -44,7 +44,7 @@ class ColumnProfile:
                         'columnName': self.get_column_name(),
                         'datasource': self.get_datasource(),
                         'dataType': self.get_data_type(), 
-                        'totalValuesCount': self.get_total_values(),
+                        'totalValuesCount': self.get_total_values_count(),
                         'distinctValuesCount': self.get_distinct_values_count(),
                         'missingValuesCount': self.get_missing_values_count(),
                         'minValue': self.get_min_value(), 
@@ -69,30 +69,30 @@ class ColumnProfile:
     def load_profile(column_profile_path):
         with open(column_profile_path) as f:
             profile_dict = json.load(f)
-        profile = ColumnProfile(pid=profile_dict.get('id'), 
-                                origin=profile_dict.get('origin'), 
-                                dataset_name=profile_dict.get('datasetName'), 
-                                dataset_id=profile_dict.get('datasetid'), 
-                                path=profile_dict.get('path'), 
-                                table_name=profile_dict.get('tableName'), 
-                                table_id=profile_dict.get('tableid'), 
-                                column_name=profile_dict.get('columnName'), 
-                                datasource=profile_dict.get('datasource'), 
+        profile = ColumnProfile(column_id=profile_dict.get('column_id'),
+                                origin=profile_dict.get('origin'),
+                                dataset_name=profile_dict.get('datasetName'),
+                                dataset_id=profile_dict.get('datasetid'),
+                                path=profile_dict.get('path'),
+                                table_name=profile_dict.get('tableName'),
+                                table_id=profile_dict.get('tableid'),
+                                column_name=profile_dict.get('columnName'),
+                                datasource=profile_dict.get('datasource'),
                                 data_type=profile_dict.get('dataType'),
-                                total_values=profile_dict.get('totalValuesCount'), 
-                                distinct_values_count=profile_dict.get('distinctValuesCount'), 
+                                total_values=profile_dict.get('totalValuesCount'),
+                                distinct_values_count=profile_dict.get('distinctValuesCount'),
                                 missing_values_count=profile_dict.get('missingValuesCount'),
                                 min_value=profile_dict.get('minValue'),
-                                max_value=profile_dict.get('maxValue'), 
-                                mean=profile_dict.get('avgValue'), 
-                                median=profile_dict.get('median'), 
+                                max_value=profile_dict.get('maxValue'),
+                                mean=profile_dict.get('avgValue'),
+                                median=profile_dict.get('median'),
                                 iqr=profile_dict.get('iqr'),
-                                minhash=profile_dict.get('minhash'), 
+                                minhash=profile_dict.get('minhash'),
                                 deep_embeddings=profile_dict.get('deep_embeddings'))
         return profile
     
-    def get_pid(self) -> float:
-        return self.pid
+    def get_column_id(self) -> float:
+        return self.column_id
 
     def get_origin(self) -> str:
         return self.origin
@@ -121,7 +121,7 @@ class ColumnProfile:
     def get_data_type(self) -> str:
         return self.data_type
 
-    def get_total_values(self) -> float:
+    def get_total_values_count(self) -> float:
         return self.total_values
 
     def get_distinct_values_count(self) -> float:
@@ -151,8 +151,8 @@ class ColumnProfile:
     def get_iqr(self) -> float:
         return self.iqr
 
-    def set_pid(self, pid: float):
-        self.pid = pid
+    def set_column_id(self, column_id: float):
+        self.column_id = column_id
 
     def set_origin(self, origin: str):
         self.origin = origin

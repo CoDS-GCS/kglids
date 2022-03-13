@@ -21,9 +21,9 @@ class Orchestrator:
     def process_tables(self, num_threads: int):
         screenLock = threading.Lock()
         for i in range(num_threads):
-            # TODO: [Refactoring] save path should be taken from project config.
+            # TODO: [Refactor] save path should be taken from project config.
             worker = Worker(name=f'Thread {i}', tables=self.tables, screenLock=screenLock, 
-                            profile_save_base_dir='storage/meta_data/profiles/')
+                            profile_save_base_dir='storage/metadata/profiles/')
             worker.setDaemon(True)
             worker.start()
         self.tables.join()

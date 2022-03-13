@@ -18,7 +18,7 @@ def test_create_numerical_profiles():
     # check the first profile
     profile1 = profiles[0]
     assert (profile1.get_minhash() == [])
-    assert (profile1.get_total_values() == 6)
+    assert (profile1.get_total_values_count() == 6)
     assert (profile1.get_distinct_values_count() == 6)
     assert (profile1.get_table_name() == 'countries.csv')
     assert (profile1.get_column_name() == 'population')
@@ -29,7 +29,7 @@ def test_create_numerical_profiles():
     # check the second profile
     profile2 = profiles[1]
     assert (profile2.get_minhash() == [])
-    assert (profile2.get_total_values() == 6)
+    assert (profile2.get_total_values_count() == 6)
     assert (profile2.get_distinct_values_count() == 5)
     assert (profile2.get_table_name() == 'countries.csv')
     assert (profile2.get_column_name() == '% water')
@@ -49,7 +49,7 @@ def test_create_textual_profiles():
     # check the first profile
     profile1 = profiles[0]
     assert (len(profile1.get_minhash()) == 512)
-    assert (profile1.get_total_values() == 7)
+    assert (profile1.get_total_values_count() == 7)
     assert (profile1.get_distinct_values_count() == 7)
     assert (profile1.get_table_name() == 'countries.csv')
     assert (profile1.get_column_name() == 'country')
@@ -60,7 +60,7 @@ def test_create_textual_profiles():
     # check the second profile
     profile2 = profiles[1]
     assert (len(profile2.get_minhash()) == 512)
-    assert (profile2.get_total_values() == 7)
+    assert (profile2.get_total_values_count() == 7)
     assert (profile2.get_distinct_values_count() == 7)
     assert (profile2.get_table_name() == 'countries.csv')
     assert (profile2.get_column_name() == 'capital')

@@ -11,7 +11,7 @@ def test_profile_serialization():
                           'column1', 'type1', 1000, 50, 9, 0, 10, 5, 4, 3, [2021, 2020, 2019])
     serializedProfile = serialize_profiles([profile])
     actual_serialization = {'_index': 'profiles',
-                            '_source': {'id': 123456789, 'origin': 'test', 'datasetName': 'dataset1',
+                            '_source': {'column_id': 123456789, 'origin': 'test', 'datasetName': 'dataset1',
                                         'path': 'usr/src/data', 'tableName': 'table1', 'columnName': 'column1',
                                         'dataType': 'type1', 'totalValuesCount': 1000, 'distinctValuesCount': 50,
                                         'missingValuesCount': 9, 'minValue': 0, 'maxValue': 10, 'avgValue': 5,
@@ -26,7 +26,7 @@ def test_rawData_serialization():
                                 'column1', ['value1', 'value2', 'value3'])
     serializedRawData = serialize_rawData([rawData])
     assert (list(serializedRawData)[0] == {'_index': 'raw_data',
-                                           '_source': {'id': 123456789, 'origin': 'test', 'datasetName': 'dataset1',
+                                           '_source': {'column_id': 123456789, 'origin': 'test', 'datasetName': 'dataset1',
                                                        'path': 'usr/src/data', 'tableName': 'table1',
                                                        'columnName': 'column1',
                                                        'values': '["value1", "value2", "value3"]'}})
