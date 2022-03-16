@@ -2,7 +2,7 @@ import sys
 from collections import Counter
 
 sys.path.insert(0, '../src')
-from rdf_builder import RDFBuilder
+from knowledge_graph_builder import KnowledgeGraphBuilder
 
 data = [('1', 'test', 'test_db', 'test1_tn', 'test_cn', 10, 5, 2, 'N', 5, 0, 10, 'path1'),
         ('2', 'test', 'test_db', 'test2_tn', 'test_cn', 10, 10, 5, 'T', -1, -1, -1, 'path2'),
@@ -10,8 +10,8 @@ data = [('1', 'test', 'test_db', 'test1_tn', 'test_cn', 10, 5, 2, 'N', 5, 0, 10,
 
 
 def test_initialize_nodes():
-    rdf_builder = RDFBuilder()
-    rdf_builder.initialize_nodes(data)
+    rdf_builder = KnowledgeGraphBuilder()
+    rdf_builder.build_membership_and_metadata_subgraph(data)
     table_id_to_name = rdf_builder._table_id_to_name
     dataset_id_to_name = rdf_builder._dataset_id_to_name
     result_triplets = rdf_builder.get_triplets()
@@ -87,9 +87,9 @@ def test_initialize_nodes():
 
 
 def test_create_semantic_sim_relation():
-    rdf_builder = RDFBuilder()
-    rdf_builder.initialize_nodes(data)
-    rdf_builder.build_semantic_sim_relation()
+    rdf_builder = KnowledgeGraphBuilder()
+    rdf_builder.build_membership_and_metadata_subgraph(data)
+    rdf_builder.generate_similarity_triples()
     result_triplets = rdf_builder.get_triplets()
     actual_triplets = ['<http://www.example.com/lac#1> '
                        '<http://www.example.com/lac#semanticSimilarity> '
@@ -158,9 +158,9 @@ def test_create_txt_content_similarity():
                         ('2', 'test', 'test_db', 'test2_tn', 'test_cn', 10, 10, 0, 'T', -1, -1, -1, 'path2'),
                         ('3', 'test', 'test_db', 'test1_tn', 'test3_cn', 0, 0, 5, 'N', 0, 0, 0, 'path1'),
                         ('4', 'test', 'test_db', 'test2_tn', 'test_cn', 0, 0, 3, 'N', 0, 0, 0, 'path2')]
-    rdf_builder = RDFBuilder()
-    rdf_builder.initialize_nodes(txt_content_data)
-    rdf_builder.build_semantic_sim_relation()
+    rdf_builder = KnowledgeGraphBuilder()
+    rdf_builder.build_membership_and_metadata_subgraph(txt_content_data)
+    rdf_builder.generate_similarity_triples()
     rdf_builder.build_content_sim_mh_text(mh_signatures)
     actual_triplets = ['<http://www.example.com/lac#2> '
                        '<http://www.example.com/lac#contentSimilarity> '
@@ -190,9 +190,9 @@ def test_create_num_content_similarity():
     id_signatures = [('1', (5, 4, 100, 120)), ('2', (3, 1, 2, 5)),
                      ('3', (3, 1, 3, 4))]
 
-    rdf_builder = RDFBuilder()
-    rdf_builder.initialize_nodes(data)
-    rdf_builder.build_semantic_sim_relation()
+    rdf_builder = KnowledgeGraphBuilder()
+    rdf_builder.build_membership_and_metadata_subgraph(data)
+    rdf_builder.generate_similarity_triples()
     rdf_builder.build_content_sim_relation_num_overlap_distr(id_signatures)
     result_triplets = rdf_builder.get_triplets()
     actual_triplets = ['<http://www.example.com/lac#3> '
@@ -250,9 +250,9 @@ def test_create_pkfk_relations():
     txt_signatures = [('2', [i % 2 for i in range(512)]), ('5', [i % 5 for i in range(512)]),
                       ('6', [i % 2 for i in range(512)])]
 
-    rdf_builder = RDFBuilder()
-    rdf_builder.initialize_nodes(pkfk_data)
-    rdf_builder.build_semantic_sim_relation()
+    rdf_builder = KnowledgeGraphBuilder()
+    rdf_builder.build_membership_and_metadata_subgraph(pkfk_data)
+    rdf_builder.generate_similarity_triples()
     rdf_builder.build_content_sim_mh_text(txt_signatures)
     rdf_builder.build_content_sim_relation_num_overlap_distr(num_signatures)
     rdf_builder.build_pkfk_relation()

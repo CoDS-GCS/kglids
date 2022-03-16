@@ -4,6 +4,7 @@ from pyspark.sql import SparkSession
 
 
 def init_spark():
+    # TODO: [Refactor] have Spark configuration read from the global project config
     spark = SparkSession \
         .builder \
         .config("spark.driver.memory", "18g").config('spark.local.dir', 'temp_spark/').config('spark.driver.maxResultSize','80g') \

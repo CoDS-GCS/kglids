@@ -2,16 +2,16 @@
 /storage
 
 pipelines/data/
-data_items/data/
-elasticsearch-7.10.2/
 
+data_items/data/
+data_items/profiler/src/storage/meta_data/
+data_items/profiler/src/temp_spark/
+data_items/profiler/src/storage/metadata/
+
+data_items/knowledge_graph/src/out/
+
+elasticsearch-7.10.2/
 .idea/
 __pycache__/
 *.py[cod]
 *$py.class
-
-data_items/profiler/src/storage/meta_data/
-
-data_items/profiler/src/temp_spark/
-
-data_items/profiler/src/storage/metadata/

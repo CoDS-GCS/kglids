@@ -10,7 +10,7 @@ class ColumnProfile:
                  table_id: str, column_name: str, datasource: str, data_type: str,
                  total_values: float, distinct_values_count: float, missing_values_count: float, min_value: float,
                  max_value: float, mean: float, median: float, iqr: float,
-                 minhash: list, deep_embeddings: list):
+                 minhash: list, deep_embedding: list):
         self.column_id = column_id
         self.origin = origin
         self.dataset_name = dataset_name
@@ -30,17 +30,17 @@ class ColumnProfile:
         self.median = median
         self.iqr = iqr
         self.minhash = minhash
-        self.deep_embeddings = deep_embeddings
+        self.deep_embedding = deep_embedding
 
     def to_dict(self):
         # TODO: [Refactor] rename these keys
-        profile_dict = {'column_id': self.get_column_id(), 
-                        'origin': self.get_origin(), 
+        profile_dict = {'column_id': self.get_column_id(),
+                        'origin': self.get_origin(),
                         'datasetName': self.get_dataset_name(),
-                        'datasetid': self.get_dataset_id(), 
+                        'datasetid': self.get_dataset_id(),
                         'path': self.get_path(),
-                        'tableName': self.get_table_name(), 
-                        'tableid': self.get_table_id(), 
+                        'tableName': self.get_table_name(),
+                        'tableid': self.get_table_id(),
                         'columnName': self.get_column_name(),
                         'datasource': self.get_datasource(),
                         'dataType': self.get_data_type(), 
@@ -53,7 +53,7 @@ class ColumnProfile:
                         'median': self.get_median(), 
                         'iqr': self.get_iqr(),
                         'minhash': self.get_minhash(),
-                        'deep_embeddings': self.get_deep_embeddings()}
+                        'deep_embedding': self.get_deep_embedding()}
         return profile_dict
     
     def save_profile(self, column_profile_base_dir):
@@ -88,8 +88,18 @@ class ColumnProfile:
                                 median=profile_dict.get('median'),
                                 iqr=profile_dict.get('iqr'),
                                 minhash=profile_dict.get('minhash'),
-                                deep_embeddings=profile_dict.get('deep_embeddings'))
+                                deep_embedding=profile_dict.get('deep_embedding'))
         return profile
+
+    # TODO: [Refactor] have the data types in a global project config
+    def is_numeric(self) -> bool:
+        return self.get_data_type() in ['N']
+    
+    def is_textual(self) -> bool:
+        return self.get_data_type() in ['T', 'T_code', 'T_date', 'T_email', 'T_loc', 'T_org', 'T_person']
+    
+    def is_boolean(self) -> bool:
+        return self.get_data_type() in ['B']
     
     def get_column_id(self) -> float:
         return self.column_id
@@ -133,8 +143,8 @@ class ColumnProfile:
     def get_minhash(self) -> list:
         return self.minhash
 
-    def get_deep_embeddings(self) -> list:
-        return self.deep_embeddings
+    def get_deep_embedding(self) -> list:
+        return self.deep_embedding
 
     def get_min_value(self) -> float:
         return self.min_value
@@ -199,8 +209,8 @@ class ColumnProfile:
     def set_minhash(self, minhash: list):
         self.minhash = minhash
 
-    def set_deep_embeddings(self, deep_embeddings: list):
-        self.deep_embeddings = deep_embeddings
+    def set_deep_embedding(self, deep_embedding: list):
+        self.deep_embedding = deep_embedding
 
     def __str__(self):
-        return self.table_name + ': ' + str(self.minhash) if self.minhash else str(self.deep_embeddings)
+        return self.table_name + ': ' + str(self.minhash) if self.minhash else str(self.deep_embedding)

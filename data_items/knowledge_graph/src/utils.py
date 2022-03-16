@@ -9,6 +9,7 @@ from graphviz import Digraph
 
 
 def generate_label(col_name: str, lan: str) -> Label:
+    # TODO: [Implement] the way labels are generated is not 100% the best. It is not always best to split by camel case
     if '.csv' in col_name:
         col_name = re.sub('.csv', '', col_name)
     col_name = re.sub('[^0-9a-zA-Z]+', ' ', col_name)

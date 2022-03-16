@@ -11,9 +11,9 @@ namespace = 'http://www.example.org/hlel#'
 
 
 def test_triplet():
-    subject = RDFResource('from', False, namespace)
-    predicate = RDFResource(Relation.cardinality.name, False, namespace)
-    object_col = RDFResource('to', False, namespace)
+    subject = RDFResource('from', namespace, False)
+    predicate = RDFResource(Relation.cardinality.name, namespace, False)
+    object_col = RDFResource('to', namespace, False)
     object_literal_txt = RDFResource('version')
     object_literal_num = RDFResource(45)
 
@@ -34,13 +34,13 @@ def test_triplet():
 
 
 def test_nested_triplets():
-    # Nested subject
-    nested_subject = RDFResource('from', False, namespace)
-    nested_predicate = RDFResource(Relation.contentSimilarity.name, False, namespace)
-    nested_object = RDFResource('to', False, namespace)
+    # Nested rdf_subject
+    nested_subject = RDFResource('from', namespace, False)
+    nested_predicate = RDFResource(Relation.contentSimilarity.name, namespace, False)
+    nested_object = RDFResource('to', namespace, False)
 
     subject = Triplet(nested_subject, nested_predicate, nested_object)
-    predicate = RDFResource(Relation.certainty.name, False, namespace)
+    predicate = RDFResource(Relation.certainty.name, namespace, False)
     objct = RDFResource(0.5)
 
     final_triplet = Triplet(subject, predicate, objct)

@@ -41,7 +41,7 @@ class NumericalAnalyser(IAnalyser):
                             **{'25%': quartiles['`' +col+'`' ][0]},
                             **{'50%': quartiles['`' +col+'`' ][1]},
                             **{'75%': quartiles['`' +col+'`' ][2]},
-                            **{'deep_embeddings': embeddings[col]}}
+                            **{'deep_embedding': embeddings[col]}}
             self.profiles_info[col] = profile_info
 
     def __extract_summaries(self, columns: list):

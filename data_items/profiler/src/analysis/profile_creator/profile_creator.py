@@ -28,14 +28,14 @@ class ProfileCreator:
             profile_info = profiles_info[column_name]
             profile = ColumnProfile(column_id, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
                                     datasource, 
-                                  'N',  # TODO: [Refactor] use more descriptive names for data types
-                                    float(profile_info['count']),
-                                    float(profile_info['distinct_values_count']),
-                                    float(profile_info['missing_values_count']),
+                                    'N',  # TODO: [Refactor] use more descriptive names for data types
+                                    int(profile_info['count']),
+                                    int(profile_info['distinct_values_count']),
+                                    int(profile_info['missing_values_count']),
                                     float(profile_info['min']), float(profile_info['max']),
                                     float(profile_info['mean']), float(profile_info['50%']),
                                     float(profile_info['75%']) - float(profile_info['25%']), [],
-                                    profile_info['deep_embeddings'])
+                                    profile_info['deep_embedding'])
             yield profile
 
     def create_textual_profiles(self, textual_cols_df: DataFrame):
@@ -55,9 +55,9 @@ class ProfileCreator:
             profile = ColumnProfile(column_id, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
                                     datasource,
                                     str(profile_info['string_subtype']),  # TODO: [Refactoring] use more descriptive names for data types
-                                    float(profile_info['count']),
-                                    float(profile_info['distinct_values_count']),
-                                    float(profile_info['missing_values_count']),
+                                    int(profile_info['count']),
+                                    int(profile_info['distinct_values_count']),
+                                    int(profile_info['missing_values_count']),
                                     -1, -1, -1, -1, -1,
                                     profile_info['minhash'], [])
             yield profile
@@ -78,9 +78,10 @@ class ProfileCreator:
             profile_info = profiles_info[column_name]
             profile = ColumnProfile(column_id, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
                                     datasource, 
-                                  'B',  # TODO: [Refactor] use more descriptive names for data types
-                                    float(profile_info['count']),
-                                    float(profile_info['distinct_values_count']),
-                                    float(profile_info['missing_values_count']),
+                                    'B',  # TODO: [Refactor] use more descriptive names for data types
+                                    # TODO: [Implement] determine what attributes need to be there for boolean columns. E.g. distinct values count doesn't make sense. Maybe true ratio?
+                                    int(profile_info['count']),
+                                    int(profile_info['distinct_values_count']),
+                                    int(profile_info['missing_values_count']),
                                     -1, -1, -1, -1, -1, [], [])
             yield profile

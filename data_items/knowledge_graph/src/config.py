@@ -4,6 +4,8 @@ join_overlap_th = 0.4
 # Schema similarity parameters
 max_distance_schema_similarity = 10
 
+# TODO: [Refactor] rename this file to knowledg_graph_builder_config.py
+
 # Serde parameters
 serdepath = "./data"
 signcollectionfile = "sigcolfile.pickle"

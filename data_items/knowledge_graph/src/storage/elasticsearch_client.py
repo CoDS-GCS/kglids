@@ -6,6 +6,7 @@ from elasticsearch import Elasticsearch
 
 class ElasticsearchClient:
     # Store client
+    # TODO: [Refactor] make this a class variable
     client = None
 
     def __init__(self):
@@ -18,14 +19,14 @@ class ElasticsearchClient:
 
     def get_profile_attributes(self):
         """
-        Reads all fields, described as (id, source_name, field_name) from the store.
-        :return: a list of all fields with the form (id, source_name, field_name)
+        Reads all fields, described as (column_id, source_name, field_name) from the store.
+        :return: a list of all fields with the form (column_id, source_name, field_name)
         """
         body = {"query": {"match_all": {}}}
         res = client.search(index='profiles', body=body, scroll="10m",
                             filter_path=['_scroll_id',
                                          'hits.total',
-                                         'hits.hits._source.id',
+                                         'hits.hits._source.column_id',
                                          'hits.hits._source.origin',
                                          'hits.hits._source.datasetName',
                                          'hits.hits._source.datasetid',
@@ -48,7 +49,7 @@ class ElasticsearchClient:
         while remaining > 0:
             hits = res['hits']['hits']
             for h in hits:
-                id_source_and_file_name = (str(h['_source']['id']),
+                id_source_and_file_name = (str(h['_source']['column_id']),
                                            h['_source']['origin'],
                                            h['_source']['datasetName'],
                                            h['_source']['datasetid'],
@@ -68,7 +69,7 @@ class ElasticsearchClient:
                 remaining -= 1
             res = client.scroll(scroll="5m", scroll_id=scroll_id,
                                 filter_path=['_scroll_id',
-                                             'hits.hits._source.id',
+                                             'hits.hits._source.column_id',
                                              'hits.hits._source.origin',
                                              'hits.hits._source.datasetName',
                                              'hits.hits._source.datasetid',
@@ -91,14 +92,14 @@ class ElasticsearchClient:
 
     def get_profiles_minhash(self, string_type):
         """
-        Retrieves id-mh fields
+        Retrieves column_id-mh fields
         :return: (fields, numsignatures)
         """
         query_body = {"query": {"match": {"dataType": string_type}}}
         res = client.search(index='profiles', body=query_body, scroll="10m",
                             filter_path=['_scroll_id',
                                          'hits.total',
-                                         'hits.hits._source.id',
+                                         'hits.hits._source.column_id',
                                          'hits.hits._source.minhash']
                             )
         scroll_id = res['_scroll_id']
@@ -108,12 +109,12 @@ class ElasticsearchClient:
         while remaining > 0:
             hits = res['hits']['hits']
             for h in hits:
-                data = (str(h['_source']['id']), json.loads(h['_source']['minhash']))
+                data = (str(h['_source']['column_id']), json.loads(h['_source']['minhash']))
                 id_sig.append(data)
                 remaining -= 1
             res = client.scroll(scroll="5m", scroll_id=scroll_id,
                                 filter_path=['_scroll_id',
-                                             'hits.hits._source.id',
+                                             'hits.hits._source.column_id',
                                              'hits.hits._source.minhash']
                                 )
             scroll_id = res['_scroll_id']  # update the scroll_id
@@ -129,8 +130,8 @@ class ElasticsearchClient:
         res = client.search(index='profiles', body=query_body, scroll="10m",
                             filter_path=['_scroll_id',
                                          'hits.total',
-                                         'hits.hits._source.id',
-                                         'hits.hits._source.deep_embeddings']
+                                         'hits.hits._source.column_id',
+                                         'hits.hits._source.deep_embedding']
                             )
         scroll_id = res['_scroll_id']
         remaining = res['hits']['total']['value']
@@ -139,13 +140,13 @@ class ElasticsearchClient:
         while remaining > 0:
             hits = res['hits']['hits']
             for h in hits:
-                data = (str(h['_source']['id']), json.loads(h['_source']['deep_embeddings']))
+                data = (str(h['_source']['column_id']), json.loads(h['_source']['deep_embedding']))
                 id_sig_de.append(data)
                 remaining -= 1
             res = client.scroll(scroll="5m", scroll_id=scroll_id,
                                 filter_path=['_scroll_id',
-                                             'hits.hits._source.id',
-                                             'hits.hits._source.deep_embeddings']
+                                             'hits.hits._source.column_id',
+                                             'hits.hits._source.deep_embedding']
                                 )
             scroll_id = res['_scroll_id']  # update the scroll_id
         client.clear_scroll(scroll_id=scroll_id)
@@ -161,7 +162,7 @@ class ElasticsearchClient:
         res = client.search(index='profiles', body=query_body, scroll="10m",
                             filter_path=['_scroll_id',
                                          'hits.total',
-                                         'hits.hits._source.id',
+                                         'hits.hits._source.column_id',
                                          'hits.hits._source.median',
                                          'hits.hits._source.iqr',
                                          'hits.hits._source.minValue',
@@ -173,13 +174,13 @@ class ElasticsearchClient:
         while remaining > 0:
             hits = res['hits']['hits']
             for h in hits:
-                data = (str(h['_source']['id']), (h['_source']['median'], h['_source']['iqr'],
+                data = (str(h['_source']['column_id']), (h['_source']['median'], h['_source']['iqr'],
                                                   h['_source']['minValue'], h['_source']['maxValue']))
                 id_sig.append(data)
                 remaining -= 1
             res = client.scroll(scroll="5m", scroll_id=scroll_id,
                                 filter_path=['_scroll_id',
-                                             'hits.hits._source.id',
+                                             'hits.hits._source.column_id',
                                              'hits.hits._source.median',
                                              'hits.hits._source.iqr',
                                              'hits.hits._source.minValue',
@@ -188,7 +189,8 @@ class ElasticsearchClient:
             scroll_id = res['_scroll_id']  # update the scroll_id
         client.clear_scroll(scroll_id=scroll_id)
         return id_sig
-
+    
+    
 
 if __name__ == "__main__":
     print("Elastic Store")

@@ -11,11 +11,11 @@ def test_rdfResource_str():
     namespace_relation = 'http://www.example.org/hlel#'
     namespace_column = 'http://www.example.org/hlel#'
 
-    rdf_relation = RDFResource(Relation.cardinality.name, False, namespace_relation)
-    rdf_col_node = RDFResource('4566', False, namespace_column)
+    rdf_relation = RDFResource(Relation.cardinality.name, namespace_relation, False)
+    rdf_col_node = RDFResource('4566', namespace_column, False)
     rdf_valueTXT = RDFResource('version')
     rdf_valueNUM = RDFResource(45)
-    rdf_blank = RDFResource('entity', True)
+    rdf_blank = RDFResource('entity', isBlank=True)
     rdf_label = RDFResource(Label('test c1', 'en'))
 
     assert (str(rdf_relation) == '<http://www.example.org/hlel#cardinality>')
