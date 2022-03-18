@@ -1,21 +1,19 @@
 import os
 import shutil
-import uuid
-from collections import defaultdict
+from datetime import datetime
 import itertools
 import random
 import string
-
+import sys
+sys.path.append('../../../')
 
 from pyspark import SparkConf, SparkContext
 
-from enums.relation import Relation
 from rdf_resource import RDFResource
 from triplet import Triplet
 from workers import column_metadata_worker, column_pair_similarity_worker
 from utils import generate_label
-from word_embedding.word_embeddings_services import WordEmbeddingServices
-# TODO: [Refactor] project structure needs to be changed. This import might not work in terminal.
+# TODO: [Refactor] project structure needs to be changed. This import won't work in terminal without the above sys call.
 from data_items.profiler.src.data.column_profile import ColumnProfile  
 
 CHUNK_SIZE = 500000
@@ -74,7 +72,7 @@ class KnowledgeGraphBuilder:
         # generate column metadata triples in parallel
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
-        # mapPartitions so we don't end up with too many subgraph files
+        # mapPartitions so we don't end up with too many subgraph files (compared to .map())
         columns_rdd.mapPartitions(lambda x: column_metadata_worker(column_profile_paths=x, ontology=ontology, 
                                                                    triples_output_tmp_dir=tmp_graph_dir)).collect()
         # generate table and dataset membership triples
@@ -159,3 +157,33 @@ class KnowledgeGraphBuilder:
         pass
         # TODO: [Implement] this method combines the intermediate subgraph files into one file and loads it to an RDF engine
     
+    
+def main():
+    # TODO: [Refactor] combine with pipeline abstraction KG builder
+    # TODO: [Refactor] read column profiles path from project config.py
+    # TODO: [Refactor] add graph output path to project config.py
+
+    start_all = datetime.now()
+    knowledge_graph_builder = KnowledgeGraphBuilder(
+        column_profiles_path='/home/mossad/projects/kglids/data_items/profiler/src/storage/metadata/profiles',
+        out_graph_path='out/kglids_data_items_graph.ttls')
+
+    # Membership (e.g. table -> dataset) and metadata (e.g. min, max) triples
+    print("\n• 1. Building Membership and Metadata triples")
+    start_schema = datetime.now()
+    knowledge_graph_builder.build_membership_and_metadata_subgraph()
+    end_schema = datetime.now()
+    print("• Done.\tTime taken: " + str(end_schema - start_schema))
+
+    print("\n• 2. Computing column-column similarities")
+    start_schema_sim = datetime.now()
+    knowledge_graph_builder.generate_similarity_triples()
+    end_schema_sim = datetime.now()
+    print("• Done.\tTime taken: " + str(end_schema_sim - start_schema_sim))
+
+    end_all = datetime.now()
+    print("\nTotal time to build graph: " + str(end_all - start_all))
+
+
+if __name__ == '__main__':
+    main()
