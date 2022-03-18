@@ -12,9 +12,15 @@ class WordEmbeddings:
         self.es = Elasticsearch()
 
     def load_vocab_to_elasticsearch(self, path_to_raw_embeddings):
+        if self.es.indices.exists(index='word_embedding'):
+            print('Word embedding index exists in elasticsearch')
+            return
+        
         with open(path_to_raw_embeddings, 'r', encoding='utf-8') as f:
             lines = f.readlines()
-
+            
+        print(f'Loading {len(lines)} word embeddings into elastic')
+        
         elasticsearch_payload = []
         for line in lines:
             split_line = line.strip().split()
@@ -22,8 +28,8 @@ class WordEmbeddings:
             embedding = np.array([float(i) for i in split_line[1:]])
             # normalize to unit length
             embedding = embedding / np.sqrt(embedding.dot(embedding))
-            elasticsearch_payload.append({'_index': 'wordEmbedding', '_id': word, '_source': {'embedding': embedding.tolist()}})
-
+            elasticsearch_payload.append({'_index': 'word_embedding', '_id': word, '_source': {'embedding': embedding.tolist()}})
+        self.es.index(index='word_embedding', id='hello', body={})
         bulk(self.es, elasticsearch_payload)
 
     def semantic_distance(self, v1, v2):
@@ -39,7 +45,7 @@ class WordEmbeddings:
     def get_embedding_for_word(self, word):
 
         try:
-            doc = self.es.get(index='wordEmbedding', id=word)
+            doc = self.es.get(index='word_embedding', id=word)
             return doc['_source']['embedding']
         except NotFoundError:
             return None
@@ -80,10 +86,3 @@ class WordEmbeddings:
 
         return mwe_vecs
 
-
-if __name__ == '__main__':
-    wiki_model = WordEmbeddings()
-    # wiki_model.load_vocab_to_elasticsearch('/home/mossad/projects/kglids/data_items/data/glove.6B.100d.txt')
-    print(wiki_model.get_distance_between_column_labels('Net amount', 'Net Amount'))
-    print("ss: " + str(wiki_model.semantic_distance(wiki_model.get_embedding_for_word("wife"),
-                                                    wiki_model.get_embedding_for_word("spouse"))))

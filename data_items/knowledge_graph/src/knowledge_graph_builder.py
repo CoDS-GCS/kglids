@@ -9,6 +9,7 @@ sys.path.append('../../../')
 
 from pyspark import SparkConf, SparkContext
 
+from word_embedding.word_embeddings import WordEmbeddings
 from rdf_resource import RDFResource
 from triplet import Triplet
 from workers import column_metadata_worker, column_pair_similarity_worker
@@ -30,6 +31,8 @@ PKFK_THRESHOLD = 0.60
 
 class KnowledgeGraphBuilder:
     # TODO: [Refactor] add all kglids URIs to knowledge graph config.py
+    # TODO: [Refactor] have Spark configuration read from the global project config
+    # TODO: [Refactor] read raw word embeddings path from global project config
     def __init__(self, column_profiles_path, out_graph_path):
         self.graph_output_path = out_graph_path
         self.out_graph_base_dir = os.path.dirname(self.graph_output_path)
@@ -38,7 +41,6 @@ class KnowledgeGraphBuilder:
             shutil.rmtree(self.tmp_graph_base_dir)
         os.makedirs(self.tmp_graph_base_dir)
         
-        # TODO: [Refactor] have Spark configuration read from the global project config
         memory_gb = 24
         conf = (SparkConf()
                 .setMaster(f'local[*]')
@@ -64,6 +66,11 @@ class KnowledgeGraphBuilder:
         print('Column Type Breakdown:')
         for data_type, profile_paths in self.column_profiles_per_type.items():
             print(f'\t{data_type}: {len(profile_paths)}')
+        
+        # create elasticsearch index of word embeddings
+        we = WordEmbeddings()
+        we.load_vocab_to_elasticsearch(path_to_raw_embeddings='/home/mossad/projects/kglids/data_items/data/glove.6B.100d.txt')
+
         
 
     def build_membership_and_metadata_subgraph(self):
