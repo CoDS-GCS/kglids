@@ -4,12 +4,11 @@ import itertools
 
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
-from elasticsearch.exceptions import NotFoundError
 
 
 class WordEmbeddings:
-    def __init__(self):
-        self.es = Elasticsearch()
+    def __init__(self, endpoint='http://localhost:9200'):
+        self.es = Elasticsearch(endpoint)
 
     def load_vocab_to_elasticsearch(self, path_to_raw_embeddings):
         if self.es.indices.exists(index='word_embedding'):
