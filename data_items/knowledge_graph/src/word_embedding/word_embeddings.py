@@ -1,6 +1,9 @@
 import numpy as np
 import statistics
 import itertools
+# TODO: [Refactor] Remove this
+import sys
+sys.path.append('../../../')
 
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
@@ -74,10 +77,16 @@ class WordEmbeddings:
     
     def get_embeddings_for_tokens(self, tokens):
         embeddings = {}
+        if not tokens:
+            return embeddings
         # TODO: [Implement] does it make sense to take only the first taken?
         req_body = {'ids': [i.strip().split()[0] for i in tokens]}  
         res = self.es.mget(index='word_embedding', body=req_body)
         for i in range(len(tokens)):
             embeddings[tokens[i]] = res['docs'][i]['_source']['embedding'] if res['docs'][i]['found'] else None
         return embeddings
+    
+    def close(self):
+        self.es.close()
+
     
