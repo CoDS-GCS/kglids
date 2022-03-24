@@ -1,34 +1,15 @@
 import numpy as np
 import itertools
-
-from elasticsearch import Elasticsearch
-from elasticsearch.helpers import bulk
+import pickle
 
 
+
+# TODO [Implement] figure out a better way than just loading the word embeddings to memory
 class WordEmbeddings:
-    def __init__(self, endpoint='http://localhost:9200'):
-        self.es = Elasticsearch(endpoint)
-
-    def load_vocab_to_elasticsearch(self, path_to_raw_embeddings):
-        if self.es.indices.exists(index='word_embedding'):
-            print('Word embedding index exists in elasticsearch')
-            return
-        
-        with open(path_to_raw_embeddings, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-            
-        print(f'Loading {len(lines)} word embeddings into elastic')
-        
-        elasticsearch_payload = []
-        for line in lines:
-            split_line = line.strip().split()
-            word = split_line[0]
-            embedding = np.array([float(i) for i in split_line[1:]])
-            # normalize to unit length
-            embedding = embedding / np.sqrt(embedding.dot(embedding))
-            elasticsearch_payload.append({'_index': 'word_embedding', '_id': word, '_source': {'embedding': embedding.tolist()}})
-        self.es.index(index='word_embedding', id='hello', body={})
-        bulk(self.es, elasticsearch_payload)
+    def __init__(self, word_embeddings_path):
+        with open(word_embeddings_path, 'rb') as f:
+            print('Loading:', word_embeddings_path)
+            self.vectors = pickle.load(f)
 
     def semantic_distance(self, v1, v2):
         if v1 is None or v2 is None:
@@ -72,17 +53,8 @@ class WordEmbeddings:
     
     
     def get_embeddings_for_tokens(self, tokens):
-        embeddings = {}
-        if not tokens:
-            return embeddings
         # TODO: [Implement] does it make sense to take only the first taken?
-        req_body = {'ids': [i.strip().split()[0] for i in tokens]}  
-        res = self.es.mget(index='word_embedding', body=req_body)
-        for i in range(len(tokens)):
-            embeddings[tokens[i]] = res['docs'][i]['_source']['embedding'] if res['docs'][i]['found'] else None
+        embeddings = {i: self.vectors.get(i.strip().split()[0], None) for i in tokens}
         return embeddings
     
-    def close(self):
-        self.es.close()
-
     

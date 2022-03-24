@@ -2,13 +2,16 @@
 import os
 import random
 import string
+# TODO: [Refactor] Get rid of this hack
+import sys
+sys.path.append('../../../')
 
 import numpy as np
 from numpy.linalg import norm
 from datasketch import MinHash
 from sklearn.cluster import DBSCAN
 
-from word_embedding.word_embeddings import WordEmbeddings
+from word_embedding.memory_word_embeddings import WordEmbeddings
 from rdf_resource import RDFResource
 from triplet import Triplet
 from utils import generate_label
@@ -63,14 +66,16 @@ def column_metadata_worker(column_profile_paths, ontology, triples_output_tmp_di
 def column_pair_similarity_worker(column_profile_path_pairs, ontology, triples_output_tmp_dir,
                                   semantic_similarity_threshold, numerical_content_threshold,
                                   deep_embedding_content_threshold, inclusion_dependency_threshold,
-                                  minhash_content_threshold, pkfk_threshold):
+                                  minhash_content_threshold, pkfk_threshold, word_embedding_path):
+    word_embedding = WordEmbeddings(word_embedding_path)
     similarity_triples = []
     for column1_profile_path, column2_profile_path in column_profile_path_pairs:
         column1_profile = ColumnProfile.load_profile(column1_profile_path)
         column2_profile = ColumnProfile.load_profile(column2_profile_path)
         
         semantic_triples = _compute_semantic_similarity(column1_profile, column2_profile, ontology, 
-                                                        semantic_similarity_threshold)
+                                                        semantic_similarity_threshold,
+                                                        word_embedding_model=word_embedding)
         content_triples = _compute_content_similarity(column1_profile, column2_profile, ontology, 
                                                       numerical_content_threshold=numerical_content_threshold,
                                                       minhash_content_threshold=minhash_content_threshold)
@@ -94,9 +99,8 @@ def column_pair_similarity_worker(column_profile_path_pairs, ontology, triples_o
     
 
 def _compute_semantic_similarity(column1_profile: ColumnProfile, column2_profile: ColumnProfile, ontology,
-                                 semantic_similarity_threshold: float) -> list:
+                                 semantic_similarity_threshold: float, word_embedding_model) -> list:
     # TODO: [Refactor] have the names of predicates read from global project ontology object
-    word_embedding_model = WordEmbeddings()
 
     column1_label = generate_label(column1_profile.get_column_name(), 'en').get_text()
     column2_label = generate_label(column2_profile.get_column_name(), 'en').get_text()
