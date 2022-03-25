@@ -11,7 +11,7 @@ from numpy.linalg import norm
 from datasketch import MinHash
 from sklearn.cluster import DBSCAN
 
-from word_embedding.memory_word_embeddings import WordEmbeddings
+from word_embedding.word_embeddings import WordEmbeddings
 from rdf_resource import RDFResource
 from triplet import Triplet
 from utils import generate_label
