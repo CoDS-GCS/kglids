@@ -67,7 +67,7 @@ class KnowledgeGraphBuilder:
             print(f'\t{data_type}: {len(profile_paths)}')
         
         # TODO: [Refactor] Read this from project config
-        self.word_embedding_path = '/home/mossad/projects/kglids/data_items/data/glove.6B.100d.pickle'
+        self.word_embedding_path = '../../data/glove.6B.100d.pickle'
         
 
     def build_membership_and_metadata_subgraph(self):
@@ -172,7 +172,7 @@ def main():
 
     start_all = datetime.now()
     knowledge_graph_builder = KnowledgeGraphBuilder(
-        column_profiles_path='/home/mossad/projects/kglids/data_items/profiler/src/storage/metadata/profiles',
+        column_profiles_path='../../profiler/src/storage/metadata/profiles',
         out_graph_path='out/kglids_data_items_graph.ttls')
 
     # Membership (e.g. table -> dataset) and metadata (e.g. min, max) triples
