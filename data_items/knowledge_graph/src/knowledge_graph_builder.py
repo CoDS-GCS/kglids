@@ -9,7 +9,6 @@ sys.path.append('../../../')
 
 from pyspark import SparkConf, SparkContext
 
-from word_embedding.word_embeddings import WordEmbeddings
 from rdf_resource import RDFResource
 from triplet import Triplet
 from workers import column_metadata_worker, column_pair_similarity_worker
@@ -67,10 +66,8 @@ class KnowledgeGraphBuilder:
         for data_type, profile_paths in self.column_profiles_per_type.items():
             print(f'\t{data_type}: {len(profile_paths)}')
         
-        # create elasticsearch index of word embeddings
-        we = WordEmbeddings()
-        we.load_vocab_to_elasticsearch(path_to_raw_embeddings='/home/mossad/projects/kglids/data_items/data/glove.6B.100d.txt')
-
+        # TODO: [Refactor] Read this from project config
+        self.word_embedding_path = '../../data/glove.6B.100d.pickle'
         
 
     def build_membership_and_metadata_subgraph(self):
@@ -148,6 +145,7 @@ class KnowledgeGraphBuilder:
         
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
+        word_embedding_path = self.word_embedding_path
         column_pairs_rdd = self.spark.parallelize(column_pairs)
         # mapPartitions so we don't end up with too many subgraph files
         column_pairs_rdd.mapPartitions(lambda x: column_pair_similarity_worker(column_profile_path_pairs=x,
@@ -158,7 +156,9 @@ class KnowledgeGraphBuilder:
                                                                                deep_embedding_content_threshold=DEEP_EMBEDDING_THRESHOLD,
                                                                                inclusion_dependency_threshold=INCLUSION_THRESHOLD,
                                                                                minhash_content_threshold=MINHASH_THRESHOLD,
-                                                                               pkfk_threshold=PKFK_THRESHOLD)).collect()
+                                                                               pkfk_threshold=PKFK_THRESHOLD,
+                                                                               word_embedding_path=word_embedding_path))\
+                                                                               .collect()
         
     def build_graph(self):
         pass
@@ -172,7 +172,7 @@ def main():
 
     start_all = datetime.now()
     knowledge_graph_builder = KnowledgeGraphBuilder(
-        column_profiles_path='/home/mossad/projects/kglids/data_items/profiler/src/storage/metadata/profiles',
+        column_profiles_path='../../profiler/src/storage/metadata/profiles',
         out_graph_path='out/kglids_data_items_graph.ttls')
 
     # Membership (e.g. table -> dataset) and metadata (e.g. min, max) triples
