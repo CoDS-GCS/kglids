@@ -18,7 +18,7 @@ class RDFResource:
         if isinstance(self.content, int):
             return '\"{}\"^^xsd:integer'.format(self.content)
         if isinstance(self.content, float):
-            return '\"{}\"^^xsd:double'.format(self.content) 
+            return '\"{}\"^^xsd:double'.format(round(self.content, 3)) 
         if isinstance(self.content, Label):
             return str(self.content)
         

@@ -12,11 +12,11 @@ from pyspark import SparkConf, SparkContext
 from rdf_resource import RDFResource
 from triplet import Triplet
 from workers import column_metadata_worker, column_pair_similarity_worker
+from word_embedding.word_embeddings import WordEmbeddings
 from utils import generate_label
 # TODO: [Refactor] project structure needs to be changed. This import won't work in terminal without the above sys call.
 from data_items.profiler.src.data.column_profile import ColumnProfile  
 
-CHUNK_SIZE = 500000
 # ************* SYSTEM PARAMETERS**********************
 # TODO: [Refactor] have these inside a global project config
 SEMANTIC_THRESHOLD = 0.50
@@ -67,7 +67,11 @@ class KnowledgeGraphBuilder:
             print(f'\t{data_type}: {len(profile_paths)}')
         
         # TODO: [Refactor] Read this from project config
-        self.word_embedding_path = '../../data/glove.6B.100d.pickle'
+        self.word_embedding_path = '../../data/glove.6B.100d.txt'
+        # make sure the word embeddings are initialized
+        word_embedding = WordEmbeddings(self.word_embedding_path)
+        word_embedding = None
+        
         
 
     def build_membership_and_metadata_subgraph(self):
@@ -161,8 +165,16 @@ class KnowledgeGraphBuilder:
                                                                                .collect()
         
     def build_graph(self):
-        pass
-        # TODO: [Implement] this method combines the intermediate subgraph files into one file and loads it to an RDF engine
+        for tmp_file in os.listdir(self.tmp_graph_base_dir):
+            with open(os.path.join(self.tmp_graph_base_dir, tmp_file), 'r') as f:
+                content = f.read()
+            with open(self.graph_output_path, 'a+') as f:
+                f.write(content)
+        # remove the intermediate results
+        shutil.rmtree(self.tmp_graph_base_dir)
+    
+        
+        
     
     
 def main():
@@ -173,23 +185,28 @@ def main():
     start_all = datetime.now()
     knowledge_graph_builder = KnowledgeGraphBuilder(
         column_profiles_path='../../profiler/src/storage/metadata/profiles',
-        out_graph_path='out/kglids_data_items_graph.ttls')
+        out_graph_path='out/kglids_data_items_graph.nq')
 
     # Membership (e.g. table -> dataset) and metadata (e.g. min, max) triples
-    print("\n• 1. Building Membership and Metadata triples")
+    print(datetime.now(), "• 1. Building Membership and Metadata triples\n")
     start_schema = datetime.now()
     knowledge_graph_builder.build_membership_and_metadata_subgraph()
     end_schema = datetime.now()
-    print("• Done.\tTime taken: " + str(end_schema - start_schema))
+    print(datetime.now(), "• Done.\tTime taken: " + str(end_schema - start_schema), '\n')
 
-    print("\n• 2. Computing column-column similarities")
+    print(datetime.now(), "• 2. Computing column-column similarities\n")
     start_schema_sim = datetime.now()
     knowledge_graph_builder.generate_similarity_triples()
     end_schema_sim = datetime.now()
-    print("• Done.\tTime taken: " + str(end_schema_sim - start_schema_sim))
+    print(datetime.now(), "• Done.\tTime taken: " + str(end_schema_sim - start_schema_sim), '\n')
+    
+    print(datetime.now(), '• 3. Combining intermediate subgraphs from workers\n')
+    knowledge_graph_builder.build_graph()
+    
+    print(datetime.now(), '\n• Done. Graph Saved to: out/kglids_data_items_graph.nq\n')
 
     end_all = datetime.now()
-    print("\nTotal time to build graph: " + str(end_all - start_all))
+    print(datetime.now(), "Total time to build graph: " + str(end_all - start_all))
 
 
 if __name__ == '__main__':

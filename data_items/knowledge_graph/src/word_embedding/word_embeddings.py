@@ -1,15 +1,39 @@
-import numpy as np
+import os
 import itertools
 import pickle
+
+import numpy as np
 
 
 # TODO [Implement] figure out a better way than just loading the word embeddings to memory
 class WordEmbeddings:
     def __init__(self, word_embeddings_path):
-        with open(word_embeddings_path, 'rb') as f:
-            print('Loading:', word_embeddings_path)
+        self.raw_word_embeddings_path = word_embeddings_path
+        self.normalized_word_embeddings_path = self.raw_word_embeddings_path[:self.raw_word_embeddings_path.rindex('.')] + '.pickle'
+        # initialize and normalize the word vectors if they don't exist
+        if not os.path.exists(self.normalized_word_embeddings_path):
+            self._initialize_and_normalize_word_embeddings()
+        
+        with open(self.normalized_word_embeddings_path, 'rb') as f:
+            print('Loading:', self.normalized_word_embeddings_path)
             self.vectors = pickle.load(f)
-
+    
+    def _initialize_and_normalize_word_embeddings(self):
+        # loads raw word embedding file, normalizes the vectors to unit length, and stores them as pickle
+        print('initializing raw word embeddings and normalizing them to unit length')
+        with open(self.raw_word_embeddings_path, 'r') as f:
+            lines = [i.strip() for i in f.readlines()]
+        vectors = {}
+        for line in lines:
+            split = line.split()
+            word = split[0]
+            vector = np.array([float(i) for i in split[1:]])
+            vector /= np.linalg.norm(vector)                 # normalize to unit length
+            vectors[word] = vector
+        with open(self.normalized_word_embeddings_path, 'wb') as f:
+            pickle.dump(vectors, f)
+        
+            
     def semantic_distance(self, v1, v2):
         if v1 is None or v2 is None:
             print("unknowns")

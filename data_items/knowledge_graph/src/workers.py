@@ -120,9 +120,10 @@ def _compute_content_similarity(col1_profile: ColumnProfile, col2_profile: Colum
     if col1_profile.is_numeric():
 
         # Content similarity without deep embedding
+        # TODO: [Implement] This original implementation generates duplicated similarity triples between columns with 
+        #       different scores.
         """ 
-        TODO: [Implement] This original implementation generates duplicated similarity triples between columns with 
-        different scores. For example: 
+         For example: 
         <<col1 hasContentSimilarity col2>> withCertainty 0.97
         <<col2 hasContentSimilarity col1>> withCertainty 0.97
         <<col1 hasContentSimilarity col2>> withCertainty 0.96
@@ -138,14 +139,14 @@ def _compute_content_similarity(col1_profile: ColumnProfile, col2_profile: Colum
             overlap2 = _compute_inclusion_overlap(col2_profile, col1_profile)
             if overlap1 > numerical_content_threshold:
                 content_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                                 'hasContentSimilarity', overlap1,
+                                                                                    'hasContentSimilarity', overlap1,
                                                                                     ontology))
-            if overlap2 > numerical_content_threshold:
+            if overlap1 != overlap2 and overlap2 > numerical_content_threshold:
                 content_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                                 'hasContentSimilarity', overlap2,
+                                                                                    'hasContentSimilarity', overlap2,
                                                                                     ontology))
             
-        if col1_profile.get_iqr() == 0 and col2_profile.get_iqr() == 0:
+        elif col1_profile.get_iqr() == 0 and col2_profile.get_iqr() == 0:
             # columns with single unique value
             # TODO: [Implement] I don't think DBSCAN is needed anymore
             medians = np.array([col1_profile.get_median() / 2, col2_profile.get_median() / 2]).reshape(-1, 1)
@@ -188,7 +189,7 @@ def _compute_numerical_inclusion_dependency(col1_profile: ColumnProfile, col2_pr
                                             inclusion_dependency_threshold):
     
     if not col1_profile.is_numeric():
-        # this only applies for numerical columns
+        # inclusion dependency applies only for numerical columns
         return []
     if col1_profile.get_iqr() == 0 or col2_profile.get_iqr() == 0:
         return []
@@ -197,9 +198,10 @@ def _compute_numerical_inclusion_dependency(col1_profile: ColumnProfile, col2_pr
         return []
 
     # inclusion relation
+    # TODO: [Implement] This original implementation generates duplicated similarity triples between columns with 
+    #       different scores.
     """ 
-    TODO: [Implement] This original implementation generates duplicated similarity triples between columns with 
-    different scores. For example: 
+    For example: 
     <<col1 hasInclusionDependency col2>> withCertainty 0.97
     <<col2 hasInclusionDependency col1>> withCertainty 0.97
     <<col1 hasInclusionDependency col2>> withCertainty 0.96
