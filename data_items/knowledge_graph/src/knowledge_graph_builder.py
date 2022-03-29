@@ -5,6 +5,7 @@ import itertools
 import random
 import string
 import sys
+
 sys.path.append('../../../')
 
 from pyspark import SparkConf, SparkContext
@@ -15,7 +16,7 @@ from workers import column_metadata_worker, column_pair_similarity_worker
 from word_embedding.word_embeddings import WordEmbeddings
 from utils import generate_label
 # TODO: [Refactor] project structure needs to be changed. This import won't work in terminal without the above sys call.
-from data_items.profiler.src.data.column_profile import ColumnProfile  
+from data_items.profiler.src.data.column_profile import ColumnProfile
 
 # ************* SYSTEM PARAMETERS**********************
 # TODO: [Refactor] have these inside a global project config
@@ -25,6 +26,8 @@ MINHASH_THRESHOLD = 0.70
 INCLUSION_THRESHOLD = 0.90
 DEEP_EMBEDDING_THRESHOLD = 0.95
 PKFK_THRESHOLD = 0.60
+
+
 # *****************************************************
 
 
@@ -39,21 +42,20 @@ class KnowledgeGraphBuilder:
         if os.path.exists(self.tmp_graph_base_dir):
             shutil.rmtree(self.tmp_graph_base_dir)
         os.makedirs(self.tmp_graph_base_dir)
-        
+
         memory_gb = 24
         conf = (SparkConf()
                 .setMaster(f'local[*]')
                 .set('spark.driver.memory', f'{memory_gb}g'))
         self.spark = SparkContext(conf=conf)
-        
+
         self.ontology = {'kglids': 'http://kglids.org/ontology/',
                          'kglidsData': 'http://kglids.org/ontology/data/',
                          'kglidsResource': 'http://kglids.org/resource/',
                          'schema': 'http://schema.org/',
                          'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
                          'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'}
-        
-        
+
         # get list of column profiles and their data type
         column_data_types = [i for i in os.listdir(column_profiles_path)]
         self.column_profiles_per_type = {}
@@ -61,18 +63,16 @@ class KnowledgeGraphBuilder:
             type_path = os.path.join(column_profiles_path, data_type)
             profiles = [os.path.join(type_path, i) for i in os.listdir(type_path) if i.endswith('.json')]
             self.column_profiles_per_type[data_type] = profiles
-        
+
         print('Column Type Breakdown:')
         for data_type, profile_paths in self.column_profiles_per_type.items():
             print(f'\t{data_type}: {len(profile_paths)}')
-        
+
         # TODO: [Refactor] Read this from project config
         self.word_embedding_path = '../../data/glove.6B.100d.txt'
         # make sure the word embeddings are initialized
         word_embedding = WordEmbeddings(self.word_embedding_path)
         word_embedding = None
-        
-        
 
     def build_membership_and_metadata_subgraph(self):
         column_profile_paths = list(itertools.chain.from_iterable(self.column_profiles_per_type.values()))
@@ -81,7 +81,7 @@ class KnowledgeGraphBuilder:
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
         # mapPartitions so we don't end up with too many subgraph files (compared to .map())
-        columns_rdd.mapPartitions(lambda x: column_metadata_worker(column_profile_paths=x, ontology=ontology, 
+        columns_rdd.mapPartitions(lambda x: column_metadata_worker(column_profile_paths=x, ontology=ontology,
                                                                    triples_output_tmp_dir=tmp_graph_dir)).collect()
         # generate table and dataset membership triples
         membership_triples = []
@@ -97,43 +97,43 @@ class KnowledgeGraphBuilder:
             table_node = RDFResource(profile.get_table_id(), self.ontology['kglidsResource'])
             dataset_node = RDFResource(profile.get_dataset_id(), self.ontology['kglidsResource'])
             table_label = generate_label(profile.get_table_name(), 'en')
-            membership_triples.append(Triplet(table_node, RDFResource('isPartOf', self.ontology['kglids']), 
+            membership_triples.append(Triplet(table_node, RDFResource('isPartOf', self.ontology['kglids']),
                                               RDFResource(dataset_node)))
-            membership_triples.append(Triplet(table_node, RDFResource('name', self.ontology['schema']), 
+            membership_triples.append(Triplet(table_node, RDFResource('name', self.ontology['schema']),
                                               RDFResource(profile.get_table_name())))
-            membership_triples.append(Triplet(table_node, RDFResource('label', self.ontology['rdfs']), 
-                                      RDFResource(table_label)))
-            membership_triples.append(Triplet(table_node, RDFResource('hasFilePath', self.ontology['kglidsData']), 
+            membership_triples.append(Triplet(table_node, RDFResource('label', self.ontology['rdfs']),
+                                              RDFResource(table_label)))
+            membership_triples.append(Triplet(table_node, RDFResource('hasFilePath', self.ontology['kglidsData']),
                                               RDFResource(profile.get_path())))
-            membership_triples.append(Triplet(table_node, RDFResource('type', self.ontology['rdf']), 
+            membership_triples.append(Triplet(table_node, RDFResource('type', self.ontology['rdf']),
                                               RDFResource('Table', self.ontology['kglids'])))
-            
+
             if profile.get_dataset_id() in datasets:
                 continue
             # dataset -> source membership and metadata
             datasets.add(profile.get_dataset_id())
             source_node = RDFResource(profile.get_datasource(), self.ontology['kglidsResource'])
-            membership_triples.append(Triplet(dataset_node, RDFResource('isPartOf', self.ontology['kglids']), 
+            membership_triples.append(Triplet(dataset_node, RDFResource('isPartOf', self.ontology['kglids']),
                                               RDFResource(source_node)))
             dataset_label = generate_label(profile.get_dataset_name(), 'en')
-            membership_triples.append(Triplet(dataset_node, RDFResource('name', self.ontology['schema']), 
+            membership_triples.append(Triplet(dataset_node, RDFResource('name', self.ontology['schema']),
                                               RDFResource(profile.get_dataset_name())))
-            membership_triples.append(Triplet(dataset_node, RDFResource('label', self.ontology['rdfs']), 
+            membership_triples.append(Triplet(dataset_node, RDFResource('label', self.ontology['rdfs']),
                                               RDFResource(dataset_label)))
             membership_triples.append(Triplet(dataset_node, RDFResource('type', self.ontology['rdf']),
-                                      RDFResource('Dataset', self.ontology['kglids'], False)))
-            
+                                              RDFResource('Dataset', self.ontology['kglids'], False)))
+
             if profile.get_datasource() in sources:
                 continue
             # source metadata
             sources.add(profile.get_datasource())
             source_label = generate_label(profile.get_datasource(), 'en')
-            membership_triples.append(Triplet(source_node, RDFResource('name', self.ontology['schema']), 
+            membership_triples.append(Triplet(source_node, RDFResource('name', self.ontology['schema']),
                                               RDFResource(profile.get_datasource())))
-            membership_triples.append(Triplet(source_node, RDFResource('label', self.ontology['rdfs']), 
+            membership_triples.append(Triplet(source_node, RDFResource('label', self.ontology['rdfs']),
                                               RDFResource(source_label)))
             membership_triples.append(Triplet(source_node, RDFResource('type', self.ontology['rdf']),
-                                      RDFResource('Source', self.ontology['kglids'], False)))
+                                              RDFResource('Source', self.ontology['kglids'], False)))
         filename = ''.join(random.choices(string.ascii_letters + string.digits, k=15)) + '.nt'
         with open(os.path.join(self.tmp_graph_base_dir, filename), 'w', encoding='utf-8') as f:
             for triple in membership_triples:
@@ -146,7 +146,7 @@ class KnowledgeGraphBuilder:
             for i in range(len(column_profiles)):
                 for j in range(i + 1, len(column_profiles)):
                     column_pairs.append((column_profiles[i], column_profiles[j]))
-        
+
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
         word_embedding_path = self.word_embedding_path
@@ -161,9 +161,9 @@ class KnowledgeGraphBuilder:
                                                                                inclusion_dependency_threshold=INCLUSION_THRESHOLD,
                                                                                minhash_content_threshold=MINHASH_THRESHOLD,
                                                                                pkfk_threshold=PKFK_THRESHOLD,
-                                                                               word_embedding_path=word_embedding_path))\
-                                                                               .collect()
-        
+                                                                               word_embedding_path=word_embedding_path)) \
+            .collect()
+
     def build_graph(self):
         for tmp_file in os.listdir(self.tmp_graph_base_dir):
             with open(os.path.join(self.tmp_graph_base_dir, tmp_file), 'r') as f:
@@ -172,15 +172,15 @@ class KnowledgeGraphBuilder:
                 f.write(content)
         # remove the intermediate results
         shutil.rmtree(self.tmp_graph_base_dir)
-    
-        
-        
-    
-    
+
+
 def main():
     # TODO: [Refactor] combine with pipeline abstraction KG builder
     # TODO: [Refactor] read column profiles path from project config.py
     # TODO: [Refactor] add graph output path to project config.py
+
+    if os.path.exists('out/kglids_data_items_graph.nq'):
+        os.remove('out/kglids_data_items_graph.nq')
 
     start_all = datetime.now()
     knowledge_graph_builder = KnowledgeGraphBuilder(
@@ -199,10 +199,10 @@ def main():
     knowledge_graph_builder.generate_similarity_triples()
     end_schema_sim = datetime.now()
     print(datetime.now(), "• Done.\tTime taken: " + str(end_schema_sim - start_schema_sim), '\n')
-    
+
     print(datetime.now(), '• 3. Combining intermediate subgraphs from workers\n')
     knowledge_graph_builder.build_graph()
-    
+
     print(datetime.now(), '\n• Done. Graph Saved to: out/kglids_data_items_graph.nq\n')
 
     end_all = datetime.now()
