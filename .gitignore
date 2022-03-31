@@ -2,6 +2,8 @@
 /storage
 
 pipelines/data/
+pipelines/experiments/**/*.tsv
+pipelines/experiments/**/*.pickle
 
 data_items/data/
 data_items/profiler/src/storage/meta_data/
@@ -15,3 +17,6 @@ elasticsearch-7.10.2/
 __pycache__/
 *.py[cod]
 *$py.class
+.ipynb_checkpoints
+
+wandb/
