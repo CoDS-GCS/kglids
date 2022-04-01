@@ -20,9 +20,16 @@ class KGLiDS:
         if not isinstance(k, int):
             raise ValueError("k needs to be a type 'int'")
         elif isinstance(table, str) and isinstance(k, int):
-            recommendations = recommend_tables(self.config, table, k, show_query)
+            recommendations = recommend_tables(self.config, table, k, 'data:hasPrimaryKeyForeignKeySimilarity', show_query)
             print('Showing the top {} table recommendations!'.format(len(recommendations)))
             return recommendations
+
+    def get_table_info(self, dataset: str, table: str, show_query: bool = False):
+        if not isinstance(dataset, str):
+            raise ValueError("dataset needs to be a type 'str'")
+        if not isinstance(table, str):
+            raise ValueError("table needs to be a type 'str'")
+        return get_table_info(self.config, dataset, table, show_query)
 
     def show_graph_info(self, show_query: bool = False):
         return show_graph_info(self.config, show_query)
@@ -62,57 +69,11 @@ class KGLiDS:
             return '\n'.join(statements), ' && '.join(filters)
 
         data = search_tables_on(self.config, parsed_conditions(conditions), show_query)
-        return pd.DataFrame(list(data), columns=['table_name', 'dataset_name', 'number_of_columns',
-                                                 'number_of_rows', 'path']).sort_values('number_of_rows',
-                                                                                        ignore_index=True,
-                                                                                        ascending=False)
-"""
-    def get_path_between_tables(self, starting_table_info: pd.core.series.Series,
-                                target_table_info: pd.core.series.Series, hops: int,
-                                predicate: str = 'lac:pkfk', show_query: bool = False):
+        return pd.DataFrame(list(data), columns=['Table', 'Dataset', 'Number_of_columns',
+                                                 'Number_of_rows', 'Path_to_table']).sort_values('Number_of_rows',
+                                                                                                 ignore_index=True,
+                                                                                                 ascending=False)
 
-        def get_iri_of_table(dataset_name: str, table_name: str, show_query: bool = False):
-            dataset_label = generate_label(dataset_name, 'en')
-            table_label = generate_label(table_name, 'en')
-            return _get_iri(dataset_label, table_label, show_query)
-        
-        
-        if not isinstance(starting_table_info, pd.core.series.Series):
-            raise TypeError('starting_table_info should be a series')
-        if not isinstance(target_table_info, pd.core.series.Series):
-            raise TypeError('target_table_info should be a series')
-        if not ('dataset_name' in starting_table_info.index and 'table_name' in starting_table_info.index):
-            raise ValueError('starting table info should contain dataset_name and table_name')
-        if not ('dataset_name' in target_table_info.index and 'table_name' in target_table_info.index):
-            raise ValueError('target table info should contain dataset_name and table_name')
-
-        starting_dataset_name = starting_table_info['dataset_name']
-        starting_table_name = starting_table_info['table_name']
-
-        target_dataset_name = target_table_info['dataset_name']
-        target_table_name = target_table_info['table_name']
-
-        starting_table_iri = get_iri_of_table(
-            dataset_name=generate_label(starting_dataset_name, 'en').get_text(),
-            table_name=generate_label(starting_table_name, 'en').get_text())
-        target_table_iri = get_iri_of_table(
-            dataset_name=generate_label(target_dataset_name, 'en').get_text(),
-            table_name=generate_label(target_table_name, 'en').get_text())
-        if starting_table_iri is None:
-            raise ValueError(str(starting_table_info) + ' does not exist')
-        if target_table_iri is None:
-            raise ValueError(str(target_table_info) + ' does not exist')
-
-        data = self.rdfClient.get_paths_between_tables('<' + starting_table_iri + '>', '<' + target_table_iri + '>',
-                                                       predicate, hops, show_query)
-        path_row = ['starting_dataset', 'starting_table', 'starting_table_path', 'starting_column']
-        for i in range(2, hops + 1):
-            intermediate = ['intermediate_dataset' + str(i), 'intermediate_table' + str(i),
-                            'intermediate_column_land_in' + str(i), 'intermediate_table_path' + str(i),
-                            'intermediate_column_take_off' + str(i)]
-            path_row.extend(intermediate)
-        path_row.extend(['target_dataset', 'target_table', 'target_table_path', 'target_column'])
-        df = pd.DataFrame(list(data), columns=path_row)
-        dot = generate_graphviz(df, predicate)
-        return dot
-"""
+    def get_path_between_tables(self, source_table: pd.Series, target_table: pd.Series, hops: int,
+                                relation: str = 'data:hasPrimaryKeyForeignKeySimilarity', show_query: bool = False):
+        return get_path_between_tables(self.config, source_table, target_table, hops, relation, show_query)

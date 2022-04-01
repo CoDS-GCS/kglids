@@ -1,4 +1,9 @@
 import pandas as pd
+import zlib
+import re
+from graphviz import Digraph
+from camelsplit import camelsplit
+from data_items.knowledge_graph.src.label import Label
 from data_items.kglids_evaluations.src.helper.queries import execute_query
 from data_items.kglids_evaluations.src.helper.queries import get_top_k_tables
 
@@ -57,7 +62,7 @@ def get_tables(config, dataset: str, show_query):
     return pd.DataFrame({'Table': tables, 'Dataset': datasets, 'Path_to_table': paths})
 
 
-def recommend_tables(config, table: str, k: int, show_query: bool):
+def recommend_tables(config, table: str, k: int, relation: str, show_query: bool):
     query = PREFIXES + """
     SELECT ?table_name1 ?table_name2 ?certainty
     WHERE
@@ -65,14 +70,14 @@ def recommend_tables(config, table: str, k: int, show_query: bool):
         ?table_id	schema:name		"%s"	        .
       	?table_id	schema:name		?table_name1	.
       	?column_id	kglids:isPartOf ?table_id		.
-      	
-      	<<?column_id data:hasSemanticSimilarity	?column_id2>>	data:withCertainty	?certainty	. 
-      	
+
+      	<<?column_id %s	?column_id2>>	data:withCertainty	?certainty	. 
+
       	FILTER (?certainty >= 0.75)					.
       	?column_id2 kglids:isPartOf	?table_id2		.
       	?table_id2	schema:name		?table_name2	.
     }
-    """ % table
+    """ % (table, relation)
     if show_query:
         print(query)
 
@@ -87,6 +92,32 @@ def recommend_tables(config, table: str, k: int, show_query: bool):
     result = get_top_k_tables(result)[:k]
     result = list(map(lambda x: x[1], result))
     return pd.DataFrame({'Recommended_table': result})
+
+
+def search_tables_on(config, all_conditions: tuple, show_query: bool):
+    def search(conditions: tuple):
+        return PREFIXES + \
+               '\nselect ?name ?dataset_name ?path (' \
+               'count(distinct ?cols) as ?number_of_columns) (max (?total) as ?number_of_rows)' \
+               '\nwhere {' \
+               '\n?table schema:name ?name.' \
+               '\n?table data:hasFilePath ?path.' \
+               '\n?table kglids:isPartOf ?dataset.' \
+               '\n?dataset schema:name ?dataset_name.' \
+               '\n?cols kglids:isPartOf ?table.' \
+               '\n?cols data:hasTotalValueCount ?total.\n' \
+               + conditions[0] + \
+               '\nfilter( ' + conditions[1] + ')}' \
+                                              '\n group by ?name ?dataset_name ?path'
+
+    query = search(all_conditions)
+    if show_query:
+        print(query)
+    res = execute_query(config, query)
+    bindings = res["results"]["bindings"]
+
+    for result in bindings:
+        yield _create_tables_df_row(result)
 
 
 def show_graph_info(config, show_query: bool):
@@ -111,13 +142,58 @@ def show_graph_info(config, show_query: bool):
                          'Total_columns': [result[2]], 'Total_pipelines': ['Not yet supported!']})
 
 
+
+def get_table_path(config, dataset, table):
+    query = PREFIXES + """
+    SELECT ?table_path
+	WHERE
+	{
+      ?dataset	schema:name				"%s"	;
+      			rdf:type				kglids:Dataset	.
+      ?table	schema:name				"%s"	;
+      			rdf:type				kglids:Table	;
+      			data:hasFilePath		?table_path		.			
+    }
+    """ % (dataset, table)
+
+    res = execute_query(config, query)["results"]["bindings"][0]
+    return res["table_path"]["value"]
+
+
+def get_table_info(config, dataset, table, show_query):
+    query = PREFIXES + """
+    SELECT (max(?rows) as ?number_of_rows) (COUNT(?col) as ?number_of_columns) 
+	WHERE
+	{
+      ?dataset	schema:name				"%s"	;
+      			rdf:type				kglids:Dataset	.
+      ?table	schema:name				"%s"	;
+      			rdf:type				kglids:Table	;
+      			data:hasFilePath		?table_path		.
+      ?col		kglids:isPartOf			?table			;	
+                rdf:type				kglids:Column	;
+      			data:hasTotalValueCount	?rows			.   			
+    } 
+    """ % (dataset, table)
+    if show_query:
+        print(query)
+    res = execute_query(config, query)["results"]["bindings"][0]
+    rows = res["number_of_rows"]["value"]
+    columns = res["number_of_columns"]["value"]
+
+    return pd.DataFrame(
+        {'Dataset': [dataset], 'Table': [table], 'Path_to_table':
+            [get_table_path(config, dataset, table)], 'Number_of_columns': [columns],
+         'Number_of_rows': [rows]})
+
+
 def _create_tables_df_row(results):
     return {
-        'table_name': results['name']['value'],
-        'dataset_name': results['dataset_name']['value'],
-        'number_of_columns': float(results['number_of_columns']['value']),
-        'number_of_rows': float(results['number_of_rows']['value']),
-        'path': results['path']['value']
+        'Table': results['name']['value'],
+        'Dataset': results['dataset_name']['value'],
+        'Number_of_columns': float(results['number_of_columns']['value']),
+        'Number_of_rows': float(results['number_of_rows']['value']),
+        'Path_to_table': results['path']['value']
     }
 
 
@@ -136,6 +212,7 @@ def search_tables_on(config, all_conditions: tuple, show_query: bool):
                + conditions[0] + \
                '\nfilter( ' + conditions[1] + ')}' \
                                               '\n group by ?name ?dataset_name ?path'
+
     query = search(all_conditions)
     if show_query:
         print(query)
@@ -144,3 +221,309 @@ def search_tables_on(config, all_conditions: tuple, show_query: bool):
 
     for result in bindings:
         yield _create_tables_df_row(result)
+
+
+def _get_iri(config, dataset_name: str, table_name: str = None, show_query: bool = False):
+    if table_name is None:
+        query = PREFIXES + \
+                '\nselect ?id' \
+                '\nwhere {' \
+                '\n?id a kglids:Dataset.' \
+                '\n?id rdfs:label %s }' % dataset_name
+    else:
+        query = PREFIXES + \
+                '\nselect ?id where{' \
+                '\n?id a kglids:Table.' \
+                '\n?id rdfs:label %s.' \
+                '\n?id kglids:isPartOf ?dataset.' \
+                '\n?dataset rdfs:label %s.' \
+                '\n?dataset a kglids:Dataset.}' % (table_name, dataset_name)
+    if show_query:
+        print(query)
+    results = execute_query(config, query)
+    bindings = results["results"]["bindings"]
+    if not bindings:
+        return None
+    return str(bindings[0]['id']['value'])
+
+
+def get_iri_of_table(config, dataset_name: str, table_name: str, show_query: bool = False):
+    dataset_label = generate_label(dataset_name, 'en')
+    table_label = generate_label(table_name, 'en')
+    return _get_iri(config, dataset_label, table_label, show_query)
+
+
+def generate_label(col_name: str, lan: str) -> Label:
+    if '.csv' in col_name:
+        col_name = re.sub('.csv', '', col_name)
+    col_name = re.sub('[^0-9a-zA-Z]+', ' ', col_name)
+    text = " ".join(camelsplit(col_name.strip()))
+    text = re.sub(r'\s+', ' ', text.strip())
+    return Label(text.lower(), lan)
+
+
+def _create_path_row(result, hops):
+    data = {'starting_column': result['c1name']['value'],
+            'starting_table': result['t1name']['value'],
+            'starting_table_path': result['t1path']['value'],
+            'starting_dataset': result['d1name']['value']}
+
+    intermediate = {}
+    for i in range(2, hops + 1):
+        intermediate.update({'intermediate_column_land_in' + str(i): result['c' + str(i) + 'name']['value'],
+                             'intermediate_table' + str(i): result['t' + str(i) + 'name']['value'],
+                             'intermediate_table_path' + str(i): result['t' + str(i) + 'path']['value'],
+                             'intermediate_column_take_off' + str(i): result['cc' + str(i) + 'name']['value'],
+                             'intermediate_dataset' + str(i): result['d' + str(i) + 'name']['value']})
+    data.update(intermediate)
+
+    data.update({'target_column': result['c' + str(hops + 1) + 'name']['value'],
+                 'target_table': result['t' + str(hops + 1) + 'name']['value'],
+                 'target_table_path': result['t' + str(hops + 1) + 'path']['value'],
+                 'target_dataset': result['d' + str(hops + 1) + 'name']['value']})
+    return data
+
+
+def get_path_between(config, start_iri: str, target_iri: str, predicate: str, hops: int,
+                     show_query: bool = False):
+    def _generate_starting_nodes() -> str:
+        return '\n    ?c1 schema:name ?c1name.' \
+               '\n    ?c1 kglids:isPartOf ?t1.' \
+               '\n    ?t1 schema:name ?t1name.' \
+               '\n    ?t1 data:hasFilePath ?t1path.' \
+               '\n    ?t1 kglids:isPartOf ?d1.' \
+               '\n    ?d1 schema:name ?d1name.'
+
+    def _generate_intermediate_nodes(h: int) -> str:
+        inters = ''
+        for i in range(2, h + 1):
+            inter = '\n    ?c' + str(i) + ' a kglids:Column.' \
+                                          '\n    ?c' + str(i) + ' schema:name ?c' + str(i) + 'name.' \
+                                                                                             '\n    ?c' + str(
+                i) + ' kglids:isPartOf ?t' + str(i) + '.' \
+                                                      '\n    ?t' + str(i) + ' schema:name ?t' + str(i) + 'name.' \
+                                                                                                         '\n    ?t' + str(
+                i) + ' data:hasFilePath ?t' + str(i) + 'path.' \
+                                                       '\n    ?cc' + str(i) + ' kglids:isPartOf ?t' + str(i) + '.' \
+                                                                                                               '\n    ?cc' + str(
+                i) + ' schema:name ?cc' + str(i) + 'name.' \
+                                                   '\n    ?t' + str(i) + ' kglids:isPartOf ?d' + str(i) + '.' \
+                                                                                                          '\n    ?d' + str(
+                i) + ' schema:name ?d' + str(i) + 'name.'
+            inters += inter
+        return inters
+
+    def _generate_target_nodes(h: int) -> str:
+        return '\n    ?c' + str(h + 1) + ' schema:name ?c' + str(h + 1) + 'name.' \
+                                                                          '\n    ?c' + str(
+            h + 1) + ' kglids:isPartOf ?t' + str(h + 1) + '.' \
+                                                          '\n    ?t' + str(h + 1) + ' schema:name ?t' + str(
+            h + 1) + 'name.' \
+                     '\n    ?t' + str(h + 1) + ' data:hasFilePath ?t' + str(h + 1) + 'path.' \
+                                                                                     '\n    ?t' + str(
+            h + 1) + ' kglids:isPartOf ?d' + str(h + 1) + '.' \
+                                                          '\n    ?d' + str(h + 1) + ' schema:name ?d' + str(
+            h + 1) + 'name.'
+
+    def _generate_relationships(h: int, pred: str) -> str:
+        relations = '\n    ?c1 ' + pred + ' ?c2.'
+        for i in range(2, h + 1):
+            relation = '\n     ?cc' + str(i) + ' ' + pred + ' ?c' + str(i + 1) + '.'
+            relations += relation
+        return relations
+
+    def _generate_select(h: int) -> str:
+        selects = '\n ?c1name ?t1name ?t1path ?d1name'
+        for i in range(2, h + 1):
+            selects += '\n ?c' + str(i) + 'name ?t' + str(i) + 'name ?t' + str(i) + 'path' \
+                                                                                    ' ?cc' + str(i) + 'name ?d' + str(
+                i) + 'name'
+        selects += '\n ?c' + str(h + 1) + 'name ?t' + str(h + 1) + 'name ?t' + str(h + 1) + 'path ?d' + str(
+            h + 1) + 'name'
+        return selects
+
+    starting_nodes = _generate_starting_nodes()
+    intermediate_nodes = _generate_intermediate_nodes(hops)
+    target_nodes = _generate_target_nodes(hops)
+    relationships = _generate_relationships(hops, predicate)
+    select = _generate_select(hops)
+    all_nodes = starting_nodes + intermediate_nodes + target_nodes
+
+    query = PREFIXES + \
+            '\n select' + select + \
+            '\nwhere {' + \
+            all_nodes + relationships + \
+            '\n values ?t1 {' + start_iri + '}' + \
+            '\n values ?t' + str(hops + 1) + ' {' + target_iri + '}}'
+
+    if show_query:
+        print(query)
+    results = execute_query(config, query)
+    bindings = results["results"]["bindings"]
+    if not bindings:
+        print("nothing")
+        return []
+    for result in bindings:
+        yield _create_path_row(result, hops)
+
+
+def generate_component_id(dataset_name: str, table_name: str = '', column_name: str = ''):
+    return zlib.crc32(bytes(dataset_name + table_name + column_name, 'utf-8'))
+
+
+def generate_graphviz(df: pd.DataFrame, predicate: str):
+    def parse_starting_or_target_nodes(dot, row, column_ids: list, table_ids: list, dataset_ids: list,
+                                       start: bool) -> str:
+        relation_name = 'partOf'
+        if start:
+            dataset_name = row[0]
+            table_name = row[1]
+            column_name = row[3]
+            color = 'lightblue2'
+        else:
+            dataset_name = row[-4]
+            table_name = row[-3]
+            column_name = row[-1]
+            color = 'darkorange3'
+        dataset_id = str(generate_component_id(dataset_name))
+        table_id = str(generate_component_id(dataset_name, table_name))
+        column_id = str(generate_component_id(dataset_name, table_name, column_name))
+        if column_id in column_ids:
+            return column_id
+        dot.node(column_id, column_name, style='filled', fillcolor=color)
+        column_ids.append(column_id)
+        if table_id in table_ids:
+            dot.edge(column_id, table_id, relation_name)
+            return column_id
+        dot.node(table_id, table_name, style='filled', fillcolor=color)
+        table_ids.append(table_id)
+        if dataset_id in dataset_ids:
+            dot.edge(column_id, table_id, relation_name)
+            dot.edge(table_id, dataset_id, relation_name)
+            return column_id
+        dot.node(dataset_id, dataset_name, style='filled', fillcolor=color)
+        dataset_ids.append(dataset_id)
+        dot.edge(column_id, table_id, relation_name)
+        dot.edge(table_id, dataset_id, relation_name)
+        return column_id
+
+    def parse_intermediate_nodes(dot, row, column_ids: list, table_ids: list, dataset_ids: list) -> list:
+        ids = []
+        relation_name = 'partOf'
+        for i in range(4, len(row) - 4, 5):
+            dataset_name = row[i]
+            table_name = row[i + 1]
+            land_in_column_name = row[i + 2]
+            take_off_column_name = row[i + 4]
+            dataset_id = str(generate_component_id(dataset_name))
+            table_id = str(generate_component_id(dataset_name, table_name))
+            land_in_column_id = str(generate_component_id(dataset_name, table_name, land_in_column_name))
+            take_off_column_id = str(generate_component_id(dataset_name, table_name, take_off_column_name))
+            ids.extend([land_in_column_id, take_off_column_id])
+
+            land_in_column_exist = False
+            take_off_column_exist = False
+            if land_in_column_id in column_ids:
+                land_in_column_exist = True
+            dot.node(land_in_column_id, land_in_column_name)
+            column_ids.append(land_in_column_id)
+
+            if take_off_column_id in column_ids:
+                take_off_column_exist = True
+
+            if land_in_column_exist and take_off_column_exist:
+                continue
+            dot.node(take_off_column_id, take_off_column_name)
+            column_ids.append(take_off_column_id)
+
+            if table_id in table_ids:
+                if land_in_column_id == take_off_column_id:
+                    dot.edge(land_in_column_id, table_id, relation_name)
+                else:
+                    dot.edge(land_in_column_id, table_id, relation_name)
+                    dot.edge(take_off_column_id, table_id, relation_name)
+                continue
+
+            dot.node(table_id, table_name)
+            table_ids.append(table_id)
+            if dataset_id in dataset_ids:
+                if land_in_column_id == take_off_column_id:
+                    dot.edge(land_in_column_id, table_id, relation_name)
+                else:
+                    dot.edge(land_in_column_id, table_id, relation_name)
+                    dot.edge(take_off_column_id, table_id, relation_name)
+                dot.edge(table_id, dataset_id, relation_name)
+                continue
+            dot.node(dataset_id, dataset_name)
+            dataset_ids.append(dataset_id)
+            if land_in_column_id == take_off_column_id:
+                dot.edge(land_in_column_id, table_id, relation_name)
+            else:
+                dot.edge(land_in_column_id, table_id, relation_name)
+                dot.edge(take_off_column_id, table_id, relation_name)
+            dot.edge(table_id, dataset_id, relation_name)
+        return ids
+
+    def establish_relationships(dot, row_ids: list, relationships: list):
+
+        for j in range(0, len(row_ids) - 1, 2):
+            pair = (row_ids[j], row_ids[j + 1])
+            if pair[0] == pair[1]:
+                continue
+            if not pair in relationships:
+                relationships.append(pair)
+                dot.edge(pair[0], pair[1], 'similar', dir='none')
+
+    col_ids = []
+    tab_ids = []
+    data_ids = []
+    relations = []
+    dot_graph = Digraph(strict=True)
+    for i in range(len(df)):
+        r = df.iloc[i]
+        row_col_ids = []
+        starting_column_id = parse_starting_or_target_nodes(dot_graph, r, col_ids, tab_ids, data_ids, True)
+        intermediate_col_ids = parse_intermediate_nodes(dot_graph, r, col_ids, tab_ids, data_ids)
+        target_col_id = parse_starting_or_target_nodes(dot_graph, r, col_ids, tab_ids, data_ids, False)
+
+        row_col_ids.append(starting_column_id)
+        row_col_ids.extend(intermediate_col_ids)
+        row_col_ids.append(target_col_id)
+
+        establish_relationships(dot_graph, row_col_ids, relations)
+    dot_graph.attr(label='Paths between starting nodes in blue and target nodes in orange', size='8,75,10')
+
+    return dot_graph
+
+
+def get_path_between_tables(config, source_table_info, target_table_info, hops, relation, show_query):
+    source_table_name = source_table_info["Table"]
+    source_dataset_name = source_table_info["Dataset"]
+    target_table_name = target_table_info["Table"]
+    target_dataset_name = target_table_info["Dataset"]
+
+    starting_table_iri = get_iri_of_table(config,
+                                          dataset_name=generate_label(source_dataset_name, 'en').get_text(),
+                                          table_name=generate_label(source_table_name, 'en').get_text())
+    target_table_iri = get_iri_of_table(config,
+                                        dataset_name=generate_label(target_dataset_name, 'en').get_text(),
+                                        table_name=generate_label(target_table_name, 'en').get_text())
+
+    if starting_table_iri is None:
+        raise ValueError(str(source_table_info) + ' does not exist')
+    if target_table_iri is None:
+        raise ValueError(str(target_table_info) + ' does not exist')
+
+    data = get_path_between(config, '<' + starting_table_iri + '>', '<' + target_table_iri + '>',
+                            relation, hops, show_query)
+
+    path_row = ['starting_dataset', 'starting_table', 'starting_table_path', 'starting_column']
+    for i in range(2, hops + 1):
+        intermediate = ['intermediate_dataset' + str(i), 'intermediate_table' + str(i),
+                        'intermediate_column_land_in' + str(i), 'intermediate_table_path' + str(i),
+                        'intermediate_column_take_off' + str(i)]
+        path_row.extend(intermediate)
+    path_row.extend(['target_dataset', 'target_table', 'target_table_path', 'target_column'])
+    df = pd.DataFrame(list(data), columns=path_row)
+    dot = generate_graphviz(df, relation)
+    return dot
