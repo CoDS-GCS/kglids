@@ -67,11 +67,17 @@ def column_pair_similarity_worker(column_profile_path_pairs, ontology, triples_o
                                   semantic_similarity_threshold, numerical_content_threshold,
                                   deep_embedding_content_threshold, inclusion_dependency_threshold,
                                   minhash_content_threshold, pkfk_threshold, word_embedding_path):
+    # load the column profiles
+    column_profiles = {}
     word_embedding = WordEmbeddings(word_embedding_path)
     similarity_triples = []
     for column1_profile_path, column2_profile_path in column_profile_path_pairs:
-        column1_profile = ColumnProfile.load_profile(column1_profile_path)
-        column2_profile = ColumnProfile.load_profile(column2_profile_path)
+        if column1_profile_path not in column_profiles:
+            column_profiles[column1_profile_path] = ColumnProfile.load_profile(column1_profile_path)
+        if column2_profile_path not in column_profiles:
+            column_profiles[column2_profile_path] = ColumnProfile.load_profile(column2_profile_path)
+        column1_profile = column_profiles[column1_profile_path]
+        column2_profile = column_profiles[column2_profile_path]
         
         semantic_triples = _compute_semantic_similarity(column1_profile, column2_profile, ontology, 
                                                         semantic_similarity_threshold,
