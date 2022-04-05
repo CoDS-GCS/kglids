@@ -1,3 +1,5 @@
+import itertools
+
 import pandas as pd
 import zlib
 import re
@@ -5,7 +7,7 @@ from graphviz import Digraph
 from camelsplit import camelsplit
 from data_items.knowledge_graph.src.label import Label
 from data_items.kglids_evaluations.src.helper.queries import execute_query
-from data_items.kglids_evaluations.src.helper.queries import get_top_k_tables
+from data_items.knowledge_graph.src.word_embedding.embeddings_client import n_similarity
 
 PREFIXES = """
     PREFIX kglids: <http://kglids.org/ontology/>
@@ -15,22 +17,30 @@ PREFIXES = """
     """
 
 
+def query(config, rdf_query):
+    return execute_query(config, PREFIXES + rdf_query)["results"]["bindings"]
+
 def get_datasets(config, show_query):
     query = PREFIXES + """
-    SELECT ?dataset_name
+    SELECT ?dataset_name (count(?table_id) as ?table_count)
     WHERE
     {
         ?dataset_id	rdf:type	kglids:Dataset	.
         ?dataset_id schema:name	?dataset_name	.
-    }"""
+      	?table_id	kglids:isPartOf	?dataset_id	.
+    }
+    group by ?dataset_name """
     if show_query:
         print(query)
 
-    result = []
+    datasets = []
+    tables = []
+
     res = execute_query(config, query)
     for r in res["results"]["bindings"]:
-        result.append(r["dataset_name"]["value"])
-    return pd.DataFrame({"Dataset": result})
+        datasets.append(r["dataset_name"]["value"])
+        tables.append(r["table_count"]["value"])
+    return pd.DataFrame({"Dataset": datasets, "Number_of_tables": tables})
 
 
 def get_tables(config, dataset: str, show_query):
@@ -59,25 +69,53 @@ def get_tables(config, dataset: str, show_query):
         datasets.append(r["dataset_name"]["value"])
         paths.append(r["table_path"]["value"])
 
-    return pd.DataFrame({'Table': tables, 'Dataset': datasets, 'Path_to_table': paths})
+    return pd.DataFrame({'Dataset': datasets, 'Table': tables, 'Path_to_table': paths})
 
 
-def recommend_tables(config, table: str, k: int, relation: str, show_query: bool):
+def get_top_k_tables(pairs: list):
+    top_k = {}
+    dataset = {}
+    path = {}
+    for p in pairs:
+        if p[0] not in top_k:
+            top_k[p[0]] = p[1]
+            dataset[p[0]] = p[2]
+            path[p[0]] = p[3]
+        else:
+            updated_score = top_k.get(p[0]) + p[1]
+            top_k[p[0]] = updated_score
+
+    scores = top_k
+    top_k = list(dict(sorted(top_k.items(), key=lambda item: item[1], reverse=True)).keys())
+    top_k = [list(ele) for ele in top_k]
+
+    for pair in top_k:
+        c1 = pair[0]
+        c2 = pair[1]
+        pair = pair.extend([scores.get((c1, c2)), dataset.get((c1, c2)), path.get((c1, c2))])
+
+    return top_k
+
+
+def recommend_tables(config, dataset: str, table: str, k: int, relation: str, show_query: bool):
     query = PREFIXES + """
-    SELECT ?table_name1 ?table_name2 ?certainty
+    SELECT ?table_name1 ?table_name2 ?certainty ?dataset2_n ?path
     WHERE
     {
         ?table_id	schema:name		"%s"	        .
       	?table_id	schema:name		?table_name1	.
+      	?dataset_id schema:name     "%s"            .
+      	?table_id   kglids:isPartOf ?dataset_id     .
       	?column_id	kglids:isPartOf ?table_id		.
 
       	<<?column_id %s	?column_id2>>	data:withCertainty	?certainty	. 
-
-      	FILTER (?certainty >= 0.75)					.
       	?column_id2 kglids:isPartOf	?table_id2		.
       	?table_id2	schema:name		?table_name2	.
+      	?table_id2  data:hasFilePath ?path          .
+      	?table_id2  kglids:isPartOf ?dataset2       .
+      	?dataset2   schema:name     ?dataset2_n     .
     }
-    """ % (table, relation)
+    """ % (table, dataset, relation)
     if show_query:
         print(query)
 
@@ -87,11 +125,17 @@ def recommend_tables(config, table: str, k: int, relation: str, show_query: bool
         table1 = r["table_name1"]["value"]
         table2 = r["table_name2"]["value"]
         certainty = float(r["certainty"]["value"])
-        result.append([(table1, table2), certainty])
+        dataset = r["dataset2_n"]["value"]
+        path = r["path"]["value"]
+        result.append([(table1, table2), certainty, dataset, path])
 
     result = get_top_k_tables(result)[:k]
-    result = list(map(lambda x: x[1], result))
-    return pd.DataFrame({'Recommended_table': result})
+    table = list(map(lambda x: x[1], result))
+    scores = list(map(lambda x: x[2], result))
+    dataset = list(map(lambda x: x[3], result))
+    path = list(map(lambda x: x[4], result))
+    return pd.DataFrame({'Dataset': dataset, 'Recommended_table': table,
+                         'Score': scores, 'Path_to_table': path})
 
 
 def search_tables_on(config, all_conditions: tuple, show_query: bool):
@@ -139,8 +183,7 @@ def show_graph_info(config, show_query: bool):
             result.append(r["total_number_of_{}".format(i)]["value"])
 
     return pd.DataFrame({'Total_datasets': [result[0]], 'Total_tables': [result[1]],
-                         'Total_columns': [result[2]], 'Total_pipelines': ['Not yet supported!']})
-
+                         'Total_columns': [result[2]]})  # 'Total_pipelines': ['Not yet supported!']})
 
 
 def get_table_path(config, dataset, table):
@@ -189,8 +232,8 @@ def get_table_info(config, dataset, table, show_query):
 
 def _create_tables_df_row(results):
     return {
-        'Table': results['name']['value'],
         'Dataset': results['dataset_name']['value'],
+        'Table': results['name']['value'],
         'Number_of_columns': float(results['number_of_columns']['value']),
         'Number_of_rows': float(results['number_of_rows']['value']),
         'Path_to_table': results['path']['value']
@@ -499,8 +542,11 @@ def generate_graphviz(df: pd.DataFrame, predicate: str):
 def get_path_between_tables(config, source_table_info, target_table_info, hops, relation, show_query):
     source_table_name = source_table_info["Table"]
     source_dataset_name = source_table_info["Dataset"]
-    target_table_name = target_table_info["Table"]
     target_dataset_name = target_table_info["Dataset"]
+    if 'Recommended_table' in target_table_info.keys():
+        target_table_name = target_table_info["Recommended_table"]
+    else:
+        target_table_name = target_table_info["Table"]
 
     starting_table_iri = get_iri_of_table(config,
                                           dataset_name=generate_label(source_dataset_name, 'en').get_text(),
@@ -527,3 +573,41 @@ def get_path_between_tables(config, source_table_info, target_table_info, hops, 
     df = pd.DataFrame(list(data), columns=path_row)
     dot = generate_graphviz(df, relation)
     return dot
+
+
+def get_unionable_columns(self, df1: pd.DataFrame, df2: pd.DataFrame, sim_threshold: float = 0.5) -> pd.DataFrame:
+    def _drop_duplicates(cn1: list, cn2: list):
+        duplicates = set(cn1).intersection(set(cn2))
+        for d in duplicates:
+            cn1.remove(d)
+            cn2.remove(d)
+        return cn1, cn2
+
+    def _create_combinations(colname1: str, colname2: str) -> pd.DataFrame:
+        colname1_tokens = colname1.split(' ')
+        colname2_tokens = colname2.split(' ')
+        if len(colname1_tokens) > 1 and len(colname2_tokens) > 1:
+            colname1_tokens, colname2_tokens = _drop_duplicates(colname1_tokens, colname2_tokens)
+        combs = itertools.product(colname1_tokens, colname2_tokens)
+        return list(combs)
+
+    def _calculate_similarity(comb: list):
+        if not comb:
+            return 1.0
+        similarity_sum = 0
+        for t1, t2 in combinations:
+            similarity_sum += n_similarity([str(t1)], [str(t2)])
+        return similarity_sum / len(comb)
+
+    if not (isinstance(df1, pd.DataFrame) and isinstance(df2, pd.DataFrame)):
+        raise TypeError('The inputs have to be of type pandas dataframes')
+    matched = []
+    for c1, c2 in itertools.product(df1.columns, df2.columns):
+        c1_label = generate_label(c1, 'en').get_text()
+        c2_label = generate_label(c2, 'en').get_text()
+        combinations = _create_combinations(c1_label, c2_label)
+        similarity = _calculate_similarity(combinations)
+        if similarity >= sim_threshold:
+            matched.append((c1, c2))
+    unionable_df = pd.DataFrame(matched, columns=['First dataframe columns', 'Second dataframe columns'])
+    return unionable_df

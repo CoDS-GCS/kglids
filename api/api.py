@@ -5,33 +5,59 @@ from data_items.kglids_evaluations.src.helper.config import connect_to_blazegrap
 
 
 class KGLiDS:
-    def __init__(self, port=7777, namespace: str = 'kglids_smallerReal'):
+    def __init__(self, port=7777, namespace: str = 'kglids_soen6111'):
         self.config = connect_to_blazegraph(port, namespace)
 
     def get_datasets(self, show_query: bool = False):
         return get_datasets(self.config, show_query)
 
     def get_tables(self, dataset: str = '', show_query: bool = False):
+        if not dataset:
+            print('Showing all available table(s): ')
+        else:
+            print("Showing table(s) for '{}' dataset: ".format(dataset))
         return get_tables(self.config, dataset, show_query)
 
-    def recommend_k_tables(self, table: str, k: int = 5, show_query: bool = False):
-        if not isinstance(table, str):
-            raise ValueError("table needs to be a type 'str'")
+    def recommend_k_joinable_tables(self, table: pd.Series, k: int = 5, show_query: bool = False):
+        if not isinstance(table, pd.Series):
+            raise ValueError("table needs to be a type 'pd.Series'")
+        # if not isinstance(dataset, str):
+        #     raise ValueError("dataset needs to be a type 'str'")
         if not isinstance(k, int):
             raise ValueError("k needs to be a type 'int'")
-        elif isinstance(table, str) and isinstance(k, int):
-            recommendations = recommend_tables(self.config, table, k, 'data:hasPrimaryKeyForeignKeySimilarity', show_query)
-            print('Showing the top {} table recommendations!'.format(len(recommendations)))
+        elif isinstance(table, pd.Series) and isinstance(k, int):
+            dataset = table["Dataset"]
+            table = table["Table"]
+            recommendations = recommend_tables(self.config, dataset, table, k, 'data:hasPrimaryKeyForeignKeySimilarity',
+                                               show_query)
+            print('Showing the top-{} joinable table recommendations:'.format(len(recommendations)))
             return recommendations
 
-    def get_table_info(self, dataset: str, table: str, show_query: bool = False):
-        if not isinstance(dataset, str):
-            raise ValueError("dataset needs to be a type 'str'")
-        if not isinstance(table, str):
-            raise ValueError("table needs to be a type 'str'")
+    def recommend_k_unionable_tables(self, table: pd.Series, k: int = 5, show_query: bool = False):
+        if not isinstance(table, pd.Series):
+            raise ValueError("table needs to be a type 'pd.Series'")
+        # if not isinstance(dataset, str):
+        #     raise ValueError("dataset needs to be a type 'str'")
+        if not isinstance(k, int):
+            raise ValueError("k needs to be a type 'int'")
+        elif isinstance(table, pd.Series) and isinstance(k, int):
+            dataset = table["Dataset"]
+            table = table["Table"]
+            recommendations = recommend_tables(self.config, dataset, table, k, 'data:hasSemanticSimilarity',
+                                               show_query)
+            print('Showing the top-{} unionable table recommendations:'.format(len(recommendations)))
+            return recommendations
+
+    def get_table_info(self, table, show_query: bool = False):
+        dataset = table["Dataset"]
+        if 'Recommended_table' in table.keys():
+            table = table["Recommended_table"]
+        else:
+            table = table["Table"]
         return get_table_info(self.config, dataset, table, show_query)
 
     def show_graph_info(self, show_query: bool = False):
+        print('Information captured: ')
         return show_graph_info(self.config, show_query)
 
     def search_tables_on(self, conditions: list, show_query: bool = False):
@@ -69,11 +95,22 @@ class KGLiDS:
             return '\n'.join(statements), ' && '.join(filters)
 
         data = search_tables_on(self.config, parsed_conditions(conditions), show_query)
-        return pd.DataFrame(list(data), columns=['Table', 'Dataset', 'Number_of_columns',
-                                                 'Number_of_rows', 'Path_to_table']).sort_values('Number_of_rows',
+        return pd.DataFrame(list(data), columns=['Dataset', 'Table', 'Number_of_columns',
+                                                 'Number_of_rows', 'Path_to_table']).sort_values('Table',
                                                                                                  ignore_index=True,
                                                                                                  ascending=False)
 
     def get_path_between_tables(self, source_table: pd.Series, target_table: pd.Series, hops: int,
                                 relation: str = 'data:hasPrimaryKeyForeignKeySimilarity', show_query: bool = False):
         return get_path_between_tables(self.config, source_table, target_table, hops, relation, show_query)
+
+    def get_unionable_columns(self, df1, df2, thresh: float = 0.50):
+        return get_unionable_columns(self.config, df1, df2, thresh)
+
+    def query(self, rdf_query: str):
+        return query(self.config, rdf_query)
+
+
+
+
+

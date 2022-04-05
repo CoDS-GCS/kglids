@@ -1,6 +1,131 @@
-datasource: "toy"
+datasource: kaggle
 datasets:
-- name: "smallerReal"
-  type: "csv"
-  path: "/Users/shubhamvashisth/Documents/data/toy/"
-  origin: "mock"
+- name: USA COVID-19 Vaccinations
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/USA COVID-19 Vaccinations
+  type: csv
+- name: COVID-19 World Vaccination Progress
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID-19 World Vaccination Progress
+  type: csv
+- name: COVID-19 Dataset
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID-19 Dataset
+  type: csv
+- name: US counties COVID 19 dataset
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/US counties COVID 19 dataset
+  type: csv
+- name: FIFA22 OFFICIAL DATASET
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/FIFA22 OFFICIAL DATASET
+  type: csv
+- name: COVID-19 dataset in Japan
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID-19 dataset in Japan
+  type: csv
+- name: UK COVID-19 Data
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/UK COVID-19 Data
+  type: csv
+- name: FIFA 21 complete player dataset
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/FIFA 21 complete player dataset
+  type: csv
+- name: Coronavirus - Brazil
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/Coronavirus - Brazil
+  type: csv
+- name: COVID-19 in Canada
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID-19 in Canada
+  type: csv
+- name: COVID19 Tweets
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID19 Tweets
+  type: csv
+- name: US Cars Dataset
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/US Cars Dataset
+  type: csv
+- name: US Election 2020
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/US Election 2020
+  type: csv
+- name: COVID-19 Indonesia Dataset
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID-19 Indonesia Dataset
+  type: csv
+- name: COVID-19 Corona Virus India Dataset
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID-19 Corona Virus India Dataset
+  type: csv
+- name: COVID-19 in USA
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID-19 in USA
+  type: csv
+- name: Most Crowded Airports
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/Most Crowded Airports
+  type: csv
+- name: FIFA World Cup
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/FIFA World Cup
+  type: csv
+- name: US Census Demographic Data
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/US Census Demographic Data
+  type: csv
+- name: FIFA 18 Complete Player Dataset
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/FIFA 18 Complete Player Dataset
+  type: csv
+- name: US Mass Shooting
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/US Mass Shooting
+  type: csv
+- name: Coronavirus tweets NLP - Text Classification
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/Coronavirus tweets NLP - Text Classification
+  type: csv
+- name: COVID-19 in Italy
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID-19 in Italy
+  type: csv
+- name: FIFA 20 complete player dataset
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/FIFA 20 complete player dataset
+  type: csv
+- name: COVID-19 in India
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID-19 in India
+  type: csv
+- name: Countries of the World
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/Countries of the World
+  type: csv
+- name: COVID-19 Healthy Diet Dataset
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID-19 Healthy Diet Dataset
+  type: csv
+- name: US Police Shootings
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/US Police Shootings
+  type: csv
+- name: US Minimum Wage by State from 1968 to 2020
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/US Minimum Wage by State from 1968
+    to 2020
+  type: csv
+- name: FIFA 19 complete player dataset
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/FIFA 19 complete player dataset
+  type: csv
+- name: FIFA worldcup 2018 Dataset
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/FIFA worldcup 2018 Dataset
+  type: csv
+- name: COVID-19's Impact on Airport Traffic
+  origin: mock
+  path: /Users/shubhamvashisth/Downloads/data_lake/COVID-19's Impact on Airport Traffic
+  type: csv
