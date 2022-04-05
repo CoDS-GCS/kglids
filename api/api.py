@@ -9,14 +9,14 @@ class KGLiDS:
         self.config = connect_to_blazegraph(port, namespace)
 
     def get_datasets(self, show_query: bool = False):
-        return get_datasets(self.config, show_query)
+        return get_datasets(self.config, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
 
     def get_tables(self, dataset: str = '', show_query: bool = False):
         if not dataset:
             print('Showing all available table(s): ')
         else:
             print("Showing table(s) for '{}' dataset: ".format(dataset))
-        return get_tables(self.config, dataset, show_query)
+        return get_tables(self.config, dataset, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
 
     def recommend_k_joinable_tables(self, table: pd.Series, k: int = 5, show_query: bool = False):
         if not isinstance(table, pd.Series):
@@ -95,6 +95,7 @@ class KGLiDS:
             return '\n'.join(statements), ' && '.join(filters)
 
         data = search_tables_on(self.config, parsed_conditions(conditions), show_query)
+        print('Showing recommendations as per the following conditions:\nCondition = ', conditions)
         return pd.DataFrame(list(data), columns=['Dataset', 'Table', 'Number_of_columns',
                                                  'Number_of_rows', 'Path_to_table']).sort_values('Table',
                                                                                                  ignore_index=True,
