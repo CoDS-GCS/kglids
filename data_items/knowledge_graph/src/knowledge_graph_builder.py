@@ -58,14 +58,14 @@ class KnowledgeGraphBuilder:
 
         # get list of column profiles and their data type
         column_data_types = [i for i in os.listdir(column_profiles_path)]
-        self.column_profiles_per_type = {}
+        self.column_profile_paths_per_type = {}
         for data_type in column_data_types:
             type_path = os.path.join(column_profiles_path, data_type)
             profiles = [os.path.join(type_path, i) for i in os.listdir(type_path) if i.endswith('.json')]
-            self.column_profiles_per_type[data_type] = profiles
+            self.column_profile_paths_per_type[data_type] = profiles
 
         print('Column Type Breakdown:')
-        for data_type, profile_paths in self.column_profiles_per_type.items():
+        for data_type, profile_paths in self.column_profile_paths_per_type.items():
             print(f'\t{data_type}: {len(profile_paths)}')
 
         # TODO: [Refactor] Read this from project config
@@ -75,7 +75,7 @@ class KnowledgeGraphBuilder:
         word_embedding = None
 
     def build_membership_and_metadata_subgraph(self):
-        column_profile_paths = list(itertools.chain.from_iterable(self.column_profiles_per_type.values()))
+        column_profile_paths = list(itertools.chain.from_iterable(self.column_profile_paths_per_type.values()))
         columns_rdd = self.spark.parallelize(column_profile_paths)
         # generate column metadata triples in parallel
         ontology = self.ontology
@@ -142,7 +142,7 @@ class KnowledgeGraphBuilder:
     def generate_similarity_triples(self):
         # create column profile pairs per type
         column_pairs = []
-        for data_type, column_profiles in self.column_profiles_per_type.items():
+        for data_type, column_profiles in self.column_profile_paths_per_type.items():
             for i in range(len(column_profiles)):
                 for j in range(i + 1, len(column_profiles)):
                     column_pairs.append((column_profiles[i], column_profiles[j]))
@@ -179,8 +179,8 @@ def main():
     # TODO: [Refactor] read column profiles path from project config.py
     # TODO: [Refactor] add graph output path to project config.py
 
-    if os.path.exists('out/kglids_data_items_graph.nq'):
-        os.remove('out/kglids_data_items_graph.nq')
+    if os.path.exists('out/kglids_data_items_graph.nt'):
+        os.remove('out/kglids_data_items_graph.nt')
 
     start_all = datetime.now()
     knowledge_graph_builder = KnowledgeGraphBuilder(
@@ -203,7 +203,7 @@ def main():
     print(datetime.now(), '• 3. Combining intermediate subgraphs from workers\n')
     knowledge_graph_builder.build_graph()
 
-    print(datetime.now(), '\n• Done. Graph Saved to: out/kglids_data_items_graph.nq\n')
+    print(datetime.now(), '\n• Done. Graph Saved to: out/kglids_data_items_graph.nt\n')
 
     end_all = datetime.now()
     print(datetime.now(), "Total time to build graph: " + str(end_all - start_all))

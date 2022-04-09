@@ -78,6 +78,9 @@ def column_pair_similarity_worker(column_profile_path_pairs, ontology, triples_o
             column_profiles[column2_profile_path] = ColumnProfile.load_profile(column2_profile_path)
         column1_profile = column_profiles[column1_profile_path]
         column2_profile = column_profiles[column2_profile_path]
+        # TODO: [Refactor] move this check to knowledge graph builder
+        if column1_profile.get_table_id() == column2_profile.get_table_id():
+            continue
         
         semantic_triples = _compute_semantic_similarity(column1_profile, column2_profile, ontology, 
                                                         semantic_similarity_threshold,
