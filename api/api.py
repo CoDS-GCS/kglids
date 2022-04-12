@@ -1,12 +1,15 @@
-import pandas as pd
+import stardog
 from api.template import *
+from api.helpers.helper import *
 # from data_items.knowledge_graph.src.utils import generate_label, generate_component_id, generate_graphviz
 from data_items.kglids_evaluations.src.helper.config import connect_to_blazegraph
 
 
 class KGLiDS:
-    def __init__(self, port=7777, namespace: str = 'kglids_soen6111'):
-        self.config = connect_to_blazegraph(port, namespace)
+    def __init__(self, blazegraph_port=9999, blazegraph_namespace: str = 'soen6111'):
+        self.config = connect_to_blazegraph(blazegraph_port, blazegraph_namespace)
+        self.conn = connect_to_stardog()
+        self.conn.begin()
 
     def get_datasets(self, show_query: bool = False):
         return get_datasets(self.config, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
@@ -109,9 +112,20 @@ class KGLiDS:
         return get_unionable_columns(self.config, df1, df2, thresh)
 
     def query(self, rdf_query: str):
-        return query(self.config, rdf_query)
+        return query_kglids(self.config, rdf_query)
 
+    def get_top_scoring_ml_model(self, dataset: str = '', show_query=False):
+        return get_top_scoring_ml_model(self.conn, dataset, show_query)
 
+    def get_pipelines(self, author: str = '', show_query=False):
+        return get_pipelines(self.conn, author, show_query).sort_values('Number_of_votes', ignore_index=True,
+                                                                        ascending=False)
 
+    def get_most_recent_pipeline(self, dataset: str = '', show_query=False):
+        return get_most_recent_pipeline(self.conn, dataset, show_query)
 
+    def get_top_k_scoring_pipelines_for_dataset(self, dataset: str = '', k: int = None, show_query=False):
+        return get_top_k_scoring_pipelines_for_dataset(self.conn, dataset, k, show_query)
 
+    def get_most_popular_parameters(self, library: str, parameters='all'):
+        pass

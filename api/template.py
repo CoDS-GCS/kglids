@@ -3,10 +3,12 @@ import itertools
 import pandas as pd
 import zlib
 import re
+import io
 from graphviz import Digraph
 from camelsplit import camelsplit
 from data_items.knowledge_graph.src.label import Label
 from data_items.kglids_evaluations.src.helper.queries import execute_query
+from api.helpers.helper import execute_query
 from data_items.knowledge_graph.src.word_embedding.embeddings_client import n_similarity
 
 PREFIXES = """
@@ -14,11 +16,14 @@ PREFIXES = """
     PREFIX data:   <http://kglids.org/ontology/data/>
     PREFIX schema: <http://schema.org/>
     PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX pipeline: <http://kglids.org/ontology/pipeline/>
     """
 
 
-def query(config, rdf_query):
+def query_kglids(config, rdf_query):
     return execute_query(config, PREFIXES + rdf_query)["results"]["bindings"]
+
 
 def get_datasets(config, show_query):
     query = PREFIXES + """
@@ -183,7 +188,7 @@ def show_graph_info(config, show_query: bool):
             result.append(r["total_number_of_{}".format(i)]["value"])
 
     return pd.DataFrame({'Total_datasets': [result[0]], 'Total_tables': [result[1]],
-                         'Total_columns': [result[2]]})  # 'Total_pipelines': ['Not yet supported!']})
+                         'Total_columns': [result[2]], 'Total_pipelines': ['Not yet supported!']})
 
 
 def get_table_path(config, dataset, table):
@@ -611,3 +616,91 @@ def get_unionable_columns(self, df1: pd.DataFrame, df2: pd.DataFrame, sim_thresh
             matched.append((c1, c2))
     unionable_df = pd.DataFrame(matched, columns=['First dataframe columns', 'Second dataframe columns'])
     return unionable_df
+
+
+def get_top_scoring_ml_model(config, dataset, show_query):
+    query = """
+    PREFIX kglids: <http://kglids.org/ontology/>
+    SELECT (count(?x) as ?count)
+    WHERE
+    {
+        ?x rdf:type kglids:Pipeline .
+    }
+    """
+    return execute_query(config, query)
+
+
+def get_pipelines(config, author, show_query):
+    if author != '':
+        author = "FILTER (?Author = '{}')   .".format(author)
+
+    query = PREFIXES + """
+    SELECT ?Pipeline ?Dataset ?Author ?Written_on ?Number_of_votes ?Score
+    WHERE
+    {
+        ?pipeline_id    rdf:type                kglids:Pipeline     ;
+                        pipeline:hasVotes       ?Number_of_votes    ;
+                        rdfs:label              ?Pipeline           ;
+                        pipeline:isWrittenOn    ?Written_on         ;
+                        pipeline:isWrittenBy    ?Author             ;
+                        pipeline:hasScore       ?Score              ;
+                        kglids:isPartOf         ?Dataset_id         .
+        ?Dataset_id     schema:name             ?Dataset            .
+        %s
+    } ORDER BY DESC(?Number_of_votes) 
+    """ % author
+    if show_query:
+        print(query)
+
+    return pd.read_csv(io.BytesIO(execute_query(config, query)))
+
+
+def get_most_recent_pipeline(config, dataset, show_query):
+    if dataset != '':
+        dataset = "FILTER (?Dataset = '{}')     .".format(dataset)
+
+    query = PREFIXES + """
+    SELECT ?Pipeline ?Dataset ?Author ?Written_on ?Number_of_votes ?Score
+    WHERE
+    {
+        ?pipeline_id    rdf:type                kglids:Pipeline     ;
+                        pipeline:hasVotes       ?Number_of_votes    ;
+                        rdfs:label              ?Pipeline           ;
+                        pipeline:isWrittenOn    ?Written_on         ;
+                        pipeline:isWrittenBy    ?Author             ;
+                        pipeline:hasScore       ?Score              ;
+                        kglids:isPartOf         ?Dataset_id         .
+        ?Dataset_id     schema:name             ?Dataset            .
+        %s                          
+    } ORDER BY DESC(?Written_on) LIMIT 1
+    """ % dataset
+    if show_query:
+        print(query)
+    return pd.read_csv(io.BytesIO(execute_query(config, query)))
+
+
+def get_top_k_scoring_pipelines_for_dataset(config, dataset, k, show_query):
+    if k is not None:
+        k = 'LIMIT ' + str(k)
+    if k is None:
+        k = ''
+    if dataset != '':
+        dataset = "FILTER (?Dataset = '{}')     .".format(dataset)
+    query = PREFIXES + """
+    SELECT ?Pipeline ?Dataset ?Author ?Written_on ?Number_of_votes ?Score
+    WHERE
+    {
+        ?pipeline_id    rdf:type                kglids:Pipeline     ;
+                        pipeline:hasVotes       ?Number_of_votes    ;
+                        rdfs:label              ?Pipeline           ;
+                        pipeline:isWrittenOn    ?Written_on         ;
+                        pipeline:isWrittenBy    ?Author             ;
+                        pipeline:hasScore       ?Score              ;
+                        kglids:isPartOf         ?Dataset_id         .
+        ?Dataset_id     schema:name             ?Dataset            .
+        %s                
+    } ORDER BY DESC(?Score) %s
+    """ % (dataset, k)
+    if show_query:
+        print(query)
+    return pd.read_csv(io.BytesIO(execute_query(config, query)))
