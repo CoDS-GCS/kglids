@@ -129,3 +129,14 @@ class KGLiDS:
 
     def get_most_popular_parameters(self, library: str, parameters='all'):
         pass
+
+    def search_classifier(self, dataset: str, show_query=False):
+        return search_classifier(self.conn, dataset, show_query)
+
+    def get_classifier(self, classifier: pd.Series, show_query=False):
+        pipeline_name = classifier['Pipeline']
+        classifier = classifier['Classifier']
+        return get_classifier(self.conn, pipeline_name, classifier, show_query)
+
+    def get_library_usage(self, dataset: str = '', show_query=False):
+        return get_library_usage(self.conn, dataset, show_query)

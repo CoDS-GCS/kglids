@@ -4,12 +4,16 @@ import pandas as pd
 import zlib
 import re
 import io
+import numpy as np
 from graphviz import Digraph
 from camelsplit import camelsplit
+from matplotlib import pyplot as plt
+
 from data_items.knowledge_graph.src.label import Label
 from data_items.kglids_evaluations.src.helper.queries import execute_query
 from api.helpers.helper import execute_query
 from data_items.knowledge_graph.src.word_embedding.embeddings_client import n_similarity
+import seaborn as sns
 
 PREFIXES = """
     PREFIX kglids: <http://kglids.org/ontology/>
@@ -19,6 +23,13 @@ PREFIXES = """
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX pipeline: <http://kglids.org/ontology/pipeline/>
     """
+
+CLASSIFIERS = {'RandomForestClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/RandomForestClassifier>',
+               'SVC': '<http://kglids.org/resource/library/sklearn/svm/SVC>',
+               'KNeighborsClassifier': '<http:/kglids.org/resource/library/sklearn/neighbors/KNeighborsClassifier>',
+               'GradientBoostingClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/GradientBoostingClassifier>',
+               'LogisticRegression': '<http://kglids.org/resource/library/sklearn/linear_model/LogisticRegression>',
+               'DecisionTreeClassifier': '<http://kglids.org/resource/library/sklearn/tree/DecisionTreeClassifier>'}
 
 
 def query_kglids(config, rdf_query):
@@ -704,3 +715,162 @@ def get_top_k_scoring_pipelines_for_dataset(config, dataset, k, show_query):
     if show_query:
         print(query)
     return pd.read_csv(io.BytesIO(execute_query(config, query)))
+
+
+# def get_classifier(config, dataset, show_query):
+#     for k, v in CLASSIFIERS.items():
+#         graph_url = k
+#         classifier = v.get('name')
+#         query = PREFIXES + """
+#         SELECT DISTINCT ?Pipeline ?Score ?Parameter ?Parameter_value
+#         WHERE
+#         {
+#             ?Dataset_id     schema:name '%s'   .
+#             ?Pipeline_id    kglids:isPartOf   ?Dataset_id    ;
+#                             rdfs:label        ?Pipeline      ;
+#                             pipeline:hasScore ?Score         .
+#            graph ?Pipeline_id
+#              {
+#                  ?Statement_number    pipeline:callsLibrary %s  .
+#                  << ?Statement_number pipeline:hasParameter ?Parameter >> pipeline:withParameterValue ?Parameter_value  .
+#              }
+#         } ORDER BY DESC(?Score)
+#         """ % (dataset, graph_url)
+#
+#         df = pd.read_csv(io.BytesIO(execute_query(config, query)))
+#
+#         if np.shape(df)[0] == 0:
+#             continue
+#         else:
+#             df = df.loc[df[df.columns[0]] == df.iloc[0][df.columns[0]]]
+#             print('Found ', classifier + '()', ' in "{}" pipeline'.format(df.iloc[0][0].replace(" ", '')))
+#             df_parameter_info = df.drop(df.columns[:2], axis=1).rename(
+#                 columns={'Parameter': classifier + '_parameters'})
+#
+#             if classifier == 'RandomForestClassifier':
+#                 return RandomForestClassifier(n_estimators=100)
+#
+#             return df_parameter_info
+#
+#     #     if show_query:
+#     #         print(query)
+#     # #
+#     # # df = pd.read_csv(io.BytesIO(execute_query(config, query)))
+#     # # df = df.loc[df[df.columns[0]] == df.iloc[0][df.columns[0]]]
+#     # return None
+#     # # df_parameter_info = df.drop(df.columns[:2], axis=1)
+#     # # df_pipeline_info = df.drop(df.columns[:2], axis=1)
+
+
+def search_classifier(config, dataset, show_query):
+    query = PREFIXES + """
+        SELECT DISTINCT ?Pipeline ?Classifier ?Score
+    WHERE 
+    {
+        ?Dataset_id     schema:name '%s'   .
+        ?Pipeline_id    kglids:isPartOf   ?Dataset_id    ;
+                        rdfs:label        ?Pipeline      ;
+                        pipeline:hasScore ?Score         .
+       graph ?Pipeline_id 
+         {
+            ?x pipeline:callsLibrary ?y
+             {
+                ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/ensemble/RandomForestClassifier>  .
+                BIND('RandomForestClassifier' as ?Classifier)
+             }
+             UNION
+             {
+                ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/svm/SVC>  .
+                BIND('SVC' as ?Classifier)
+             }
+             UNION
+             {
+                ?Statement_number    pipeline:callsLibrary <http:/kglids.org/resource/library/sklearn/neighbors/KNeighborsClassifier>  .
+                BIND('KNeighborsClassifier' as ?Classifier)
+             }
+             UNION
+             {
+                ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/ensemble/GradientBoostingClassifier>  .
+                BIND('GradientBoostingClassifier' as ?Classifier)
+             }
+             UNION
+             {
+                ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/linear_model/LogisticRegression>  .
+                BIND('LogisticRegression' as ?Classifier)
+             }
+             UNION
+             {
+                ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/tree/DecisionTreeClassifier>  .
+                BIND('DecisionTreeClassifier' as ?Classifier)
+             }
+         }
+         
+    } ORDER BY DESC(?Score) 
+    """ % dataset
+
+    if show_query:
+        print(query)
+
+    return pd.read_csv(io.BytesIO(execute_query(config, query)))
+
+
+def get_classifier(config, pipeline, classifier, show_query):
+    classifier_url = CLASSIFIERS.get(classifier)
+    parameter_heading = '?{}_hyperparameter'.format(classifier)
+    query = PREFIXES + """
+    
+    SELECT DISTINCT %s ?Value
+        WHERE
+        {
+            ?Pipeline_id    rdfs:label        '%s'     ;
+                            pipeline:hasScore ?Score         .
+           graph ?Pipeline_id
+             {
+                 ?Statement_number    pipeline:callsLibrary   %s .
+                 << ?Statement_number pipeline:hasParameter %s >> pipeline:withParameterValue ?Value  .
+             }
+        } ORDER BY DESC(?Score)
+    
+    """ % (parameter_heading, pipeline, classifier_url, parameter_heading)
+
+    if show_query:
+        print(query)
+
+    df = pd.read_csv(io.BytesIO(execute_query(config, query)))
+    if np.shape(df)[0] == 0:
+        return 'Using default configurations'
+    else:
+        return df
+
+
+def get_library_usage(config, dataset, show_query):
+    if dataset != '':
+        dataset = '?Dataset    schema:name        "{}"        .\n\t\t' \
+                  '?Pipeline   kglids:isPartOf    ?Dataset  .'.format(dataset)
+    query = PREFIXES + """
+    PREFIX lib: <http://kglids.org/resource/library/> 
+    SELECT ?Library (COUNT(?Library) as ?Usage)
+    WHERE
+    {
+        %s
+        ?Pipeline   rdf:type    kglids:Pipeline                 .
+        GRAPH ?Pipeline
+        {
+            ?Statement pipeline:callsLibrary ?l                 .
+            BIND(STRAFTER(str(?l), str(lib:)) as ?l1)           .
+            BIND(STRBEFORE(str(?l1), str('/')) as ?Library)     .
+        }
+        FILTER (?Library != "")              .
+        FILTER (?Library != "builtin")       .         
+    } GROUP BY ?Library ORDER BY DESC(?Usage) LIMIT 5
+    """ % dataset
+    if show_query:
+        print(query)
+    df = pd.read_csv(io.BytesIO(execute_query(config, query)))
+    plt.rcParams['figure.figsize'] = 10, 5
+    plt.rcParams['figure.dpi'] = 300
+    plt.rcParams['savefig.dpi'] = 300
+    sns.set_theme(style='darkgrid')
+    ax = sns.barplot(x="Library", y="Usage", data=df, palette='viridis')
+    ax = ax.set_xticklabels(ax.get_xticklabels(), rotation=30)
+
