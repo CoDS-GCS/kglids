@@ -1,4 +1,6 @@
+import SPARQLWrapper.Wrapper
 import stardog
+from SPARQLWrapper import JSON
 
 
 def connect_to_stardog(db_name: str = 'kglids'):
@@ -11,5 +13,11 @@ def connect_to_stardog(db_name: str = 'kglids'):
     return stardog.Connection('kglids', **connection_details)
 
 
-def execute_query(conn: stardog.Connection, query):
-    return conn.select(query, content_type='text/csv')
+def execute_query(conn: stardog.Connection, query: str, content_type='text/csv'):
+    return conn.select(query, content_type=content_type)
+
+
+def execute_query_blazegraph(sparql: SPARQLWrapper.Wrapper.SPARQLWrapper, query: str):
+    sparql.setQuery(query)
+    sparql.setReturnFormat(JSON)
+    return sparql.query().convert()

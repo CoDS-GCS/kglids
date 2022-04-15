@@ -10,8 +10,7 @@ from camelsplit import camelsplit
 from matplotlib import pyplot as plt
 
 from data_items.knowledge_graph.src.label import Label
-from data_items.kglids_evaluations.src.helper.queries import execute_query
-from api.helpers.helper import execute_query
+from api.helpers.helper import execute_query, execute_query_blazegraph
 from data_items.knowledge_graph.src.word_embedding.embeddings_client import n_similarity
 import seaborn as sns
 
@@ -33,59 +32,62 @@ CLASSIFIERS = {'RandomForestClassifier': '<http://kglids.org/resource/library/sk
 
 
 def query_kglids(config, rdf_query):
-    return execute_query(config, PREFIXES + rdf_query)["results"]["bindings"]
+    # return execute_query(config, PREFIXES + rdf_query)["results"]["bindings"]
+    return pd.read_csv(io.BytesIO(execute_query(config, PREFIXES + rdf_query)))
 
 
 def get_datasets(config, show_query):
     query = PREFIXES + """
-    SELECT ?dataset_name (count(?table_id) as ?table_count)
+    SELECT ?Dataset (count(?table_id) as ?Number_of_tables)
     WHERE
     {
         ?dataset_id	rdf:type	kglids:Dataset	.
-        ?dataset_id schema:name	?dataset_name	.
+        ?dataset_id schema:name	?Dataset	    .
       	?table_id	kglids:isPartOf	?dataset_id	.
     }
-    group by ?dataset_name """
+    group by ?Dataset """
     if show_query:
         print(query)
 
-    datasets = []
-    tables = []
-
-    res = execute_query(config, query)
-    for r in res["results"]["bindings"]:
-        datasets.append(r["dataset_name"]["value"])
-        tables.append(r["table_count"]["value"])
-    return pd.DataFrame({"Dataset": datasets, "Number_of_tables": tables})
+    # datasets = []
+    # tables = []
+    #
+    # res = execute_query(config, query)
+    # for r in res["results"]["bindings"]:
+    #     datasets.append(r["dataset_name"]["value"])
+    #     tables.append(r["table_count"]["value"])
+    # return pd.DataFrame({"Dataset": datasets, "Number_of_tables": tables})
+    return pd.read_csv(io.BytesIO(execute_query(config, query)))
 
 
 def get_tables(config, dataset: str, show_query):
     if dataset:
         dataset = '?dataset_id schema:name "{}" .'.format(dataset)
     query = PREFIXES + """
-    SELECT ?table_name ?dataset_name ?table_path
+    SELECT ?Table ?Dataset ?Path_to_table
     WHERE
     {
         ?table_id	rdf:type            kglids:Table	.
         %s
         ?table_id	kglids:isPartOf     ?dataset_id		.
-        ?table_id  	schema:name			?table_name		.
-        ?table_id	data:hasFilePath	?table_path		.
-        ?dataset_id	schema:name			?dataset_name	.	
+        ?table_id  	schema:name			?Table  		.
+        ?table_id	data:hasFilePath	?Path_to_table	.
+        ?dataset_id	schema:name			?Dataset	    .	
     }""" % dataset
     if show_query:
         print(query)
 
-    tables = []
-    datasets = []
-    paths = []
-    res = execute_query(config, query)
-    for r in res["results"]["bindings"]:
-        tables.append(r["table_name"]["value"])
-        datasets.append(r["dataset_name"]["value"])
-        paths.append(r["table_path"]["value"])
-
-    return pd.DataFrame({'Dataset': datasets, 'Table': tables, 'Path_to_table': paths})
+    # tables = []
+    # datasets = []
+    # paths = []
+    # res = execute_query(config, query)
+    # for r in res["results"]["bindings"]:
+    #     tables.append(r["table_name"]["value"])
+    #     datasets.append(r["dataset_name"]["value"])
+    #     paths.append(r["table_path"]["value"])
+    #
+    # return pd.DataFrame({'Dataset': datasets, 'Table': tables, 'Path_to_table': paths})
+    return pd.read_csv(io.BytesIO(execute_query(config, query)))
 
 
 def get_top_k_tables(pairs: list):
@@ -135,7 +137,7 @@ def recommend_tables(config, dataset: str, table: str, k: int, relation: str, sh
     if show_query:
         print(query)
 
-    res = execute_query(config, query)
+    res = execute_query_blazegraph(config, query)
     result = []
     for r in res["results"]["bindings"]:
         table1 = r["table_name1"]["value"]
@@ -154,52 +156,71 @@ def recommend_tables(config, dataset: str, table: str, k: int, relation: str, sh
                          'Score': scores, 'Path_to_table': path})
 
 
-def search_tables_on(config, all_conditions: tuple, show_query: bool):
-    def search(conditions: tuple):
-        return PREFIXES + \
-               '\nselect ?name ?dataset_name ?path (' \
-               'count(distinct ?cols) as ?number_of_columns) (max (?total) as ?number_of_rows)' \
-               '\nwhere {' \
-               '\n?table schema:name ?name.' \
-               '\n?table data:hasFilePath ?path.' \
-               '\n?table kglids:isPartOf ?dataset.' \
-               '\n?dataset schema:name ?dataset_name.' \
-               '\n?cols kglids:isPartOf ?table.' \
-               '\n?cols data:hasTotalValueCount ?total.\n' \
-               + conditions[0] + \
-               '\nfilter( ' + conditions[1] + ')}' \
-                                              '\n group by ?name ?dataset_name ?path'
-
-    query = search(all_conditions)
+def show_graph_info(config, show_query):
+    query1 = PREFIXES + """
+    SELECT (COUNT(?Dataset) as ?Datasets)
+    WHERE
+    {
+        ?Dataset    rdf:type kglids:Dataset     .
+    }
+    """
+    query2 = PREFIXES + """
+    SELECT  (COUNT(?Table) as ?Tables)
+    WHERE
+    {
+        ?Table      rdf:type        kglids:Table    ;
+                    kglids:isPartOf ?Dataset        .
+        ?Dataset    rdf:type        kglids:Dataset  . 
+    } 
+    """
+    query3 = PREFIXES + """
+    SELECT (COUNT(?Pipeline) as ?Pipelines)
+    WHERE
+    {
+        ?Pipeline   rdf:type    kglids:Pipeline ;
+                    kglids:isPartOf ?Dataset    .
+        ?Dataset    rdf:type    kglids:Dataset  .
+    }
+    """
+    query4 = PREFIXES + """
+    SELECT  (COUNT(?Column) as ?Columns)
+    WHERE
+    {
+        ?Column     rdf:type        kglids:Column   ;
+                    kglids:isPartOf ?Table          .
+        ?Table      rdf:type        kglids:Table    . 
+    } 
+    """
     if show_query:
-        print(query)
-    res = execute_query(config, query)
-    bindings = res["results"]["bindings"]
+        print(query1, '\n', query3, '\n', query2, '\n', query4)
+    dataset = pd.read_csv(io.BytesIO(execute_query(config, query1)))
+    tables = pd.read_csv(io.BytesIO(execute_query(config, query2)))
+    pipelines = pd.read_csv(io.BytesIO(execute_query(config, query3)))
+    columns = pd.read_csv(io.BytesIO(execute_query(config, query4)))
+    return pd.concat([dataset, pipelines, tables, columns], axis=1)
 
-    for result in bindings:
-        yield _create_tables_df_row(result)
 
 
-def show_graph_info(config, show_query: bool):
-    def count_nodes(node: str):
-        return PREFIXES + """
-        SELECT (COUNT(?n_%s) as ?total_number_of_%s)
-        WHERE
-        {
-            ?n_%s rdf:type 	kglids:%s	.
-        }
-        """ % (node, node, node, node.capitalize())
 
-    result = []
-    for i in ['dataset', 'table', 'column']:
-        if show_query:
-            count_nodes(i)
-        res = execute_query(config, count_nodes(i))
-        for r in res["results"]["bindings"]:
-            result.append(r["total_number_of_{}".format(i)]["value"])
-
-    return pd.DataFrame({'Total_datasets': [result[0]], 'Total_tables': [result[1]],
-                         'Total_columns': [result[2]], 'Total_pipelines': ['Not yet supported!']})
+    # def count_nodes(node: str):
+    #     return PREFIXES + """
+    #     SELECT (COUNT(?n_%s) as ?total_number_of_%s)
+    #     WHERE
+    #     {
+    #         ?n_%s rdf:type 	kglids:%s	.
+    #     }
+    #     """ % (node, node, node, node.capitalize())
+    #
+    # result = []
+    # for i in ['dataset', 'table', 'column']:
+    #     if show_query:
+    #         count_nodes(i)
+    #     res = execute_query(config, count_nodes(i))
+    #     for r in res["results"]["bindings"]:
+    #         result.append(r["total_number_of_{}".format(i)]["value"])
+    #
+    # return pd.DataFrame({'Total_datasets': [result[0]], 'Total_tables': [result[1]],
+    #                      'Total_columns': [result[2]], 'Total_pipelines': ['Not yet supported!']})
 
 
 def get_table_path(config, dataset, table):
@@ -275,7 +296,7 @@ def search_tables_on(config, all_conditions: tuple, show_query: bool):
     query = search(all_conditions)
     if show_query:
         print(query)
-    res = execute_query(config, query)
+    res = execute_query_blazegraph(config, query)
     bindings = res["results"]["bindings"]
 
     for result in bindings:
@@ -299,7 +320,7 @@ def _get_iri(config, dataset_name: str, table_name: str = None, show_query: bool
                 '\n?dataset a kglids:Dataset.}' % (table_name, dataset_name)
     if show_query:
         print(query)
-    results = execute_query(config, query)
+    results = execute_query_blazegraph(config, query)
     bindings = results["results"]["bindings"]
     if not bindings:
         return None
@@ -417,7 +438,7 @@ def get_path_between(config, start_iri: str, target_iri: str, predicate: str, ho
 
     if show_query:
         print(query)
-    results = execute_query(config, query)
+    results = execute_query_blazegraph(config, query)
     bindings = results["results"]["bindings"]
     if not bindings:
         print("nothing")
@@ -814,7 +835,7 @@ def search_classifier(config, dataset, show_query):
     return pd.read_csv(io.BytesIO(execute_query(config, query)))
 
 
-def get_classifier(config, pipeline, classifier, show_query):
+def get_hyperparameters(config, pipeline, classifier, show_query):
     classifier_url = CLASSIFIERS.get(classifier)
     parameter_heading = '?{}_hyperparameter'.format(classifier)
     query = PREFIXES + """
@@ -843,7 +864,7 @@ def get_classifier(config, pipeline, classifier, show_query):
         return df
 
 
-def get_library_usage(config, dataset, show_query):
+def get_library_usage(config, dataset, k, show_query):
     if dataset != '':
         dataset = '?Dataset    schema:name        "{}"        .\n\t\t' \
                   '?Pipeline   kglids:isPartOf    ?Dataset  .'.format(dataset)
@@ -862,8 +883,8 @@ def get_library_usage(config, dataset, show_query):
         }
         FILTER (?Library != "")              .
         FILTER (?Library != "builtin")       .         
-    } GROUP BY ?Library ORDER BY DESC(?Usage) LIMIT 5
-    """ % dataset
+    } GROUP BY ?Library ORDER BY DESC(?Usage) LIMIT %s
+    """ % (dataset, k)
     if show_query:
         print(query)
     df = pd.read_csv(io.BytesIO(execute_query(config, query)))

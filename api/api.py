@@ -12,14 +12,14 @@ class KGLiDS:
         self.conn.begin()
 
     def get_datasets(self, show_query: bool = False):
-        return get_datasets(self.config, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
+        return get_datasets(self.conn, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
 
     def get_tables(self, dataset: str = '', show_query: bool = False):
         if not dataset:
             print('Showing all available table(s): ')
         else:
             print("Showing table(s) for '{}' dataset: ".format(dataset))
-        return get_tables(self.config, dataset, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
+        return get_tables(self.conn, dataset, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
 
     def recommend_k_joinable_tables(self, table: pd.Series, k: int = 5, show_query: bool = False):
         if not isinstance(table, pd.Series):
@@ -61,7 +61,7 @@ class KGLiDS:
 
     def show_graph_info(self, show_query: bool = False):
         print('Information captured: ')
-        return show_graph_info(self.config, show_query)
+        return show_graph_info(self.conn, show_query)
 
     def search_tables_on(self, conditions: list, show_query: bool = False):
 
@@ -112,7 +112,7 @@ class KGLiDS:
         return get_unionable_columns(self.config, df1, df2, thresh)
 
     def query(self, rdf_query: str):
-        return query_kglids(self.config, rdf_query)
+        return query_kglids(self.conn, rdf_query)
 
     def get_top_scoring_ml_model(self, dataset: str = '', show_query=False):
         return get_top_scoring_ml_model(self.conn, dataset, show_query)
@@ -133,10 +133,10 @@ class KGLiDS:
     def search_classifier(self, dataset: str, show_query=False):
         return search_classifier(self.conn, dataset, show_query)
 
-    def get_classifier(self, classifier: pd.Series, show_query=False):
+    def get_hyperparameters(self, classifier: pd.Series, show_query=False):
         pipeline_name = classifier['Pipeline']
         classifier = classifier['Classifier']
-        return get_classifier(self.conn, pipeline_name, classifier, show_query)
+        return get_hyperparameters(self.conn, pipeline_name, classifier, show_query)
 
-    def get_library_usage(self, dataset: str = '', show_query=False):
-        return get_library_usage(self.conn, dataset, show_query)
+    def get_top_k_library_used(self, dataset: str = '', k: int = 5, show_query=False):
+        return get_library_usage(self.conn, dataset, k, show_query)
