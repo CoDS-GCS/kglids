@@ -1,25 +1,21 @@
-import stardog
 from api.template import *
 from api.helpers.helper import *
-# from data_items.knowledge_graph.src.utils import generate_label, generate_component_id, generate_graphviz
-from data_items.kglids_evaluations.src.helper.config import connect_to_blazegraph
 
 
 class KGLiDS:
-    def __init__(self, blazegraph_port=9999, blazegraph_namespace: str = 'soen6111'):
-        self.config = connect_to_blazegraph(blazegraph_port, blazegraph_namespace)
-        self.conn = connect_to_stardog()
+    def __init__(self, port=5820, db: str = 'kglids'):
+        self.conn = connect_to_stardog(port, db)
         self.conn.begin()
 
-    def get_datasets(self, show_query: bool = False):
-        return get_datasets(self.conn, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
+    def get_datasets_info(self, show_query: bool = False):
+        return get_datasets_info(self.conn, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
 
-    def get_tables(self, dataset: str = '', show_query: bool = False):
+    def get_tables_info(self, dataset: str = '', show_query: bool = False):
         if not dataset:
             print('Showing all available table(s): ')
         else:
             print("Showing table(s) for '{}' dataset: ".format(dataset))
-        return get_tables(self.conn, dataset, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
+        return get_tables_info(self.conn, dataset, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
 
     def recommend_k_joinable_tables(self, table: pd.Series, k: int = 5, show_query: bool = False):
         if not isinstance(table, pd.Series):
@@ -31,7 +27,7 @@ class KGLiDS:
         elif isinstance(table, pd.Series) and isinstance(k, int):
             dataset = table["Dataset"]
             table = table["Table"]
-            recommendations = recommend_tables(self.config, dataset, table, k, 'data:hasPrimaryKeyForeignKeySimilarity',
+            recommendations = recommend_tables(self.conn, dataset, table, k, 'data:hasPrimaryKeyForeignKeySimilarity',
                                                show_query)
             print('Showing the top-{} joinable table recommendations:'.format(len(recommendations)))
             return recommendations
@@ -46,7 +42,7 @@ class KGLiDS:
         elif isinstance(table, pd.Series) and isinstance(k, int):
             dataset = table["Dataset"]
             table = table["Table"]
-            recommendations = recommend_tables(self.config, dataset, table, k, 'data:hasSemanticSimilarity',
+            recommendations = recommend_tables(self.conn, dataset, table, k, 'data:hasSemanticSimilarity',
                                                show_query)
             print('Showing the top-{} unionable table recommendations:'.format(len(recommendations)))
             return recommendations
@@ -57,7 +53,7 @@ class KGLiDS:
             table = table["Recommended_table"]
         else:
             table = table["Table"]
-        return get_table_info(self.config, dataset, table, show_query)
+        return get_table_info(self.conn, dataset, table, show_query)
 
     def show_graph_info(self, show_query: bool = False):
         print('Information captured: ')
@@ -97,7 +93,7 @@ class KGLiDS:
                 i += 1
             return '\n'.join(statements), ' && '.join(filters)
 
-        data = search_tables_on(self.config, parsed_conditions(conditions), show_query)
+        data = search_tables_on(self.conn, parsed_conditions(conditions), show_query)
         print('Showing recommendations as per the following conditions:\nCondition = ', conditions)
         return pd.DataFrame(list(data), columns=['Dataset', 'Table', 'Number_of_columns',
                                                  'Number_of_rows', 'Path_to_table']).sort_values('Table',
@@ -106,10 +102,10 @@ class KGLiDS:
 
     def get_path_between_tables(self, source_table: pd.Series, target_table: pd.Series, hops: int,
                                 relation: str = 'data:hasPrimaryKeyForeignKeySimilarity', show_query: bool = False):
-        return get_path_between_tables(self.config, source_table, target_table, hops, relation, show_query)
+        return get_path_between_tables(self.conn, source_table, target_table, hops, relation, show_query)
 
     def get_unionable_columns(self, df1, df2, thresh: float = 0.50):
-        return get_unionable_columns(self.config, df1, df2, thresh)
+        return get_unionable_columns(self.conn, df1, df2, thresh)
 
     def query(self, rdf_query: str):
         return query_kglids(self.conn, rdf_query)
@@ -117,9 +113,9 @@ class KGLiDS:
     def get_top_scoring_ml_model(self, dataset: str = '', show_query=False):
         return get_top_scoring_ml_model(self.conn, dataset, show_query)
 
-    def get_pipelines(self, author: str = '', show_query=False):
-        return get_pipelines(self.conn, author, show_query).sort_values('Number_of_votes', ignore_index=True,
-                                                                        ascending=False)
+    def get_pipelines_info(self, author: str = '', show_query=False):
+        return get_pipelines_info(self.conn, author, show_query).sort_values('Number_of_votes', ignore_index=True,
+                                                                             ascending=False)
 
     def get_most_recent_pipeline(self, dataset: str = '', show_query=False):
         return get_most_recent_pipeline(self.conn, dataset, show_query)

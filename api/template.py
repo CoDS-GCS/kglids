@@ -1,9 +1,7 @@
 import itertools
-
 import pandas as pd
 import zlib
 import re
-import io
 import numpy as np
 from graphviz import Digraph
 from camelsplit import camelsplit
@@ -33,10 +31,10 @@ CLASSIFIERS = {'RandomForestClassifier': '<http://kglids.org/resource/library/sk
 
 def query_kglids(config, rdf_query):
     # return execute_query(config, PREFIXES + rdf_query)["results"]["bindings"]
-    return pd.read_csv(io.BytesIO(execute_query(config, PREFIXES + rdf_query)))
+    return execute_query(config, PREFIXES + rdf_query)
 
 
-def get_datasets(config, show_query):
+def get_datasets_info(config, show_query):
     query = PREFIXES + """
     SELECT ?Dataset (count(?table_id) as ?Number_of_tables)
     WHERE
@@ -48,19 +46,10 @@ def get_datasets(config, show_query):
     group by ?Dataset """
     if show_query:
         print(query)
-
-    # datasets = []
-    # tables = []
-    #
-    # res = execute_query(config, query)
-    # for r in res["results"]["bindings"]:
-    #     datasets.append(r["dataset_name"]["value"])
-    #     tables.append(r["table_count"]["value"])
-    # return pd.DataFrame({"Dataset": datasets, "Number_of_tables": tables})
-    return pd.read_csv(io.BytesIO(execute_query(config, query)))
+    return execute_query(config, query)
 
 
-def get_tables(config, dataset: str, show_query):
+def get_tables_info(config, dataset: str, show_query):
     if dataset:
         dataset = '?dataset_id schema:name "{}" .'.format(dataset)
     query = PREFIXES + """
@@ -76,18 +65,7 @@ def get_tables(config, dataset: str, show_query):
     }""" % dataset
     if show_query:
         print(query)
-
-    # tables = []
-    # datasets = []
-    # paths = []
-    # res = execute_query(config, query)
-    # for r in res["results"]["bindings"]:
-    #     tables.append(r["table_name"]["value"])
-    #     datasets.append(r["dataset_name"]["value"])
-    #     paths.append(r["table_path"]["value"])
-    #
-    # return pd.DataFrame({'Dataset': datasets, 'Table': tables, 'Path_to_table': paths})
-    return pd.read_csv(io.BytesIO(execute_query(config, query)))
+    return execute_query(config, query)
 
 
 def get_top_k_tables(pairs: list):
@@ -137,9 +115,9 @@ def recommend_tables(config, dataset: str, table: str, k: int, relation: str, sh
     if show_query:
         print(query)
 
-    res = execute_query_blazegraph(config, query)
+    res = execute_query(config, query, return_type='json')
     result = []
-    for r in res["results"]["bindings"]:
+    for r in res:
         table1 = r["table_name1"]["value"]
         table2 = r["table_name2"]["value"]
         certainty = float(r["certainty"]["value"])
@@ -193,10 +171,10 @@ def show_graph_info(config, show_query):
     """
     if show_query:
         print(query1, '\n', query3, '\n', query2, '\n', query4)
-    dataset = pd.read_csv(io.BytesIO(execute_query(config, query1)))
-    tables = pd.read_csv(io.BytesIO(execute_query(config, query2)))
-    pipelines = pd.read_csv(io.BytesIO(execute_query(config, query3)))
-    columns = pd.read_csv(io.BytesIO(execute_query(config, query4)))
+    dataset = execute_query(config, query1)
+    tables = execute_query(config, query2)
+    pipelines = execute_query(config, query3)
+    columns = execute_query(config, query4)
     return pd.concat([dataset, pipelines, tables, columns], axis=1)
 
 
@@ -296,10 +274,9 @@ def search_tables_on(config, all_conditions: tuple, show_query: bool):
     query = search(all_conditions)
     if show_query:
         print(query)
-    res = execute_query_blazegraph(config, query)
-    bindings = res["results"]["bindings"]
+    res = execute_query(config, query, return_type='json')
 
-    for result in bindings:
+    for result in res:
         yield _create_tables_df_row(result)
 
 
@@ -320,8 +297,8 @@ def _get_iri(config, dataset_name: str, table_name: str = None, show_query: bool
                 '\n?dataset a kglids:Dataset.}' % (table_name, dataset_name)
     if show_query:
         print(query)
-    results = execute_query_blazegraph(config, query)
-    bindings = results["results"]["bindings"]
+    results = execute_query(config, query, return_type='json')
+    bindings = results
     if not bindings:
         return None
     return str(bindings[0]['id']['value'])
@@ -438,10 +415,9 @@ def get_path_between(config, start_iri: str, target_iri: str, predicate: str, ho
 
     if show_query:
         print(query)
-    results = execute_query_blazegraph(config, query)
-    bindings = results["results"]["bindings"]
+    results = execute_query(config, query, return_type='json')
+    bindings = results
     if not bindings:
-        print("nothing")
         return []
     for result in bindings:
         yield _create_path_row(result, hops)
@@ -662,7 +638,7 @@ def get_top_scoring_ml_model(config, dataset, show_query):
     return execute_query(config, query)
 
 
-def get_pipelines(config, author, show_query):
+def get_pipelines_info(config, author, show_query):
     if author != '':
         author = "FILTER (?Author = '{}')   .".format(author)
 
@@ -684,7 +660,7 @@ def get_pipelines(config, author, show_query):
     if show_query:
         print(query)
 
-    return pd.read_csv(io.BytesIO(execute_query(config, query)))
+    return execute_query(config, query)
 
 
 def get_most_recent_pipeline(config, dataset, show_query):
@@ -708,7 +684,7 @@ def get_most_recent_pipeline(config, dataset, show_query):
     """ % dataset
     if show_query:
         print(query)
-    return pd.read_csv(io.BytesIO(execute_query(config, query)))
+    return execute_query(config, query)
 
 
 def get_top_k_scoring_pipelines_for_dataset(config, dataset, k, show_query):
@@ -735,7 +711,7 @@ def get_top_k_scoring_pipelines_for_dataset(config, dataset, k, show_query):
     """ % (dataset, k)
     if show_query:
         print(query)
-    return pd.read_csv(io.BytesIO(execute_query(config, query)))
+    return execute_query(config, query)
 
 
 # def get_classifier(config, dataset, show_query):
@@ -832,7 +808,7 @@ def search_classifier(config, dataset, show_query):
     if show_query:
         print(query)
 
-    return pd.read_csv(io.BytesIO(execute_query(config, query)))
+    return execute_query(config, query)
 
 
 def get_hyperparameters(config, pipeline, classifier, show_query):
@@ -857,7 +833,7 @@ def get_hyperparameters(config, pipeline, classifier, show_query):
     if show_query:
         print(query)
 
-    df = pd.read_csv(io.BytesIO(execute_query(config, query)))
+    df = execute_query(config, query)
     if np.shape(df)[0] == 0:
         return 'Using default configurations'
     else:
@@ -887,7 +863,7 @@ def get_library_usage(config, dataset, k, show_query):
     """ % (dataset, k)
     if show_query:
         print(query)
-    df = pd.read_csv(io.BytesIO(execute_query(config, query)))
+    df = execute_query(config, query)
     plt.rcParams['figure.figsize'] = 10, 5
     plt.rcParams['figure.dpi'] = 300
     plt.rcParams['savefig.dpi'] = 300
