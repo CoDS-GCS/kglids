@@ -8,7 +8,7 @@ from camelsplit import camelsplit
 from matplotlib import pyplot as plt
 
 from data_items.knowledge_graph.src.label import Label
-from api.helpers.helper import execute_query, execute_query_blazegraph
+from api.helpers.helper import execute_query
 from data_items.knowledge_graph.src.word_embedding.embeddings_client import n_similarity
 import seaborn as sns
 

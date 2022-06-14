@@ -1,13 +1,11 @@
-import SPARQLWrapper.Wrapper
 import io
 import stardog
 import pandas as pd
-from SPARQLWrapper import JSON
 
 
-def connect_to_stardog(port, db_name: str = 'kglids'):
+def connect_to_stardog(endpoint: str, port, db_name: str = 'kglids'):
     connection_details = {
-        'endpoint': 'http://localhost:{}'.format(str(port)),
+        'endpoint': 'http://{}:{}'.format(endpoint, str(port)),
         'username': 'admin',
         'password': 'admin'
     }
@@ -24,9 +22,3 @@ def execute_query(conn: stardog.Connection, query: str, return_type: str = 'csv'
         return result['results']['bindings']
     else:
         raise ValueError(return_type, ' not supported')
-
-
-def execute_query_blazegraph(sparql: SPARQLWrapper.Wrapper.SPARQLWrapper, query: str):
-    sparql.setQuery(query)
-    sparql.setReturnFormat(JSON)
-    return sparql.query().convert()

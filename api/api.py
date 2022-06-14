@@ -3,9 +3,12 @@ from api.helpers.helper import *
 
 
 class KGLiDS:
-    def __init__(self, port=5820, db: str = 'kglids'):
-        self.conn = connect_to_stardog(port, db)
+    def __init__(self, endpoint: str = 'localhost', port=5820, db: str = 'kglids'):
+        self.conn = connect_to_stardog(endpoint, port, db)
         self.conn.begin()
+
+    def get_table(self, path_to_table: str):
+        return pd.read_csv(path_to_table)
 
     def get_datasets_info(self, show_query: bool = False):
         return get_datasets_info(self.conn, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
