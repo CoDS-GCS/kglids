@@ -35,7 +35,7 @@ conda activate kglids
 ## Quickstart
 <b>Try the [Sample Colab notebook](https://colab.research.google.com/drive/1XbjJkppz5_nTufgnD53gEBzxyLYViGAi?usp=sharing) for a quick hands-on!</b>
 - Generate the `LiDS` graph
-- Upload `LiDS` grahp to the [Stardog](https://www.stardog.com/) server
+- Upload `LiDS` graph to the [Stardog](https://www.stardog.com/) server
 - Test the [`KGLiDS APIs`]()
 
 ## Benchmarking
