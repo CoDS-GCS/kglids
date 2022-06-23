@@ -1,6 +1,6 @@
 # KGLiDS - A Knowledge Graph-Based Platform for Linked Data Science
 
-n recent years, we have witnessed a growing interest in data science
+<div style="text-align: justify">In recent years, we have witnessed a growing interest in data science
 not only from academia but particularly from companies investing
 in data science platforms to analyze large amounts of data. In this
 process, a myriad of data science artifacts, such as datasets and
@@ -23,7 +23,7 @@ how. Our comprehensive evaluation uses thousands of datasets and
 more than thirteen thousand pipeline scripts extracted from data
 discovery benchmarks and the Kaggle portal, and show that KGLiDS
 significantly outperforms state-of-the-art systems on related tasks,
-such as datasets and pipeline recommendation.
+such as datasets and pipeline recommendation.</div>
 
 ## Installation
 * Create `kglids` Conda environment (Python 3.8) and install pip requirements.
