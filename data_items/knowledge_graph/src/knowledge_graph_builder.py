@@ -4,11 +4,13 @@ from datetime import datetime
 import itertools
 import random
 import string
+import multiprocessing as mp
+import numpy as np
+from tqdm import tqdm
 import sys
-
 sys.path.append('../../../')
 
-from pyspark import SparkConf, SparkContext
+# from pyspark import SparkConf, SparkContext
 
 from rdf_resource import RDFResource
 from triplet import Triplet
@@ -31,6 +33,25 @@ PKFK_THRESHOLD = 0.60
 # *****************************************************
 
 
+def _metadata_worker_helper(args):
+    column_profile_paths, ontology, tmp_graph_dir = args
+    column_metadata_worker(column_profile_paths=column_profile_paths, ontology=ontology,
+                           triples_output_tmp_dir=tmp_graph_dir)
+
+def _similarity_worker_helper(args):
+    column_profile_path_pairs, ontology, tmp_graph_dir, word_embedding_path = args
+    column_pair_similarity_worker(column_profile_path_pairs=column_profile_path_pairs,
+                                  ontology=ontology,
+                                  triples_output_tmp_dir=tmp_graph_dir,
+                                  semantic_similarity_threshold=SEMANTIC_THRESHOLD,
+                                  numerical_content_threshold=CONTENT_THRESHOLD,
+                                  deep_embedding_content_threshold=DEEP_EMBEDDING_THRESHOLD,
+                                  inclusion_dependency_threshold=INCLUSION_THRESHOLD,
+                                  minhash_content_threshold=MINHASH_THRESHOLD,
+                                  pkfk_threshold=PKFK_THRESHOLD,
+                                  word_embedding_path=word_embedding_path)
+
+
 class KnowledgeGraphBuilder:
     # TODO: [Refactor] add all kglids URIs to knowledge graph config.py
     # TODO: [Refactor] have Spark configuration read from the global project config
@@ -43,11 +64,11 @@ class KnowledgeGraphBuilder:
             shutil.rmtree(self.tmp_graph_base_dir)
         os.makedirs(self.tmp_graph_base_dir)
 
-        memory_gb = 24
-        conf = (SparkConf()
-                .setMaster(f'local[*]')
-                .set('spark.driver.memory', f'{memory_gb}g'))
-        self.spark = SparkContext(conf=conf)
+        # memory_gb = 24
+        # conf = (SparkConf()
+        #         .setMaster(f'local[*]')
+        #         .set('spark.driver.memory', f'{memory_gb}g'))
+        # self.spark = SparkContext(conf=conf)
 
         self.ontology = {'kglids': 'http://kglids.org/ontology/',
                          'kglidsData': 'http://kglids.org/ontology/data/',
@@ -76,13 +97,18 @@ class KnowledgeGraphBuilder:
 
     def build_membership_and_metadata_subgraph(self):
         column_profile_paths = list(itertools.chain.from_iterable(self.column_profile_paths_per_type.values()))
-        columns_rdd = self.spark.parallelize(column_profile_paths)
+        # columns_rdd = self.spark.parallelize(column_profile_paths)
         # generate column metadata triples in parallel
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
         # mapPartitions so we don't end up with too many subgraph files (compared to .map())
-        columns_rdd.mapPartitions(lambda x: column_metadata_worker(column_profile_paths=x, ontology=ontology,
-                                                                   triples_output_tmp_dir=tmp_graph_dir)).collect()
+        # columns_rdd.mapPartitions(lambda x: column_metadata_worker(column_profile_paths=x, ontology=ontology,
+        #                                                            triples_output_tmp_dir=tmp_graph_dir)).collect()
+        # TODO: TMP Change
+        column_profile_paths_grouped = [(i, ontology, tmp_graph_dir) for i in np.array_split(column_profile_paths, os.cpu_count())]
+        pool = mp.Pool(os.cpu_count())
+        list(tqdm(pool.imap_unordered(_metadata_worker_helper, column_profile_paths_grouped), total=len(column_profile_paths_grouped)))
+        
         # generate table and dataset membership triples
         membership_triples = []
         tables = set()
@@ -150,19 +176,22 @@ class KnowledgeGraphBuilder:
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
         word_embedding_path = self.word_embedding_path
-        column_pairs_rdd = self.spark.parallelize(column_pairs)
+        # column_pairs_rdd = self.spark.parallelize(column_pairs)
         # mapPartitions so we don't end up with too many subgraph files
-        column_pairs_rdd.mapPartitions(lambda x: column_pair_similarity_worker(column_profile_path_pairs=x,
-                                                                               ontology=ontology,
-                                                                               triples_output_tmp_dir=tmp_graph_dir,
-                                                                               semantic_similarity_threshold=SEMANTIC_THRESHOLD,
-                                                                               numerical_content_threshold=CONTENT_THRESHOLD,
-                                                                               deep_embedding_content_threshold=DEEP_EMBEDDING_THRESHOLD,
-                                                                               inclusion_dependency_threshold=INCLUSION_THRESHOLD,
-                                                                               minhash_content_threshold=MINHASH_THRESHOLD,
-                                                                               pkfk_threshold=PKFK_THRESHOLD,
-                                                                               word_embedding_path=word_embedding_path)) \
-            .collect()
+        # column_pairs_rdd.mapPartitions(lambda x: column_pair_similarity_worker(column_profile_path_pairs=x,
+        #                                                                        ontology=ontology,
+        #                                                                        triples_output_tmp_dir=tmp_graph_dir,
+        #                                                                        semantic_similarity_threshold=SEMANTIC_THRESHOLD,
+        #                                                                        numerical_content_threshold=CONTENT_THRESHOLD,
+        #                                                                        deep_embedding_content_threshold=DEEP_EMBEDDING_THRESHOLD,
+        #                                                                        inclusion_dependency_threshold=INCLUSION_THRESHOLD,
+        #                                                                        minhash_content_threshold=MINHASH_THRESHOLD,
+        #                                                                        pkfk_threshold=PKFK_THRESHOLD,
+        #                                                                        word_embedding_path=word_embedding_path)) \
+        #     .collect()
+        column_pairs = [(i, ontology, tmp_graph_dir, word_embedding_path) for i in np.array_split(column_pairs, os.cpu_count())]
+        pool = mp.Pool(os.cpu_count())
+        list(tqdm(pool.imap_unordered(_similarity_worker_helper, column_pairs), total=len(column_pairs)))
 
     def build_graph(self):
         for tmp_file in os.listdir(self.tmp_graph_base_dir):
