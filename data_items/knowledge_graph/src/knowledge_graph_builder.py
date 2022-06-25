@@ -5,6 +5,7 @@ import itertools
 import random
 import string
 import sys
+import argparse
 
 sys.path.append('../../../')
 
@@ -35,18 +36,22 @@ class KnowledgeGraphBuilder:
     # TODO: [Refactor] add all kglids URIs to knowledge graph config.py
     # TODO: [Refactor] have Spark configuration read from the global project config
     # TODO: [Refactor] read raw word embeddings path from global project config
-    def __init__(self, column_profiles_path, out_graph_path):
+    def __init__(self, column_profiles_path, out_graph_path, memory_size):
         self.graph_output_path = out_graph_path
         self.out_graph_base_dir = os.path.dirname(self.graph_output_path)
+        if os.path.exists(self.graph_output_path):
+            os.rename(self.graph_output_path,
+                      f'{self.out_graph_base_dir}/OLD_{datetime.now().strftime("%Y_%m_%d_%H_%M")}_{self.graph_output_path.split("/")[-1]}')
         self.tmp_graph_base_dir = os.path.join(self.out_graph_base_dir, 'tmp')  # for intermediate results
         if os.path.exists(self.tmp_graph_base_dir):
             shutil.rmtree(self.tmp_graph_base_dir)
         os.makedirs(self.tmp_graph_base_dir)
 
-        memory_gb = 24
+        self.memory_size = memory_size
+
         conf = (SparkConf()
                 .setMaster(f'local[*]')
-                .set('spark.driver.memory', f'{memory_gb}g'))
+                .set('spark.driver.memory', f'{self.memory_size}g'))
         self.spark = SparkContext(conf=conf)
 
         self.ontology = {'kglids': 'http://kglids.org/ontology/',
@@ -178,14 +183,18 @@ def main():
     # TODO: [Refactor] combine with pipeline abstraction KG builder
     # TODO: [Refactor] read column profiles path from project config.py
     # TODO: [Refactor] add graph output path to project config.py
-
-    if os.path.exists('out/kglids_data_items_graph.nt'):
-        os.remove('out/kglids_data_items_graph.nt')
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--memory-size', type=int, default=24, help='RAM in GB to be used.')
+    parser.add_argument('--column-profiles-path', type=str,  
+                        default='../../profiler/src/storage/metadata/profiles', help='Path to column profiles')
+    parser.add_argument('--out-graph-path', type=str, default='out/kglids_data_items_graph.nq',
+                        help='Path to save the graph, including graph file name.')
+    args = parser.parse_args()
 
     start_all = datetime.now()
-    knowledge_graph_builder = KnowledgeGraphBuilder(
-        column_profiles_path='../../profiler/src/storage/metadata/profiles',
-        out_graph_path='out/kglids_data_items_graph.nq')
+    knowledge_graph_builder = KnowledgeGraphBuilder(column_profiles_path=args.column_profiles_path,
+                                                    out_graph_path=args.out_graph_path, memory_size=args.memory_size)
 
     # Membership (e.g. table -> dataset) and metadata (e.g. min, max) triples
     print(datetime.now(), "• 1. Building Membership and Metadata triples\n")
