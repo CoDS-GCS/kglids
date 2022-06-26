@@ -63,29 +63,25 @@ def column_metadata_worker(column_profile_paths, ontology, triples_output_tmp_di
     return []
     
         
-def column_pair_similarity_worker(column_profile_path_pairs, ontology, triples_output_tmp_dir,
+def column_pair_similarity_worker(column_idx, column_profile_paths, ontology, triples_output_tmp_dir,
                                   semantic_similarity_threshold, numerical_content_threshold,
                                   deep_embedding_content_threshold, inclusion_dependency_threshold,
-                                  minhash_content_threshold, pkfk_threshold, word_embedding_path):
+                                  minhash_content_threshold, pkfk_threshold, word_embedding):
     # load the column profiles
-    column_profiles = {}
-    word_embedding = WordEmbeddings(word_embedding_path)
+    column1_profile = ColumnProfile.load_profile(column_profile_paths[column_idx])
     similarity_triples = []
-    for column1_profile_path, column2_profile_path in column_profile_path_pairs:
-        if column1_profile_path not in column_profiles:
-            column_profiles[column1_profile_path] = ColumnProfile.load_profile(column1_profile_path)
-        if column2_profile_path not in column_profiles:
-            column_profiles[column2_profile_path] = ColumnProfile.load_profile(column2_profile_path)
-        column1_profile = column_profiles[column1_profile_path]
-        column2_profile = column_profiles[column2_profile_path]
-        # TODO: [Refactor] move this check to knowledge graph builder
+    for j in range(column_idx+1, len(column_profile_paths)):
+        column2_profile = ColumnProfile.load_profile(column_profile_paths[j])
+        
+        if column1_profile.get_data_type() != column2_profile.get_data_type():
+            continue
         if column1_profile.get_table_id() == column2_profile.get_table_id():
             continue
-        
-        semantic_triples = _compute_semantic_similarity(column1_profile, column2_profile, ontology, 
+
+        semantic_triples = _compute_semantic_similarity(column1_profile, column2_profile, ontology,
                                                         semantic_similarity_threshold,
                                                         word_embedding_model=word_embedding)
-        content_triples = _compute_content_similarity(column1_profile, column2_profile, ontology, 
+        content_triples = _compute_content_similarity(column1_profile, column2_profile, ontology,
                                                       numerical_content_threshold=numerical_content_threshold,
                                                       minhash_content_threshold=minhash_content_threshold)
         deep_content_triples = _compute_numerical_deep_content_similarity(column1_profile, column2_profile, ontology,
@@ -97,7 +93,7 @@ def column_pair_similarity_worker(column_profile_path_pairs, ontology, triples_o
                                                                    content_similarity_triples=content_triples,
                                                                    deep_content_similarity_triples=deep_content_triples,
                                                                    inclusion_dependency_triples=inclusion_triples)
-        
+
         similarity_triples.extend(semantic_triples + content_triples + deep_content_triples + inclusion_triples + pkfk_triples)
     filename = ''.join(random.choices(string.ascii_letters + string.digits, k=15)) + '.nt'
     with open(os.path.join(triples_output_tmp_dir, filename), 'w', encoding='utf-8') as f:

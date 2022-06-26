@@ -40,8 +40,9 @@ class KnowledgeGraphBuilder:
         self.graph_output_path = out_graph_path
         self.out_graph_base_dir = os.path.dirname(self.graph_output_path)
         if os.path.exists(self.graph_output_path):
-            os.rename(self.graph_output_path,
-                      f'{self.out_graph_base_dir}/OLD_{datetime.now().strftime("%Y_%m_%d_%H_%M")}_{self.graph_output_path.split("/")[-1]}')
+            renamed_graph = f'{self.out_graph_base_dir}/OLD_{datetime.now().strftime("%Y_%m_%d_%H_%M")}_{self.graph_output_path.split("/")[-1]}'
+            print(f'Found existing graph at: {self.graph_output_path}. Renaming to: {renamed_graph}')
+            os.rename(self.graph_output_path, renamed_graph)
         self.tmp_graph_base_dir = os.path.join(self.out_graph_base_dir, 'tmp')  # for intermediate results
         if os.path.exists(self.tmp_graph_base_dir):
             shutil.rmtree(self.tmp_graph_base_dir)
@@ -63,37 +64,38 @@ class KnowledgeGraphBuilder:
 
         # get list of column profiles and their data type
         column_data_types = [i for i in os.listdir(column_profiles_path)]
-        self.column_profile_paths_per_type = {}
+        self.column_profile_paths = []
+        print('Column Type Breakdown:')
         for data_type in column_data_types:
             type_path = os.path.join(column_profiles_path, data_type)
             profiles = [os.path.join(type_path, i) for i in os.listdir(type_path) if i.endswith('.json')]
-            self.column_profile_paths_per_type[data_type] = profiles
-
-        print('Column Type Breakdown:')
-        for data_type, profile_paths in self.column_profile_paths_per_type.items():
-            print(f'\t{data_type}: {len(profile_paths)}')
-
+            self.column_profile_paths.extend(profiles)
+            print(f'\t{data_type}: {len(profiles)}')
+        print('Total:', len(self.column_profile_paths))
+        
         # TODO: [Refactor] Read this from project config
         self.word_embedding_path = '../../data/glove.6B.100d.txt'
         # make sure the word embeddings are initialized
-        word_embedding = WordEmbeddings(self.word_embedding_path)
-        word_embedding = None
+        self.word_embedding = WordEmbeddings(self.word_embedding_path)
+
 
     def build_membership_and_metadata_subgraph(self):
-        column_profile_paths = list(itertools.chain.from_iterable(self.column_profile_paths_per_type.values()))
-        columns_rdd = self.spark.parallelize(column_profile_paths)
+        
         # generate column metadata triples in parallel
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
         # mapPartitions so we don't end up with too many subgraph files (compared to .map())
-        columns_rdd.mapPartitions(lambda x: column_metadata_worker(column_profile_paths=x, ontology=ontology,
-                                                                   triples_output_tmp_dir=tmp_graph_dir)).collect()
+        column_profile_paths_rdd = self.spark.parallelize(self.column_profile_paths)
+        column_profile_paths_rdd.mapPartitions(lambda x: column_metadata_worker(column_profile_paths=x,
+                                                                                ontology=ontology,
+                                                                                triples_output_tmp_dir=tmp_graph_dir))\
+                                .collect()
         # generate table and dataset membership triples
         membership_triples = []
         tables = set()
         datasets = set()
         sources = set()
-        for column_profile_path in column_profile_paths:
+        for column_profile_path in self.column_profile_paths:
             profile = ColumnProfile.load_profile(column_profile_path)
             if profile.get_table_id() in tables:
                 continue
@@ -145,29 +147,25 @@ class KnowledgeGraphBuilder:
                 f.write(f"{triple}\n")
 
     def generate_similarity_triples(self):
-        # create column profile pairs per type
-        column_pairs = []
-        for data_type, column_profiles in self.column_profile_paths_per_type.items():
-            for i in range(len(column_profiles)):
-                for j in range(i + 1, len(column_profiles)):
-                    column_pairs.append((column_profiles[i], column_profiles[j]))
-
+        
+        column_profile_paths = self.column_profile_paths
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
-        word_embedding_path = self.word_embedding_path
-        column_pairs_rdd = self.spark.parallelize(column_pairs)
-        # mapPartitions so we don't end up with too many subgraph files
-        column_pairs_rdd.mapPartitions(lambda x: column_pair_similarity_worker(column_profile_path_pairs=x,
-                                                                               ontology=ontology,
-                                                                               triples_output_tmp_dir=tmp_graph_dir,
-                                                                               semantic_similarity_threshold=SEMANTIC_THRESHOLD,
-                                                                               numerical_content_threshold=CONTENT_THRESHOLD,
-                                                                               deep_embedding_content_threshold=DEEP_EMBEDDING_THRESHOLD,
-                                                                               inclusion_dependency_threshold=INCLUSION_THRESHOLD,
-                                                                               minhash_content_threshold=MINHASH_THRESHOLD,
-                                                                               pkfk_threshold=PKFK_THRESHOLD,
-                                                                               word_embedding_path=word_embedding_path)) \
-            .collect()
+        word_embedding = self.word_embedding
+        column_profile_indexes_rdd = self.spark.parallelize(list(range(len(self.column_profile_paths))))
+        column_profile_indexes_rdd.map(
+            lambda x: column_pair_similarity_worker(column_idx=x,
+                                                    column_profile_paths=column_profile_paths,
+                                                    ontology=ontology,
+                                                    triples_output_tmp_dir=tmp_graph_dir,
+                                                    semantic_similarity_threshold=SEMANTIC_THRESHOLD,
+                                                    numerical_content_threshold=CONTENT_THRESHOLD,
+                                                    deep_embedding_content_threshold=DEEP_EMBEDDING_THRESHOLD,
+                                                    inclusion_dependency_threshold=INCLUSION_THRESHOLD,
+                                                    minhash_content_threshold=MINHASH_THRESHOLD,
+                                                    pkfk_threshold=PKFK_THRESHOLD,
+                                                    word_embedding=word_embedding)) \
+                                .collect()
 
     def build_graph(self):
         for tmp_file in os.listdir(self.tmp_graph_base_dir):
