@@ -7,7 +7,9 @@
 #SBATCH --ntasks-per-node=1
 
 module load spark/3.0.0
-module load python/3.7
+module load python/3.8
+
+source venv/bin/activate
 
 # Recommended settings for calling Intel MKL routines from multi-threaded applications
 # https://software.intel.com/en-us/articles/recommended-settings-for-calling-intel-mkl-routines-from-multi-threaded-applications 
@@ -17,14 +19,14 @@ export SPARK_WORKER_DIR=$SLURM_TMPDIR
 export SLURM_SPARK_MEM=$(printf "%.0f" $((${SLURM_MEM_PER_NODE} *95/100)))
 
 date
+echo "Spark KGLiDS 16 nodes."
 
 start-master.sh
 sleep 5
-MASTER_URL=$(grep -Po '(?=spark://).*' $SPARK_LOG_DIR/spark*-org.apache.spark.deploy.master*.out)
+MASTER_URL=$(grep -Po '(?=spark://).*' $SPARK_LOG_DIR/spark-${SPARK_IDENT_STRING}-org.apache.spark.deploy.master*.out)
 
 NWORKERS=$((SLURM_NTASKS - 1))
-SPARK_NO_DAEMONIZE=1 srun -n ${NWORKERS} -N ${NWORKERS} --label --output=$SPARK_LOG_DIR/spark-%j-workers.out start-slave.sh -m ${SLURM_SPARK_MEM}M -c ${SLURM_CPUS_PER_TASK} ${MASTER_URL} &
-slaves_pid=$!
+SPARK_NO_DAEMONIZE=1 srun -n ${NWORKERS} -N ${NWORKERS} --label --output=$SPARK_LOG_DIR/spark-%j-workers.out start-slave.sh -m ${SLURM_SPARK_MEM}M -c ${SLURM_CPUS_PER_TASK} ${MASTER_URL} & slaves_pid=$!
 
 
 srun -n 1 -N 1 spark-submit --master ${MASTER_URL} --executor-memory ${SLURM_SPARK_MEM}M knowledge_graph_builder.py --spark-mode='cluster'

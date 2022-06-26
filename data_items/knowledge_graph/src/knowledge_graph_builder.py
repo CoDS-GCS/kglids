@@ -1,7 +1,6 @@
 import os
 import shutil
 from datetime import datetime
-import itertools
 import random
 import string
 import sys
