@@ -60,11 +60,11 @@ class KnowledgeGraphBuilder:
                          'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'}
 
         # get list of column profiles and their data type
-        column_data_types = [i for i in os.listdir(self.column_profiles_base_dir) if os.path.isdir(i)]
+        column_data_types = [str(i.name) for i in os.scandir(column_profiles_path) if i.is_dir()]
         self.column_profile_paths = []
         print('Column Type Breakdown:')
         for data_type in column_data_types:
-            type_path = os.path.join(self.column_profiles_base_dir, data_type)
+            type_path = os.path.join(column_profiles_path, data_type)
             profiles = [os.path.join(type_path, i) for i in os.listdir(type_path) if i.endswith('.json')]
             self.column_profile_paths.extend(profiles)
             print(f'\t{data_type}: {len(profiles)}')
@@ -81,6 +81,8 @@ class KnowledgeGraphBuilder:
                                       .getOrCreate()
                                       .sparkContext)
             # TODO: [Refactor] make sure this is updated. 
+            self.spark.addPyFile('rdf_resource.py')
+            self.spark.addPyFile('triplet.py')
             self.spark.addPyFile('workers.py')
             self.spark.addPyFile('word_embedding/word_embeddings.py')
             self.spark.addPyFile('utils.py')
