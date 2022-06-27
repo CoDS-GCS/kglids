@@ -20,22 +20,17 @@ from utils import generate_label
 from data_items.profiler.src.data.column_profile import ColumnProfile  
 
 
-def column_metadata_worker(column_profile_paths,  ontology, triples_output_tmp_dir,
-                           is_cluster_mode):
+def column_metadata_worker(column_profiles,  ontology, triples_output_tmp_dir):
     
-    # TODO: [Refactor] remove this workaround
-    if is_cluster_mode:
-        column_profile_paths = [SparkFiles.get(i.split('/')[-1]) for i in column_profile_paths]
 
     # TODO: [Refactor] have the names of predicates read from global project ontology object
     triples = []
 
-    for column_profile_path in column_profile_paths:
-        profile = ColumnProfile.load_profile(column_profile_path)
+    for column_profile in column_profiles:
 
-        column_node = RDFResource(profile.get_column_id(), ontology['kglidsResource'])
-        table_node = RDFResource(profile.get_table_id(), ontology['kglidsResource'])
-        col_label = generate_label(profile.get_column_name(), 'en')
+        column_node = RDFResource(column_profile.get_column_id(), ontology['kglidsResource'])
+        table_node = RDFResource(column_profile.get_table_id(), ontology['kglidsResource'])
+        col_label = generate_label(column_profile.get_column_name(), 'en')
 
         # membership
         triples.append(Triplet(column_node, RDFResource('isPartOf', ontology['kglids']), table_node))
@@ -43,24 +38,24 @@ def column_metadata_worker(column_profile_paths,  ontology, triples_output_tmp_d
                                RDFResource('Column', ontology['kglids'])))
         # metadata
         triples.append(Triplet(column_node, RDFResource('hasDataType', ontology['kglidsData']),
-                               RDFResource(profile.get_data_type())))
+                               RDFResource(column_profile.get_data_type())))
         triples.append(Triplet(column_node, RDFResource('name', ontology['schema']),
-                               RDFResource(profile.get_column_name())))
+                               RDFResource(column_profile.get_column_name())))
         triples.append(Triplet(column_node, RDFResource('hasTotalValueCount', ontology['kglidsData']),
-                               RDFResource(profile.get_total_values_count())))
+                               RDFResource(column_profile.get_total_values_count())))
         triples.append(Triplet(column_node, RDFResource('hasDistinctValueCount', ontology['kglidsData']),
-                               RDFResource(profile.get_distinct_values_count())))
+                               RDFResource(column_profile.get_distinct_values_count())))
         triples.append(Triplet(column_node, RDFResource('hasMissingValueCount', ontology['kglidsData']),
-                               RDFResource(profile.get_missing_values_count())))
+                               RDFResource(column_profile.get_missing_values_count())))
         triples.append(Triplet(column_node, RDFResource('label', ontology['rdfs']), RDFResource(col_label)))
 
-        if profile.is_numeric():
+        if column_profile.is_numeric():
             triples.append(Triplet(column_node, RDFResource('hasMedianValue', ontology['kglidsData']),
-                                   RDFResource(profile.get_median())))
+                                   RDFResource(column_profile.get_median())))
             triples.append(Triplet(column_node, RDFResource('hasMaxValue', ontology['kglidsData']),
-                                   RDFResource(profile.get_max_value())))
+                                   RDFResource(column_profile.get_max_value())))
             triples.append(Triplet(column_node, RDFResource('hasMinValue', ontology['kglidsData']),
-                                   RDFResource(profile.get_min_value())))
+                                   RDFResource(column_profile.get_min_value())))
 
     filename = ''.join(random.choices(string.ascii_letters + string.digits, k=15)) + '.nt'
     with open(os.path.join(triples_output_tmp_dir, filename), 'w', encoding='utf-8') as f:
@@ -70,19 +65,16 @@ def column_metadata_worker(column_profile_paths,  ontology, triples_output_tmp_d
     return []
     
         
-def column_pair_similarity_worker(column_idx, column_profile_paths, ontology, triples_output_tmp_dir, 
+def column_pair_similarity_worker(column_idx, column_profiles, ontology, triples_output_tmp_dir, 
                                   semantic_similarity_threshold, numerical_content_threshold,
                                   deep_embedding_content_threshold, inclusion_dependency_threshold,
-                                  minhash_content_threshold, pkfk_threshold, word_embedding, is_cluster_mode):
-    # TODO: [Refactor] remove this workaround
-    if is_cluster_mode:
-        column_profile_paths = [SparkFiles.get(i.split('/')[-1]) for i in column_profile_paths]
+                                  minhash_content_threshold, pkfk_threshold, word_embedding):
 
     # load the column profiles
-    column1_profile = ColumnProfile.load_profile(column_profile_paths[column_idx])
+    column1_profile = column_profiles[column_idx]
     similarity_triples = []
-    for j in range(column_idx+1, len(column_profile_paths)):
-        column2_profile = ColumnProfile.load_profile(column_profile_paths[j])
+    for j in range(column_idx+1, len(column_profiles)):
+        column2_profile = column_profiles[j]
         
         if column1_profile.get_data_type() != column2_profile.get_data_type():
             continue
