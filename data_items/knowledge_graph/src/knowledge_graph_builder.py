@@ -86,6 +86,7 @@ class KnowledgeGraphBuilder:
             self.spark.addPyFile('workers.py')
             self.spark.addPyFile('word_embedding/word_embeddings.py')
             self.spark.addPyFile('utils.py')
+            self.spark.addPyFile('label.py')
             self.spark.addPyFile('../../profiler/src/data/column_profile.py')
             for column_profile_path in self.column_profile_paths:
                 self.spark.addFile(column_profile_path)
