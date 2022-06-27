@@ -29,6 +29,7 @@ significantly outperforms state-of-the-art systems on related tasks,
 such as datasets and pipeline recommendation.</div>
 
 ## Installation
+* Clone the `kglids` repo 
 * Create `kglids` Conda environment (Python 3.8) and install pip requirements.
 * Activate the `kglids` environment
 ```
@@ -37,15 +38,53 @@ conda activate kglids
 
 ## Quickstart
 <b>Try the [Sample Colab notebook](https://colab.research.google.com/drive/1XbjJkppz5_nTufgnD53gEBzxyLYViGAi?usp=sharing) for a quick hands-on!</b>
-- Generate the `LiDS` graph
-- Upload `LiDS` graph to the [Stardog](https://www.stardog.com/) server
-- Test the [`KGLiDS APIs`]()
+1. Add your configurations to [config,yml]():
+```python
+# sample configurations
+datasource: "kaggle" 
+datasets:
+- name:     "Titanic"
+  type:     "csv"
+  path:     "/data/titanic"
+  origin:   "https://www.kaggle.com/"
+- name:     "Montreal Crime Data"
+  type:     "csv"
+  path:     "/data/mtl_crime"
+  origin:   "https://www.kaggle.com/"
+```
+</t>Note: The config.yml file expects the following structure:
+```
+datasource/
+├── datasets
+│   └── name
+│   └── type
+│   └── path
+│   └── origin
+├ ...
+...
+```
+2. Run the [Data profiler]()
+```commandline
+cd kglids/data_items/profiler/src/
+python main.py
+```
+3. Run the [Knowledge graph builder]() to generate the data_items graph 
+```commandline/
+cd kglids/data_items/knowledge_graph/src/
+python knowledge_graph_builder.py
+```
+4. Run the [Pipeline abstractor]() to generate the pipeline named graph(s)
+```
+cd kglids/pipelines/src/
+python run.py
+```
+6. Upload the data items + pipeline graphs to the [Stardog](https://www.stardog.com/) server 
+7. Test the [KGLiDS APIs](docs/LiDS_ontology.md)
 
 
 ## Benchmarking
 The following benchmark datasets were used to evaluate KGLiDS:
 * [Dataset Discovery in Data Lakes](https://arxiv.org/pdf/2011.10427.pdf)
-* [GraphGen4Code]()
 * [Kaggle]()
 
 ## KGLiDS APIs
