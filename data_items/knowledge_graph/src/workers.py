@@ -16,8 +16,6 @@ from pyspark import SparkFiles
 from rdf_resource import RDFResource
 from triplet import Triplet
 from utils import generate_label
-# TODO: [Refactor] project structure needs to be changed. This import might not work in terminal.
-from data_items.profiler.src.data.column_profile import ColumnProfile  
 
 
 def column_metadata_worker(column_profiles,  ontology, triples_output_tmp_dir):
@@ -106,7 +104,7 @@ def column_pair_similarity_worker(column_idx, column_profiles, ontology, triples
     return []
     
 
-def _compute_semantic_similarity(column1_profile: ColumnProfile, column2_profile: ColumnProfile, ontology,
+def _compute_semantic_similarity(column1_profile, column2_profile, ontology,
                                  semantic_similarity_threshold: float, word_embedding_model) -> list:
     # TODO: [Refactor] have the names of predicates read from global project ontology object
 
@@ -121,7 +119,7 @@ def _compute_semantic_similarity(column1_profile: ColumnProfile, column2_profile
     return semantic_similarity_triples
 
 
-def _compute_content_similarity(col1_profile: ColumnProfile, col2_profile: ColumnProfile, ontology,
+def _compute_content_similarity(col1_profile, col2_profile, ontology,
                                 numerical_content_threshold, minhash_content_threshold):
     # TODO: [Refactor] have the names of predicates read from global project ontology object
     content_similarity_triples = []
@@ -178,7 +176,7 @@ def _compute_content_similarity(col1_profile: ColumnProfile, col2_profile: Colum
     return content_similarity_triples
 
 
-def _compute_numerical_deep_content_similarity(col1_profile: ColumnProfile, col2_profile: ColumnProfile, ontology,
+def _compute_numerical_deep_content_similarity(col1_profile, col2_profile, ontology,
                                                deep_embedding_content_threshold):
     deep_content_similarity_triples = []
     if col1_profile.is_numeric():
@@ -193,7 +191,7 @@ def _compute_numerical_deep_content_similarity(col1_profile: ColumnProfile, col2
     return deep_content_similarity_triples
 
 
-def _compute_numerical_inclusion_dependency(col1_profile: ColumnProfile, col2_profile: ColumnProfile, ontology, 
+def _compute_numerical_inclusion_dependency(col1_profile, col2_profile, ontology, 
                                             inclusion_dependency_threshold):
     
     if not col1_profile.is_numeric():
@@ -238,7 +236,7 @@ def _compute_numerical_inclusion_dependency(col1_profile: ColumnProfile, col2_pr
 
 
 # TODO: [Refactor] this method needs to be moved somewhere else.
-def _compute_inclusion_overlap(column1_profile: ColumnProfile, column2_profile: ColumnProfile):
+def _compute_inclusion_overlap(column1_profile, column2_profile):
     col1_left = column1_profile.get_median() - column1_profile.get_iqr()
     col1_right = column1_profile.get_median() + column1_profile.get_iqr()
     col2_left = column2_profile.get_median() - column2_profile.get_iqr()
@@ -255,7 +253,7 @@ def _compute_inclusion_overlap(column1_profile: ColumnProfile, column2_profile: 
     return float(overlap)
 
 
-def _compute_primary_key_foreign_key_similarity(col1_profile: ColumnProfile, col2_profile: ColumnProfile, ontology, 
+def _compute_primary_key_foreign_key_similarity(col1_profile, col2_profile, ontology, 
                                                 pkfk_threshold, content_similarity_triples, 
                                                 deep_content_similarity_triples, inclusion_dependency_triples):
     # we have pkfk if the two columns have content similarity and their cardinalities are above the provided threshold
@@ -282,7 +280,7 @@ def _compute_primary_key_foreign_key_similarity(col1_profile: ColumnProfile, col
 
 # TODO: [Refactor] this method needs to be moved somewhere else.
 # TODO: [Refactor] this method shouldn't take ontology from the worker methods. It should be passed from global config
-def _create_column_similarity_triples(column1_profile: ColumnProfile, column2_profile: ColumnProfile,
+def _create_column_similarity_triples(column1_profile, column2_profile,
                                       similarity_predicate, similarity_score, ontology):
     nested_subject = RDFResource(column1_profile.get_column_id(), ontology['kglidsResource'])
     nested_predicate = RDFResource(similarity_predicate, ontology['kglidsData'])
