@@ -65,7 +65,7 @@ class KnowledgeGraphBuilder:
         print('Column Type Breakdown:')
         for data_type in column_data_types:
             type_path = os.path.join(self.column_profiles_base_dir, data_type)
-            profiles = [os.path.join(data_type, i) for i in os.listdir(type_path) if i.endswith('.json')]
+            profiles = [os.path.join(type_path, i) for i in os.listdir(type_path) if i.endswith('.json')]
             self.column_profile_paths.extend(profiles)
             print(f'\t{data_type}: {len(profiles)}')
         print('Total:', len(self.column_profile_paths))
@@ -80,12 +80,12 @@ class KnowledgeGraphBuilder:
                                       .appName("KGBuilder") 
                                       .getOrCreate()
                                       .sparkContext)
-            # TODO: [Refactor] make sure this is updated. Also, zip file should be auto-created
+            # TODO: [Refactor] make sure this is updated. 
             self.spark.addPyFile('workers.py')
             self.spark.addPyFile('word_embedding/word_embeddings.py')
             self.spark.addPyFile('utils.py')
             self.spark.addPyFile('../../profiler/src/data/column_profile.py')
-            self.spark.addArchive(os.path.join(self.column_profiles_base_dir, 'profiles.zip'))
+            self.spark.addFile(self.column_profiles_base_dir, recursive=True)
 
         else:
             self.spark = SparkContext(conf=SparkConf().setMaster(f'local[*]')
@@ -102,7 +102,6 @@ class KnowledgeGraphBuilder:
         # mapPartitions so we don't end up with too many subgraph files (compared to .map())
         column_profile_paths_rdd = self.spark.parallelize(self.column_profile_paths)
         column_profile_paths_rdd.mapPartitions(lambda x: column_metadata_worker(column_profile_paths=x,
-                                                                                column_profiles_base_dir=column_profiles_base_dir,
                                                                                 ontology=ontology,
                                                                                 triples_output_tmp_dir=tmp_graph_dir,
                                                                                 is_cluster_mode=is_cluster_mode))\
@@ -166,6 +165,7 @@ class KnowledgeGraphBuilder:
     def generate_similarity_triples(self):
         
         column_profile_paths = self.column_profile_paths
+        is_cluster_mode = self.is_cluster_mode
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
         word_embedding = self.word_embedding
@@ -181,7 +181,8 @@ class KnowledgeGraphBuilder:
                                                     inclusion_dependency_threshold=INCLUSION_THRESHOLD,
                                                     minhash_content_threshold=MINHASH_THRESHOLD,
                                                     pkfk_threshold=PKFK_THRESHOLD,
-                                                    word_embedding=word_embedding)) \
+                                                    word_embedding=word_embedding,
+                                                    is_cluster_mode=is_cluster_mode)) \
                                 .collect()
 
     def build_graph(self):

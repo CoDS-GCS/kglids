@@ -20,15 +20,18 @@ from utils import generate_label
 from data_items.profiler.src.data.column_profile import ColumnProfile  
 
 
-def column_metadata_worker(column_profile_paths, column_profiles_base_dir, ontology, triples_output_tmp_dir,
+def column_metadata_worker(column_profile_paths,  ontology, triples_output_tmp_dir,
                            is_cluster_mode):
+    
+    # TODO: [Refactor] remove this workaround
     if is_cluster_mode:
-        column_profiles_base_dir = SparkFiles.get('profiles.zip')
+        column_profile_paths = [SparkFiles.get(i.split('/')[-1]) for i in column_profile_paths]
+
     # TODO: [Refactor] have the names of predicates read from global project ontology object
     triples = []
 
     for column_profile_path in column_profile_paths:
-        profile = ColumnProfile.load_profile(os.path.join(column_profiles_base_dir, column_profile_path))
+        profile = ColumnProfile.load_profile(column_profile_path)
 
         column_node = RDFResource(profile.get_column_id(), ontology['kglidsResource'])
         table_node = RDFResource(profile.get_table_id(), ontology['kglidsResource'])
@@ -67,18 +70,19 @@ def column_metadata_worker(column_profile_paths, column_profiles_base_dir, ontol
     return []
     
         
-def column_pair_similarity_worker(column_idx, column_profile_paths, column_profiles_base_dir, ontology,
-                                  triples_output_tmp_dir, semantic_similarity_threshold, numerical_content_threshold,
+def column_pair_similarity_worker(column_idx, column_profile_paths, ontology, triples_output_tmp_dir, 
+                                  semantic_similarity_threshold, numerical_content_threshold,
                                   deep_embedding_content_threshold, inclusion_dependency_threshold,
                                   minhash_content_threshold, pkfk_threshold, word_embedding, is_cluster_mode):
+    # TODO: [Refactor] remove this workaround
     if is_cluster_mode:
-        column_profiles_base_dir = SparkFiles.get('profiles.zip')
+        column_profile_paths = [SparkFiles.get(i.split('/')[-1]) for i in column_profile_paths]
+
     # load the column profiles
-    column1_profile = ColumnProfile.load_profile(os.path.join(column_profiles_base_dir,
-                                                              column_profile_paths[column_idx]))
+    column1_profile = ColumnProfile.load_profile(column_profile_paths[column_idx])
     similarity_triples = []
     for j in range(column_idx+1, len(column_profile_paths)):
-        column2_profile = ColumnProfile.load_profile(os.path.join(column_profiles_base_dir, column_profile_paths[j]))
+        column2_profile = ColumnProfile.load_profile(column_profile_paths[j])
         
         if column1_profile.get_data_type() != column2_profile.get_data_type():
             continue
