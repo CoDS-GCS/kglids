@@ -79,7 +79,7 @@ cd kglids/pipelines/src/
 python run.py
 ```
 6. Upload the data items + pipeline graphs to the [Stardog](https://www.stardog.com/) server 
-7. Test the [KGLiDS APIs](docs/LiDS_ontology.md)
+7. Test the [KGLiDS APIs](docs/KGLiDS_apis.md)
 
 
 ## Benchmarking
