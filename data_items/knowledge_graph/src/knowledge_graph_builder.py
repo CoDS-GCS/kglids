@@ -8,7 +8,7 @@ import argparse
 
 sys.path.append('../../../')
 
-from pyspark import SparkConf, SparkContext
+from pyspark import SparkConf, SparkContext, SparkFiles
 from pyspark.sql import SparkSession
 
 from rdf_resource import RDFResource
@@ -37,6 +37,7 @@ class KnowledgeGraphBuilder:
     # TODO: [Refactor] have Spark configuration read from the global project config
     # TODO: [Refactor] read raw word embeddings path from global project config
     def __init__(self, column_profiles_path, out_graph_path, spark_mode, memory_size):
+        self.column_profiles_base_dir = column_profiles_path
         self.graph_output_path = out_graph_path
         self.out_graph_base_dir = os.path.dirname(self.graph_output_path)
         if os.path.exists(self.graph_output_path):
@@ -49,15 +50,7 @@ class KnowledgeGraphBuilder:
         os.makedirs(self.tmp_graph_base_dir)
 
         self.memory_size = memory_size
-        
-        if spark_mode == 'cluster':
-            self.spark = (SparkSession.builder
-                                      .appName("KGBuilder") 
-                                      .getOrCreate()
-                                      .sparkContext)
-        else:
-            self.spark = SparkContext(conf=SparkConf().setMaster(f'local[*]')
-                                                      .set('spark.driver.memory', f'{self.memory_size}g'))
+        self.is_cluster_mode = spark_mode == 'cluster'
 
         self.ontology = {'kglids': 'http://kglids.org/ontology/',
                          'kglidsData': 'http://kglids.org/ontology/data/',
@@ -67,20 +60,36 @@ class KnowledgeGraphBuilder:
                          'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'}
 
         # get list of column profiles and their data type
-        column_data_types = [i for i in os.listdir(column_profiles_path)]
+        column_data_types = [i for i in os.listdir(self.column_profiles_base_dir) if os.path.isdir(i)]
         self.column_profile_paths = []
         print('Column Type Breakdown:')
         for data_type in column_data_types:
-            type_path = os.path.join(column_profiles_path, data_type)
-            profiles = [os.path.join(type_path, i) for i in os.listdir(type_path) if i.endswith('.json')]
+            type_path = os.path.join(self.column_profiles_base_dir, data_type)
+            profiles = [os.path.join(data_type, i) for i in os.listdir(type_path) if i.endswith('.json')]
             self.column_profile_paths.extend(profiles)
             print(f'\t{data_type}: {len(profiles)}')
         print('Total:', len(self.column_profile_paths))
-        
+
         # TODO: [Refactor] Read this from project config
         self.word_embedding_path = '../../data/glove.6B.100d.txt'
         # make sure the word embeddings are initialized
         self.word_embedding = WordEmbeddings(self.word_embedding_path)
+        
+        if self.is_cluster_mode:
+            self.spark = (SparkSession.builder
+                                      .appName("KGBuilder") 
+                                      .getOrCreate()
+                                      .sparkContext)
+            # TODO: [Refactor] make sure this is updated. Also, zip file should be auto-created
+            self.spark.addPyFile('workers.py')
+            self.spark.addPyFile('word_embedding/word_embeddings.py')
+            self.spark.addPyFile('utils.py')
+            self.spark.addPyFile('../../profiler/src/data/column_profile.py')
+            self.spark.addArchive(os.path.join(self.column_profiles_base_dir, 'profiles.zip'))
+
+        else:
+            self.spark = SparkContext(conf=SparkConf().setMaster(f'local[*]')
+                                                      .set('spark.driver.memory', f'{self.memory_size}g'))
 
 
     def build_membership_and_metadata_subgraph(self):
@@ -88,11 +97,15 @@ class KnowledgeGraphBuilder:
         # generate column metadata triples in parallel
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
+        column_profiles_base_dir = self.column_profiles_base_dir
+        is_cluster_mode = self.is_cluster_mode
         # mapPartitions so we don't end up with too many subgraph files (compared to .map())
         column_profile_paths_rdd = self.spark.parallelize(self.column_profile_paths)
         column_profile_paths_rdd.mapPartitions(lambda x: column_metadata_worker(column_profile_paths=x,
+                                                                                column_profiles_base_dir=column_profiles_base_dir,
                                                                                 ontology=ontology,
-                                                                                triples_output_tmp_dir=tmp_graph_dir))\
+                                                                                triples_output_tmp_dir=tmp_graph_dir,
+                                                                                is_cluster_mode=is_cluster_mode))\
                                 .collect()
         # generate table and dataset membership triples
         membership_triples = []
@@ -100,7 +113,7 @@ class KnowledgeGraphBuilder:
         datasets = set()
         sources = set()
         for column_profile_path in self.column_profile_paths:
-            profile = ColumnProfile.load_profile(column_profile_path)
+            profile = ColumnProfile.load_profile(os.path.join(self.column_profiles_base_dir, column_profile_path))
             if profile.get_table_id() in tables:
                 continue
             # table -> dataset membership and metadata
