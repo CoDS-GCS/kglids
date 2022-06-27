@@ -5,11 +5,13 @@ import random
 import string
 import sys
 import argparse
+import multiprocessing as mp
 
 sys.path.append('../../../')
 
 from pyspark import SparkConf, SparkContext, SparkFiles
 from pyspark.sql import SparkSession
+from tqdm import tqdm
 
 from rdf_resource import RDFResource
 from triplet import Triplet
@@ -61,14 +63,18 @@ class KnowledgeGraphBuilder:
 
         # get list of column profiles and their data type
         column_data_types = [str(i.name) for i in os.scandir(column_profiles_path) if i.is_dir()]
-        self.column_profiles = []
+        column_profile_paths = []
         print('Column Type Breakdown:')
         for data_type in column_data_types:
             type_path = os.path.join(column_profiles_path, data_type)
             profiles = [os.path.join(type_path, i) for i in os.listdir(type_path) if i.endswith('.json')]
-            self.column_profiles.extend([ColumnProfile.load_profile(i) for i in profiles])
+            column_profile_paths.extend(profiles)
             print(f'\t{data_type}: {len(profiles)}')
-        print('Total:', len(self.column_profiles))
+        print('Total:', len(column_profile_paths))
+        print('Reading column profiles ...')
+        pool = mp.Pool(os.cpu_count() - 1)
+        self.column_profiles = list(tqdm(pool.imap_unordered(ColumnProfile.load_profile, column_profile_paths), total=len(column_profile_paths)))
+        
 
         # TODO: [Refactor] Read this from project config
         self.word_embedding_path = '../../data/glove.6B.100d.txt'
