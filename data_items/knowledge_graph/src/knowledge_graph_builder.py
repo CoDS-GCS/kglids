@@ -85,7 +85,8 @@ class KnowledgeGraphBuilder:
             self.spark.addPyFile('word_embedding/word_embeddings.py')
             self.spark.addPyFile('utils.py')
             self.spark.addPyFile('../../profiler/src/data/column_profile.py')
-            self.spark.addFile(self.column_profiles_base_dir, recursive=True)
+            for column_profile_path in self.column_profile_paths:
+                self.spark.addFile(column_profile_path)
 
         else:
             self.spark = SparkContext(conf=SparkConf().setMaster(f'local[*]')
