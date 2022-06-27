@@ -38,7 +38,7 @@ conda activate kglids
 
 ## Quickstart
 <b>Try the [Sample Colab notebook](https://colab.research.google.com/drive/1XbjJkppz5_nTufgnD53gEBzxyLYViGAi?usp=sharing) for a quick hands-on!</b>
-1. Add your configurations to [config,yml]():
+1. Add your configuracltions to [config,yml]():
 ```python
 # sample configurations
 datasource: "kaggle" 
