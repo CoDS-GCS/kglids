@@ -68,7 +68,7 @@ class NumericalAnalyser(IAnalyser):
         return quartilesDF.toPandas().to_dict()
     
     def __get_subtypes(self) -> dict:
-        numerical_cols = [f.name for f in self.df.schema.fields if not isinstance(f.dataType, StringType)]
+        numerical_cols = [f'`{field.name}`' for field in self.df.schema.fields if not isinstance(field.dataType, StringType)]
         numerical_subtypes = {}
         for numerical_col in numerical_cols:
             distinct_vals = [i[0] for i in self.df.select(numerical_col).sample(0.1).distinct().na.drop().collect()]
