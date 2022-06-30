@@ -31,7 +31,7 @@ class Worker(threading.Thread):
             # Create profiles
             numerical_profiles = profile_creator.create_numerical_profiles(numerical_columns)
             textual_profiles = profile_creator.create_textual_profiles(textual_columns)
-            boolean_profiles = profile_creator.create_boolean_profiles(boolean_columns)
+            boolean_profiles = [] # profile_creator.create_boolean_profiles(boolean_columns) # TODO: [Refactor] remove
 
             self.screenLock.acquire()
             print(self.name + " finished profiling " + table.get_table_name())

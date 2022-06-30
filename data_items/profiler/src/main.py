@@ -28,4 +28,5 @@ def start_profiling():
     print('Time to profile: ', datetime.now() - start_time)
 
 
-start_profiling()
+if __name__ == '__main__':
+    start_profiling()

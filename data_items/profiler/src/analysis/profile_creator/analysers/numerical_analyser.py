@@ -25,19 +25,20 @@ class NumericalAnalyser(IAnalyser):
         if not columns:
             return
         summaries = self.__extract_summaries(columns)
+        subtypes = self.__get_subtypes()
         num_distinct_values_counts_per_column_dict = self.__compute_distinct_values_counts(columns)
         missing_values_per_column_dict = self.__get_missing_values(columns)
         quartiles = self.__get_quantiles(columns)
         embeddings = self.__get_embeddings(columns)
         for col in columns:
-            profile_info = {**{'count': summaries[col][0]},
+            profile_info = {**{'type': subtypes[col]},
+                            **{'count': summaries[col][0]},
                             **{'mean': summaries[col][1]},
                             **{'stddev': summaries[col][2]},
                             **{'min': summaries[col][3]},
                             **{'max': summaries[col][4]},
                             **{'distinct_values_count': num_distinct_values_counts_per_column_dict[col][0]},
                             **{'missing_values_count': missing_values_per_column_dict[col]},
-                            #**{'missing_values_count': 0},
                             **{'25%': quartiles['`' +col+'`' ][0]},
                             **{'50%': quartiles['`' +col+'`' ][1]},
                             **{'75%': quartiles['`' +col+'`' ][2]},
@@ -65,6 +66,24 @@ class NumericalAnalyser(IAnalyser):
             ["Percentile"] + quantile_list
         )
         return quartilesDF.toPandas().to_dict()
+    
+    def __get_subtypes(self) -> dict:
+        numerical_cols = [f.name for f in self.df.schema.fields if not isinstance(f.dataType, StringType)]
+        numerical_subtypes = {}
+        for col in numerical_cols:
+            distinct_vals = [i[0] for i in self.df.select(col).sample(0.1).distinct().collect()]
+            if not distinct_vals:
+                distinct_vals = [i[0] for i in self.df.select(col).distinct().collect()]    # if len(df) < 10
+            
+            # TODO: [Refactor] use more descriptive names for data types. Also read them from config/enum
+            if distinct_vals == [0, 1] or [1, 0]:
+                numerical_subtypes[col] = 'N_bool'
+            elif distinct_vals == [int(i) for i in distinct_vals]:
+                numerical_subtypes[col] = 'N_int'
+            else:
+                numerical_subtypes[col] = 'N_float'
+        
+        return numerical_subtypes
 
     def __get_embeddings(self, columns) -> dict:
         def compute_deep_embeddings(col):

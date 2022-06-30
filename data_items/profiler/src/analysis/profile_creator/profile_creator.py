@@ -28,7 +28,7 @@ class ProfileCreator:
             profile_info = profiles_info[column_name]
             profile = ColumnProfile(column_id, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
                                     datasource, 
-                                    'N',  # TODO: [Refactor] use more descriptive names for data types
+                                    profile_info['type'],
                                     int(profile_info['count']),
                                     int(profile_info['distinct_values_count']),
                                     int(profile_info['missing_values_count']),
