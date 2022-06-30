@@ -5,7 +5,7 @@ class CSVTable(ITable):
 
     def __init__(self, datasource: str, table_path: str, dataset_name: str, dataset_path: str, origin: str):
         self.datasource = datasource
-        self.table_name = table_path[table_path.rindex('/')+1:]
+        self.table_name = table_path.split('/')[-1]
         self.dataset_name = dataset_name
         self.table_path = table_path
         self.origin = origin
