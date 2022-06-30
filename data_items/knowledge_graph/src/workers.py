@@ -256,6 +256,10 @@ def _compute_inclusion_overlap(column1_profile, column2_profile):
 def _compute_primary_key_foreign_key_similarity(col1_profile, col2_profile, ontology, 
                                                 pkfk_threshold, content_similarity_triples, 
                                                 deep_content_similarity_triples, inclusion_dependency_triples):
+    # no pkfk if the columns are booleans of floats
+    if col1_profile.is_boolean() or col1_profile.is_float():
+        return []
+    
     # we have pkfk if the two columns have content similarity and their cardinalities are above the provided threshold
     if col1_profile.get_total_values_count() == 0 or col2_profile.get_total_values_count() == 0:
         return []

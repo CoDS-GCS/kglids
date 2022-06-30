@@ -70,18 +70,18 @@ class NumericalAnalyser(IAnalyser):
     def __get_subtypes(self) -> dict:
         numerical_cols = [f.name for f in self.df.schema.fields if not isinstance(f.dataType, StringType)]
         numerical_subtypes = {}
-        for col in numerical_cols:
-            distinct_vals = [i[0] for i in self.df.select(col).sample(0.1).distinct().collect()]
+        for numerical_col in numerical_cols:
+            distinct_vals = [i[0] for i in self.df.select(numerical_col).sample(0.1).distinct().collect()]
             if not distinct_vals:
-                distinct_vals = [i[0] for i in self.df.select(col).distinct().collect()]    # if len(df) < 10
+                distinct_vals = [i[0] for i in self.df.select(numerical_col).distinct().collect()]    # if len(df) < 10
             
             # TODO: [Refactor] use more descriptive names for data types. Also read them from config/enum
-            if distinct_vals == [0, 1] or [1, 0]:
-                numerical_subtypes[col] = 'N_bool'
+            if distinct_vals == [0, 1] or distinct_vals == [1, 0]:
+                numerical_subtypes[numerical_col] = 'N_bool'
             elif distinct_vals == [int(i) for i in distinct_vals]:
-                numerical_subtypes[col] = 'N_int'
+                numerical_subtypes[numerical_col] = 'N_int'
             else:
-                numerical_subtypes[col] = 'N_float'
+                numerical_subtypes[numerical_col] = 'N_float'
         
         return numerical_subtypes
 

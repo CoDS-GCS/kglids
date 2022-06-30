@@ -93,13 +93,20 @@ class ColumnProfile:
 
     # TODO: [Refactor] have the data types in a global project config
     def is_numeric(self) -> bool:
-        return self.get_data_type() in ['N']
+        return self.get_data_type() in ['N', 'N_int', 'N_float', 'N_bool']
     
+    def is_boolean(self) -> bool:
+        return self.get_data_type() == 'N_bool'
+    
+    def is_float(self) -> bool:
+        return self.get_data_type() == 'N_float'
+    
+    def is_int(self) -> bool:
+        return self.get_data_type() == 'N_int'
+
     def is_textual(self) -> bool:
         return self.get_data_type() in ['T', 'T_code', 'T_date', 'T_email', 'T_loc', 'T_org', 'T_person']
     
-    def is_boolean(self) -> bool:
-        return self.get_data_type() in ['B']
     
     def get_column_id(self) -> float:
         return self.column_id
