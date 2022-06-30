@@ -3,11 +3,11 @@ from data.tables.i_table import ITable
 
 class CSVTable(ITable):
 
-    def __init__(self, datasource: str, table_name: str, dataset_name: str, dataset_path: str, origin: str):
+    def __init__(self, datasource: str, table_path: str, dataset_name: str, dataset_path: str, origin: str):
         self.datasource = datasource
-        self.table_name = table_name
+        self.table_name = table_path[table_path.rindex('/')+1:]
         self.dataset_name = dataset_name
-        self.table_path = dataset_path + '/' + table_name
+        self.table_path = table_path
         self.origin = origin
 
     def get_table_path(self):
