@@ -1,3 +1,4 @@
+import glob
 import os
 import queue
 
@@ -12,7 +13,7 @@ def get_file_type(filename: str) -> FileType:
 
 def create_sources_from_datasets(datasource: str, datasets: list, tables: queue):
     for dataset in datasets:
-        for filename in os.listdir(dataset['path']):
+        for filename in glob.glob(os.path.join(dataset['path'], '**/*'), recursive=True):
             if get_file_type(filename) == FileType.CSV:
                 csvTable = CSVTable(datasource, filename, dataset['name'], dataset['path'], dataset['origin'])
                 tables.put(csvTable)
