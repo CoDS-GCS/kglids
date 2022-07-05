@@ -71,10 +71,10 @@ class NumericalAnalyser(IAnalyser):
         numerical_cols = [str(field.name) for field in self.df.schema.fields if not isinstance(field.dataType, StringType)]
         numerical_subtypes = {}
         for numerical_col in numerical_cols:
-            distinct_vals = self.df.select(f'`{numerical_col}`').sample(0.1).distinct().na.drop().rdd.flatMap(lambda x: x).collect()
+            distinct_vals = self.df.select(col('`'+numerical_col+'`')).sample(0.1).distinct().na.drop().rdd.flatMap(lambda x: x).collect()
             # don't sample if len(df) < 10
             if not distinct_vals: 
-                distinct_vals = self.df.select(f'`{numerical_col}`').distinct().na.drop().rdd.flatMap(lambda x: x).collect()
+                distinct_vals = self.df.select(col('`'+numerical_col+'`')).distinct().na.drop().rdd.flatMap(lambda x: x).collect()
             
             # TODO: [Refactor] use more descriptive names for data types. Also read them from config/enum
             if distinct_vals == [0, 1] or distinct_vals == [1, 0]:
