@@ -1,7 +1,7 @@
 from analysis.profile_creator.analysers.i_analyser import IAnalyser
 from analysis.utils import init_spark
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import *
+from pyspark.sql.functions import col, collect_list, udf, countDistinct, sum
 from pyspark.sql.types import *
 from deep_embeddings.numerical_model import load_embedding_model
 import bitstring
@@ -19,6 +19,7 @@ class NumericalAnalyser(IAnalyser):
         self.spark = init_spark()
         self.profiles_info = {}
         self.df = df
+        self.num_rows = self.df.count()
 
     def analyse_columns(self):
         columns = self.df.columns
@@ -70,8 +71,9 @@ class NumericalAnalyser(IAnalyser):
     def __get_subtypes(self) -> dict:
         numerical_cols = [str(field.name) for field in self.df.schema.fields if not isinstance(field.dataType, StringType)]
         numerical_subtypes = {}
+        sample_size = min(1000/self.num_rows, 0.1)
         for numerical_col in numerical_cols:
-            distinct_vals = self.df.select(col('`'+numerical_col+'`')).sample(0.1).distinct().rdd.flatMap(lambda x: x).collect()
+            distinct_vals = self.df.select(col('`'+numerical_col+'`')).sample(sample_size).distinct().rdd.flatMap(lambda x: x).collect()
             # don't sample if len(df) < 10
             if not distinct_vals: 
                 distinct_vals = self.df.select(col('`'+numerical_col+'`')).distinct().rdd.flatMap(lambda x: x).collect()

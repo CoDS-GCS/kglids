@@ -23,7 +23,7 @@ from data_items.profiler.src.data.column_profile import ColumnProfile
 
 # ************* SYSTEM PARAMETERS**********************
 # TODO: [Refactor] have these inside a global project config
-SEMANTIC_THRESHOLD = 0.50
+SEMANTIC_THRESHOLD = 0.75
 CONTENT_THRESHOLD = 0.95
 MINHASH_THRESHOLD = 0.70
 INCLUSION_THRESHOLD = 0.90
