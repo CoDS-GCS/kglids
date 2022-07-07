@@ -78,7 +78,7 @@ class ProfileCreator:
             profile_info = profiles_info[column_name]
             profile = ColumnProfile(column_id, origin, dataset_name, dataset_id, path, table_name, table_id, column_name,
                                     datasource, 
-                                    'B',  # TODO: [Refactor] use more descriptive names for data types
+                                    'N_bool',  # TODO: [Refactor] use more descriptive names for data types
                                     # TODO: [Implement] determine what attributes need to be there for boolean columns. E.g. distinct values count doesn't make sense. Maybe true ratio?
                                     int(profile_info['count']),
                                     int(profile_info['distinct_values_count']),

@@ -7,6 +7,8 @@ from deep_embeddings.numerical_model import load_embedding_model
 import bitstring
 import torch
 
+import math
+
 
 DEVICE = 'cpu'
 EMBEDDING_MODEL = load_embedding_model('deep_embeddings/embedding_model/20211123161253_numerical_embedding_model_epoch_4_3M_samples_gpu_cluster.pt')
@@ -77,7 +79,7 @@ class NumericalAnalyser(IAnalyser):
             # don't sample if len(df) < 10
             if not distinct_vals: 
                 distinct_vals = self.df.select(col('`'+numerical_col+'`')).distinct().rdd.flatMap(lambda x: x).collect()
-            distinct_vals = [i for i in distinct_vals if i]
+            distinct_vals = [i for i in distinct_vals if i and not math.isnan(i)]
             
             # TODO: [Refactor] use more descriptive names for data types. Also read them from config/enum
             if distinct_vals == [0, 1] or distinct_vals == [1, 0]:

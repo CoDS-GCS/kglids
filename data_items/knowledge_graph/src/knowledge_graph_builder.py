@@ -38,7 +38,7 @@ class KnowledgeGraphBuilder:
     # TODO: [Refactor] add all kglids URIs to knowledge graph config.py
     # TODO: [Refactor] have Spark configuration read from the global project config
     # TODO: [Refactor] read raw word embeddings path from global project config
-    def __init__(self, column_profiles_path, out_graph_path, spark_mode, memory_size):
+    def __init__(self, column_profiles_path, out_graph_path, spark_mode):
         self.column_profiles_base_dir = column_profiles_path
         self.graph_output_path = out_graph_path
         self.out_graph_base_dir = os.path.dirname(self.graph_output_path)
@@ -51,7 +51,7 @@ class KnowledgeGraphBuilder:
             shutil.rmtree(self.tmp_graph_base_dir)
         os.makedirs(self.tmp_graph_base_dir)
 
-        self.memory_size = memory_size
+        self.memory_size = (os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') // 1024**3) - 1
         self.is_cluster_mode = spark_mode == 'cluster'
 
         self.ontology = {'kglids': 'http://kglids.org/ontology/',
@@ -209,13 +209,12 @@ def main():
     parser.add_argument('--out-graph-path', type=str, default='out/kglids_data_items_graph.nq',
                         help='Path to save the graph, including graph file name.')
     parser.add_argument('--spark-mode', type=str, default='local', help="Possible values: 'local' or 'cluster'")
-    parser.add_argument('--memory-size', type=int, default=24, help='RAM in GB to be used for local mode.')
     args = parser.parse_args()
 
     start_all = datetime.now()
     knowledge_graph_builder = KnowledgeGraphBuilder(column_profiles_path=args.column_profiles_path,
                                                     out_graph_path=args.out_graph_path, 
-                                                    spark_mode=args.spark_mode, memory_size=args.memory_size)
+                                                    spark_mode=args.spark_mode)
 
     # Membership (e.g. table -> dataset) and metadata (e.g. min, max) triples
     print(datetime.now(), "• 1. Building Membership and Metadata triples\n")

@@ -1,13 +1,18 @@
-from pyspark.rdd import RDD
+import os
+
 from pyspark.sql import DataFrame
 from pyspark.sql import SparkSession
 
 
 def init_spark():
+    mem_gb = (os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') // 1024**3) - 1
+
     # TODO: [Refactor] have Spark configuration read from the global project config
     spark = SparkSession \
         .builder \
-        .config("spark.driver.memory", "85g").config('spark.local.dir', 'temp_spark/').config('spark.driver.maxResultSize','85g') \
+        .config("spark.driver.memory", f'{mem_gb}g')\
+        .config('spark.local.dir', 'temp_spark/')\
+        .config('spark.driver.maxResultSize', f'{mem_gb}g') \
         .getOrCreate()
     return spark
 
