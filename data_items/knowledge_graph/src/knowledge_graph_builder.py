@@ -9,14 +9,14 @@ import multiprocessing as mp
 
 sys.path.append('../../../')
 
-from pyspark import SparkConf, SparkContext, SparkFiles
+from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 from tqdm import tqdm
 
 from rdf_resource import RDFResource
 from triplet import Triplet
 from workers import column_metadata_worker, column_pair_similarity_worker
-from word_embedding.word_embeddings import WordEmbeddings
+from word_embeddings import WordEmbeddings
 from utils import generate_label
 # TODO: [Refactor] project structure needs to be changed. This import won't work in terminal without the above sys call.
 from data_items.profiler.src.data.column_profile import ColumnProfile
@@ -90,7 +90,7 @@ class KnowledgeGraphBuilder:
             self.spark.addPyFile('rdf_resource.py')
             self.spark.addPyFile('triplet.py')
             self.spark.addPyFile('workers.py')
-            self.spark.addPyFile('word_embedding/word_embeddings.py')
+            self.spark.addPyFile('word_embeddings.py')
             self.spark.addPyFile('utils.py')
             self.spark.addPyFile('label.py')
             self.spark.addPyFile('../../profiler/src/data/column_profile.py')
