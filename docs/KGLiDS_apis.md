@@ -60,17 +60,53 @@ kglids.show_dataset_info()
 ```
 
 
-|      | Dataset                                           | Number_of_tables |
-|------|---------------------------------------------------|------------------|
-| 0	   | COVID-19 Corona Virus India Dataset               | 	8               |
-| 1	   | COVID-19 Dataset                                  | 	6               |
-| 2	   | COVID-19 Healthy Diet Dataset                     | 	5               |
-| 3	   | COVID-19 Indonesia Dataset                        | 	1               |
-| 4	   | COVID-19 World Vaccination Progress               | 	2               |
-| ...  | 	...                                              | 	...             |
-| 96	  | uciml.red-wine-quality-cortez-et-al-2009          | 	22              |
-| 97	  | unitednations.international-greenhouse-gas-emi... | 	3               |
-| 98	  | upadorprofzs.testes	                              | 8                |
-| 99	  | vitaliymalcev.russian-passenger-air-service-20... | 	14              |
-| 100  | 	ylchang.coffee-shop-sample-data-1113             | 	10              |
+|      | Dataset                                           | Number_of_tables   |
+|------|---------------------------------------------------|--------------------|
+| 0	   | COVID-19 Corona Virus India Dataset               | 	8                 |
+| 1	   | COVID-19 Dataset                                  | 	6                 |
+| 2	   | COVID-19 Healthy Diet Dataset                     | 	5                 |
+| 3	   | COVID-19 Indonesia Dataset                        | 	1                 |
+| 4	   | COVID-19 World Vaccination Progress               | 	2                 |
+| ...  | 	...                                              | 	...               |
+| 96	  | uciml.red-wine-quality-cortez-et-al-2009          | 	22                |
+| 97	  | unitednations.international-greenhouse-gas-emi... | 	3                 |
+| 98	  | upadorprofzs.testes	                              | 8                  |
+| 99	  | vitaliymalcev.russian-passenger-air-service-20... | 	14                |
+| 100  | 	ylchang.coffee-shop-sample-data-1113             | 	10                |
+
+
+4. `kglids.show_table_info()`
+```python
+kglids.show_table_info()
+```
+
+Showing all available table(s):
+
+|  | Table                      | 	Dataset                                 | 	Path_to_table                                     |
+|---|----------------------------|------------------------------------------|----------------------------------------------------|
+|0	| state_level_daily.csv      | 	COVID-19 Corona Virus India Dataset     | 	/data/datasets/data_lake/COVID-19 Coro... |
+|2	| patients_data.csv          | 	COVID-19 Corona Virus India Dataset  	  | /data/datasets/data_lake/COVID-19 Coro...  |
+|3	| nation_level_daily.csv	    | COVID-19 Corona Virus India Dataset	     | /data/datasets/data_lake/COVID-19 Coro...  |
+|...| 	...                       | 	...	                                    | ...                                                |
+|414| 	201904 sales reciepts.csv | 	ylchang.coffee-shop-sample-data-1113    | 	/data/datasets/data_lake/ylchang.coffe... |
+|415| 	sales_outlet.csv	         | ylchang.coffee-shop-sample-data-1113	    | /data/datasets/data_lake/ylchang.coffe...  |
+|416| 	product.csv	              | ylchang.coffee-shop-sample-data-1113     | 	/data/datasets/data_lake/ylchang.coffe... |
+|417| 	Dates.csv                 | 	ylchang.coffee-shop-sample-data-1113	   | /data/datasets/data_lake/ylchang.coffe... |
+
+```python
+kglids.get_tables_info(dataset='UK COVID-19 Data')
+```
+
+Showing table(s) for 'UK COVID-19 Data' dataset: 
+
+
+|  | Table                                          | 	Dataset                                 | 	Path_to_table                                     |
+|---|------------------------------------------------|------------------------------------------|----------------------------------------------------|
+|0| 	UK_Devolved_Nations_COVID_Dataset.csv         |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
+|1| 	UK_Local_Authority_UTLA_COVID_Dataset.csv     |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
+|2| 	England_Regions_COVID_Dataset.csv             |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
+|3| 	UK_National_Total_COVID_Dataset.csv           |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
+|4| 	NEW_Official_Population_Data_ONS_mid-2019.csv |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
+|5| 	Populations_for_UK_and_Devolved_Nations.csv   |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
+
 

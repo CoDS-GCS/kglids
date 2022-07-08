@@ -37,8 +37,10 @@ conda activate kglids
 ```
 
 ## Quickstart
-<b>Try the [Sample Colab notebook](https://colab.research.google.com/drive/1XbjJkppz5_nTufgnD53gEBzxyLYViGAi?usp=sharing) for a quick hands-on!</b>
-1. Add your configuracltions to [config,yml]():
+<b>Try the [Sample Colab notebook](https://colab.research.google.com/drive/1XbjJkppz5_nTufgnD53gEBzxyLYViGAi?usp=sharing) for a quick hands-on!</b><hr>
+
+<b>Generating the LiDS graph:</b>
+1. Add your configurations to [config,yml]():
 ```python
 # sample configurations
 datasource: "kaggle" 
@@ -78,22 +80,63 @@ python knowledge_graph_builder.py
 cd kglids/pipelines/src/
 python run.py
 ```
-6. Upload the data items + pipeline graphs to the [Stardog](https://www.stardog.com/) server 
-7. Test the [KGLiDS APIs](docs/KGLiDS_apis.md)
+<hr>
 
+<b>Uploading LiDS graph to the graph-engine (we recommend using [Stardog](https://www.stardog.com/)):</b>
+1. Create a database 
+Note: enable support for <i>RDF *</i> (example given below) more info [here](https://docs.stardog.com/query-stardog/edge-properties)
+```python
+import stardog
+database_name = 'db'
+connection_details = {
+      'endpoint': 'http://localhost:5820',
+      'username': 'admin',
+      'password': 'admin'}
+with stardog.Admin(**connection_details) as admin:
+    if database_name in [db.name for db in admin.databases()]:
+        admin.database(database_name).drop()
+    db = admin.new_database(database_name, {'edge.properties': True})
+```
+2. Add the dataset-graph to the database
+```
+stardog data add --format turtle db dataset_graph.nq
+```
+3. Add the pipeline default graph and named-graphs to the database
+```
+stardog data add --format turtle db dataset_graph.nq
+```
+```python
+conn = stardog.Connection(database_name, **connection_details)
+conn.begin()
+ttl_files = [i for i in os.listdir(graphs_dir) if i.endswith('ttl')]
+for ttl in ttl_files:
+    conn.add(stardog.content.File(graphs_dir + ttl), graph_uri= 'http://kglids.org/pipelineResource/'
+conn.commit()
+conn.close()
+```
+<hr>
 
-## Benchmarking
-The following benchmark datasets were used to evaluate KGLiDS:
-* [Dataset Discovery in Data Lakes](https://arxiv.org/pdf/2011.10427.pdf)
-* [Kaggle]()
+<b> Using the KGLiDS APIs</b>: 
 
-## KGLiDS APIs
-See the full list of supported APIs [here](docs/KGLiDS_apis.md).
+KGLiDS provides predefined operations in form of python apis that allow seamless integration with a conventional data science pipeline.
+Checkout the full list of [KGLiDS APIs](docs/KGLiDS_apis.md)
 
 ## LiDS Ontology
 To store the created knowledge graph in a standardized and well-structured way,
 we developed an ontology for linked data science: the <b>LiDS Ontology</b>.<br/>
 Checkout [LiDS Ontology](docs/LiDS_ontology.md)!
+
+## Benchmarking
+The following benchmark datasets were used to evaluate KGLiDS:
+* Dataset Discovery in Data Lakes
+  * [Smaller Real](https://github.com/alex-bogatu/d3l)
+  * [Synthetic](https://github.com/RJMillerLab/table-union-search-benchmark)<br>
+    (more info on data discovery benchmarks [here]((https://arxiv.org/pdf/2011.10427.pdf))) 
+* Kaggle
+  * [`setup_kaggle_data.py`]()
+
+## KGLiDS APIs
+See the full list of supported APIs [here](docs/KGLiDS_apis.md).
 
 ## Citing Our Work
 If you find our work useful, please cite it in your research:
