@@ -179,6 +179,18 @@ class VisitImportFromNode(Test):
         self.assertEqual(lib_uri_2, self.graph.libraries.get(lib_uri_1).contain.get(lib_uri_2).uri)
         self.assertEqual(lib_uri_3, self.graph.libraries.get(lib_uri_1).contain.get(lib_uri_3).uri)
 
+    def test_import_star_is_not_selected_as_followed(self):
+        value = 'from sklearn import *'
+        parse_and_visit_node(value, self.graph)
+
+        lib_uri_1 = util.create_import_uri('sklearn')
+        lib_uri_2 = util.create_import_uri('sklearn.*')
+
+        self.assertEqual(0, len(self.graph.head.calls))
+        self.assertIn(lib_uri_1, self.graph.libraries.keys())
+        self.assertEqual(lib_uri_1, self.graph.libraries.get(lib_uri_1).uri)
+        self.assertNotIn(lib_uri_2, self.graph.libraries.get(lib_uri_1).contain.keys())
+
 
 class VisitAssignNode(Test):
     def test_ast_assign_create_node(self):
@@ -331,6 +343,17 @@ class VisitAssignNode(Test):
         self.assertEqual('False', param.parameter_value)
         self.assertEqual(lib_uri, self.graph.tail.calls[0].uri)
 
+    def test_ast_assign_bin_op_when_subscript_left_branch_return_types_to_variable(self):
+        value = "a = 'A'\n" \
+                "p = (train['a'] - 100).sort_values(ascending=False)"
+        tree = ast.parse(value)
+        node_visitor = NodeVisitor(self.graph)
+        node_visitor.variables['train'] = pd_dataframe
+        node_visitor.visit(tree)
+
+        lib_uri = util.create_import_uri('pandas.DataFrame.sort_values')
+        self.assertEqual(lib_uri, self.graph.tail.calls[0].uri)
+
     @unittest.skip("not working")
     def test_ast_assign_multiple_right_hand_value_to_multiple_left_hand_value(self):
         value = "X_train, X_test = X[train_index], X[test_index]"
@@ -374,6 +397,13 @@ class VisitAssignNode(Test):
 
         self.assertEqual(node_visitor.variables['arr'], ['a', 'b'])
 
+    def test_ast_assign_with_more_complex_version(self):
+        value = "player = pandas.read_csv('../input/predict-nhl-player-salaries/train.csv', encoding='ISO-8859-1').fillna(0)"
+        node_visitor = parse_and_visit_node(value, self.graph)
+
+        self.assertIn('player', node_visitor.files.keys())
+        self.assertEqual('train.csv', node_visitor.files.get('player').filename)
+
 
 class VisitExprNode(Test):
     @unittest.skip("not working")
@@ -389,6 +419,16 @@ class VisitExprNode(Test):
         value = '""" # **Variables associated with SalePrice** """'
         parse_and_visit_node(value, self.graph)
         self.assertIsNone(self.graph.head)
+
+    def test_expr_when_call_method_give_it_to_visit_call(self):
+        value = 'from sklearn.model_selection import cross_val_score\n' \
+                'print("Lasso Cross Validation: ", cross_val_score(lasso, X, y, cv=5))'
+        parse_and_visit_node(value, self.graph)
+
+        fct = util.create_import_uri('sklearn.model_selection.cross_val_score')
+
+        self.assertEqual(1, len(self.graph.tail.previous.calls))
+        self.assertEqual(fct, self.graph.tail.previous.calls[0].uri)
 
 
 class VisitAttributeNode(Test):
@@ -435,8 +475,8 @@ class VisitAttributeNode(Test):
         node2 = ast.parse('train.isnull()').body[0].value.func
         node_visitor = NodeVisitor(self.graph)
         node_visitor.variables = {'train': pd_dataframe}
-        path1, base_package1 = node_visitor.visit_Attribute(node1)
-        path2, base_package2 = node_visitor.visit_Attribute(node2)
+        path1, base_package1, file = node_visitor.visit_Attribute(node1)
+        path2, base_package2, file = node_visitor.visit_Attribute(node2)
 
         self.assertEqual('pandas.DataFrame.sum', path1)
         self.assertEqual('train', base_package1)
@@ -449,13 +489,38 @@ class VisitAttributeNode(Test):
         node_visitor = NodeVisitor(self.graph)
         node_visitor.graph_info.add_node('')
         node_visitor.variables = {'train': pd_dataframe}
-        path1, base_package1 = node_visitor.visit_Attribute(node1)
-        path2, base_package2 = node_visitor.visit_Attribute(node2)
+        path1, base_package1, _ = node_visitor.visit_Attribute(node1)
+        path2, base_package2, _ = node_visitor.visit_Attribute(node2)
 
         self.assertEqual('pandas.DataFrame.sum', path1)
         self.assertEqual('train', base_package1)
         self.assertEqual('pandas.DataFrame.isnull', path2)
         self.assertEqual('train', base_package2)
+
+    def test_attribute_when_column_present_return_dataframe(self):
+        value = 'train = pandas.read_csv("train.csv")\n' \
+                'x = train.sum().Age.sort_values()'
+        tree = ast.parse(value)
+        node_visitor = NodeVisitor(self.graph)
+        node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['Age'])
+
+        node_visitor.visit(tree)
+        self.assertEqual(pd_dataframe.name, node_visitor.variables.get('x').name)
+        self.assertEqual(1, len(self.graph.tail.read))
+
+    def test_attribute_when_column_is_present_add_read_column(self):
+        value = 'train = pandas.read_csv("train.csv")\n' \
+                'x = train.Age'
+        tree = ast.parse(value)
+
+        node_visitor = NodeVisitor(self.graph)
+        node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['Age'])
+
+        node_visitor.visit(tree)
+
+        self.assertEqual(1, len(self.graph.tail.read))
+        self.assertEqual(util.create_column_name(SOURCE, DATASET_NAME, 'train.csv', 'Age'),
+                         self.graph.tail.read[0].uri)
 
 
 class VisitCallNode(Test):
@@ -551,6 +616,17 @@ class VisitCallNode(Test):
         self.assertEqual(1, len(self.graph.libraries.get(pandas_uri).contain))
         self.assertEqual(2, len(self.graph.libraries.get(pandas_uri).contain.get(dataframe_uri).contain))
 
+    # def test_column_call_in_calls_then_subscript(self):
+    #     value = "df = pandas.read_csv('train.csv')\n" \
+    #             "x = df.groupby('X')['Y']"
+    #     tree = ast.parse(value)
+    #     node_visitor = NodeVisitor(self.graph)
+    #     node_visitor.working_file = pd.DataFrame(columns=['X', 'Y'])
+    #
+    #     node_visitor.visit(tree)
+    #
+    #     self.assertEqual(2, len(self.graph.tail.read))
+
 
 class VisitIfNode(Test):
     def test_ast_if_node_link_to_loop_control_flow(self):
@@ -600,6 +676,10 @@ class VisitListNode(Test):
         value = "['a', 'b', 'c', 'd']"
         result = NodeVisitor().visit_List(ast.parse(value).body[0].value)
         self.assertEqual(len(result), 4)
+        self.assertEqual('a', result[0])
+        self.assertEqual('b', result[1])
+        self.assertEqual('c', result[2])
+        self.assertEqual('d', result[3])
 
     @unittest.skip("not working")
     def test_ast_list_continue(self):
@@ -807,10 +887,12 @@ class VisitSubscriptNode(Test):
         self.assertEqual(value, self.graph.head.text)
         self.assertEqual(util.create_statement_uri(SOURCE, DATASET_NAME, FILENAME, 1),
                          self.graph.head.uri)
-        self.assertEqual(3, len(self.graph.head.read))
+        self.assertEqual(4, len(self.graph.head.read))
         self.assertEqual(9, len(self.graph.head.parameters))
         self.assertEqual(1, len(self.graph.head.calls))
 
+        self.assertEqual(util.create_column_name(SOURCE, DATASET_NAME, 'train.csv', 'Age'),
+                         self.graph.head.read.pop().uri)
         self.assertEqual(util.create_column_name(SOURCE, DATASET_NAME, 'train.csv', 'Age'),
                          self.graph.head.read.pop().uri)
         self.assertEqual(util.create_column_name(SOURCE, DATASET_NAME, 'train.csv', 'Sex'),
@@ -833,11 +915,13 @@ class VisitSubscriptNode(Test):
         node_visitor.variables['train'] = pd_dataframe
         node_visitor.files = {'train': File("train.csv")}
         node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['a'])
+        self.graph.files['train.csv'] = DataTypes.File(util.create_file_uri(SOURCE, DATASET_NAME, 'train.csv'))
+        self.graph.add_node('1')
 
-        name = node_visitor.visit_Subscript(node)
+        name, _ = node_visitor.visit_Subscript(node)
         self.assertEqual('train', name)
-        self.assertEqual(1, len(node_visitor.columns))
-        self.assertIn('a', node_visitor.columns)
+        self.assertEqual(0, len(node_visitor.columns))
+        self.assertEqual(1, len(self.graph.tail.read))
 
     def test_subscript_return_name_with_str_index(self):
         node = ast.parse("train['a']").body[0].value
@@ -845,11 +929,13 @@ class VisitSubscriptNode(Test):
         node_visitor.variables['train'] = pd_dataframe
         node_visitor.files = {'train': File("train.csv")}
         node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['a'])
+        self.graph.files['train.csv'] = DataTypes.File(util.create_file_uri(SOURCE, DATASET_NAME, 'train.csv'))
+        self.graph.add_node('1')
 
-        name = node_visitor.visit_Subscript(node)
+        name, _ = node_visitor.visit_Subscript(node)
         self.assertEqual('train', name)
-        self.assertEqual(1, len(node_visitor.columns))
-        self.assertIn('a', node_visitor.columns)
+        self.assertEqual(0, len(node_visitor.columns))
+        self.assertEqual(1, len(self.graph.tail.read))
 
 
 class VisitSliceNode(Test):
@@ -1182,7 +1268,7 @@ class ColumnSeparation(Test):
 
         node_visitor.visit(tree)
 
-        self.assertEqual(3, len(self.graph.head.read))
+        self.assertEqual(4, len(self.graph.head.read))
         self.assertEqual(9, len(self.graph.head.parameters))
         self.assertEqual(1, len(self.graph.head.calls))
 
@@ -1199,8 +1285,8 @@ class ColumnSeparation(Test):
         self.assertEqual(col6_uri, self.graph.head.next.read[0].uri)
         self.assertEqual(col5_uri, self.graph.head.next.read[1].uri)
         self.assertEqual(col4_uri, self.graph.head.next.read[2].uri)
-        self.assertEqual(3, len(self.graph.files.get('train.csv').contain))
-        self.assertEqual(3, len(self.graph.files.get('test.csv').contain))
+        self.assertEqual(4, len(self.graph.files.get('train.csv').contain))
+        self.assertEqual(4, len(self.graph.files.get('test.csv').contain))
         self.assertIn(self.graph.files.get('train.csv').contain.pop().uri, (col1_uri, col2_uri, col3_uri))
         self.assertIn(self.graph.files.get('train.csv').contain.pop().uri, (col1_uri, col2_uri, col3_uri))
         self.assertIn(self.graph.files.get('train.csv').contain.pop().uri, (col1_uri, col2_uri, col3_uri))
@@ -1502,25 +1588,6 @@ class DataFlowTesting(Test):
                          self.graph.head.next.next.data_flow[0].uri)
 
 
-class TestVisitCall(Test):
-    def test_extract_arguments_return_default_arguments_object_for_library(self):
-        arguments = []
-        keywords = []
-        library_path = 'pandas.read_csv'
-
-        node_visitor = NodeVisitor(self.graph)
-        arg_object = node_visitor._extract_arguments(library_path, arguments, keywords)
-        self.assertEqual(arg_object, packages[library_path].parameters)
-
-    @unittest.skip('not working')
-    def test_keywords_are_extracted_into_object(self):
-        arguments = [ast.Constant('123')]
-        keywords = [ast.keyword('key1', 'value1')]
-
-        node_visitor = NodeVisitor(self.graph)
-        self.assertEqual(node_visitor._extract_arguments('', arguments, keywords), {})
-
-
 class TestLibraryPath(Test):
     def test_method_return_library_path_from_package_name(self):
         package1 = 'pd.read_csv'
@@ -1585,6 +1652,51 @@ class TestCreatePackageClass(Test):
         for l in self.graph.libraries.values():
             print(l.uri)
         # print(self.graph.libraries.values())
+
+
+class TestFileContainingElement(Test):
+    def test_file_containing_column_in_set(self):
+        value = "data = pandas.read_csv('train.csv')\n" \
+                "data['Age'] = data.groupby(['Pclass', 'Sex'])['Age']"
+        tree = ast.parse(value)
+
+        self.graph.files['train.csv'] = DataTypes.File(util.create_file_uri(SOURCE, DATASET_NAME, 'train.csv'))
+        node_visitor = NodeVisitor(self.graph)
+
+        node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['Pclass', 'Sex', 'Age'])
+
+        node_visitor.visit(tree)
+
+        self.assertNotEqual(0, len(self.graph.files.get('train.csv', DataTypes.File('')).contain))
+
+    def test_column_read_in_sub_graph(self):
+        value = "df = pandas.read_csv('train.csv')\n" \
+                "x = df.groupby('A')['B']"
+        tree = ast.parse(value)
+
+        node_visitor = NodeVisitor(self.graph)
+        node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['A', 'B'])
+
+        node_visitor.visit(tree)
+        self.assertEqual(2, len(self.graph.tail.read))
+
+    def test_column_read_in_sub_graph(self):
+        value = "df = pandas.read_csv('train.csv')\n" \
+                "x = df[1:]"
+        tree = ast.parse(value)
+
+        node_visitor = NodeVisitor(self.graph)
+        node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['A', 'B'])
+
+        node_visitor.visit(tree)
+        self.assertEqual(2, len(self.graph.tail.read))
+
+    def test_column_read_in_sub_graph(self):
+        value = "x = pandas.read_csv('train.csv')\n" \
+                "x = x[1:]"
+        tree = ast.parse(value).body[0].value
+        print(tree.__dict__)
+        parse_and_visit_node(value, self.graph)
 
 
 if __name__ == '__main__':

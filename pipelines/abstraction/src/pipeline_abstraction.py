@@ -9,8 +9,7 @@ from _ast import (withitem, alias, keyword, arg, arguments, ExceptHandler, compr
                   Continue, Break, Pass, Expr, Nonlocal, Global, ImportFrom, Import, Assert, Try, Raise, AsyncWith,
                   With, If, While, AsyncFor, For, AnnAssign, AugAssign, Assign, Delete, Return, ClassDef,
                   AsyncFunctionDef, FunctionDef, Expression, Interactive, AST)
-from ast import NameConstant, Bytes, Str, Num, Param, AugStore, AugLoad, Suite, Index, ExtSlice
-from typing import Any
+from typing import Any, cast
 from collections import deque
 
 import pandas as pd
@@ -18,14 +17,10 @@ import pandas as pd
 import Calls
 from src.datatypes import GraphInformation
 from Calls import File, pd_dataframe, packages
-from util import is_file, ControlFlow, get_package_info
-
-
-def _format_node_text(node) -> str:
-    text = astor.to_source(node).strip()
-    if isinstance(node, ast.For):
-        text = text.split("\n")[0]
-    return text
+from util import is_file, ControlFlow, format_node_text, get_package
+from src.ast_package import AstPackage, get_ast_package
+from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
+    AttributeComponents
 
 
 def _insert_parameter(parameters: dict, is_block: bool, parameter: str, value):
@@ -57,9 +52,9 @@ class NodeVisitor(ast.NodeVisitor):
 
     def visit(self, node: AST) -> Any:
         if type(node) in [ast.Assign, ast.Import, ast.ImportFrom, ast.Expr, ast.For, ast.If,
-                          ast.FunctionDef, ast.AugAssign, ast.Call, ast.Return, ast.Attribute]:  # TODO: MaKE THIS PRETTIER
+                          ast.FunctionDef, ast.AugAssign, ast.Call, ast.Return, ast.Attribute]:  # TODO: Improve this
             self.columns.clear()
-            self.graph_info.add_node(_format_node_text(node))
+            self.graph_info.add_node(format_node_text(node))
             if len(self.control_flow) > 0:
                 self.graph_info.add_control_flow(self.control_flow)
         return super().visit(node)
@@ -103,84 +98,17 @@ class NodeVisitor(ast.NodeVisitor):
         pass
 
     def visit_Assign(self, node: Assign) -> Any:
-        # TODO: differentiate between return type and elements
-        file = variable = None
-        value = ''  # TODO: REFACTOR TYPE TO ARRAY
-        if isinstance(node.value, ast.Constant):
-            value = self.visit_Constant(node.value)
-            file = self._file_creation(value)
-        elif isinstance(node.value, ast.Call):
-            return_types, file, _, _ = self.visit_Call(node.value)
-            value = return_types
-        elif isinstance(node.value, ast.Subscript):
-            value = self.visit_Subscript(node.value)
-            self._extract_dataflow(value)
+        assign_components = AssignComponents()
+        value_package = get_ast_package(node.value)
+        value_package.extract_assign_value(self, node, assign_components)
 
-            if not isinstance(value, list) and value in self.files.keys() and len(self.columns) > 0:
-                file = self.files.get(value)
-                if file is not None:
-                    self.graph_info.add_columns(file.filename, self.columns)
-                    self.columns.clear()
-        elif isinstance(node.value, ast.List):
-            value = self.visit_List(node.value)
-            for el in value:
-                self._extract_dataflow(el)
-        elif isinstance(node.value, ast.BinOp):
-            value = self.visit_BinOp(node.value)
-        elif isinstance(node.value, ast.Name):
-            value = self.visit_Name(node.value)
-        elif isinstance(node.value, ast.Dict):
-            value = self.visit_Dict(node.value)
-        elif isinstance(node.value, ast.Attribute):
-            value, base = self.visit_Attribute(node.value)
-            file = self.files.get(base)
-            if file is not None:
-                self.graph_info.add_columns(file.filename, self.columns)
-        elif isinstance(node.value, ast.Tuple):
-            value = self.visit_Tuple(node.value)
-        else:
-            print("ASSIGN VALUE:", node.__dict__)
-            print(astor.to_source(node))
-
-        # NOTE: Extract target to assign
+        variable = None  # TODO: Choose better name
         for target in node.targets:
-            if isinstance(target, ast.Name):
-                name = self.visit_Name(target)
-                self.data_flow_container[name] = self.graph_info.tail
-                if type(value) == str:
-                    if file is not None:
-                        self.files[name] = file
-                    elif value in self.files.keys():
-                        self.files[name] = self.files.get(value)
-                    if value in self.variables.keys():
-                        self.variables[name] = self.variables.get(value)
-                elif isinstance(value, list):
-                    if len(value) > 0:
-                        self.variables[name] = value[0]
-                    if file is not None:
-                        self.files[name] = file
-            elif isinstance(target, ast.Tuple):
-                tuple_values = self.visit_Tuple(target)
-                for el in tuple_values:
-                    self.data_flow_container[el] = self.graph_info.tail
-
-                if value is not None and tuple_values is not None:
-                    for sub_target, package in tuple(zip(self.visit_Tuple(target), value)):
-                        self.variables[sub_target] = package
-                        if file is not None:
-                            self.files[sub_target] = file
-
-            elif isinstance(target, ast.Subscript):
-                variable = self.visit_Subscript(target)
-                self._extract_dataflow(variable)
-                if isinstance(variable, str):
-                    self.data_flow_container[variable] = self.graph_info.tail
+            target_package = get_ast_package(target)
+            variable = target_package.analyze_assign_target(self, target, assign_components)
 
         if variable is not None and not isinstance(variable, list):
-            file = self.files.get(variable)
-            if file is not None and len(self.columns) > 0:
-                self.graph_info.add_columns(file.filename, self.columns)
-                self.columns.clear()
+            self._connect_node_to_column(self.files.get(variable))
 
     def visit_AugAssign(self, node: AugAssign) -> Any:
         pass
@@ -284,53 +212,27 @@ class NodeVisitor(ast.NodeVisitor):
         pass
 
     def visit_Slice(self, node: Slice) -> Any:
-        pass
+        lower = upper = step = None
+        if isinstance(node.lower, ast.Constant):
+            lower = self.visit_Constant(node.lower)
+
+        return lower, upper, step
 
     def visit_BoolOp(self, node: BoolOp) -> Any:
         pass
 
     def visit_BinOp(self, node: BinOp) -> Any:
-        left = ''
-        right = ''
-        if isinstance(node.left, ast.Constant):
-            left = self.visit_Constant(node.left)
-        elif isinstance(node.left, ast.Subscript):
-            left = self.visit_Subscript(node.left)
-        elif isinstance(node.left, ast.BinOp):
-            left = self.visit_BinOp(node.left)
-        elif isinstance(node.left, ast.Compare):
-            self.visit_Compare(node.left)
-        elif isinstance(node.left, ast.Call):
-            subgraph = self._param_subgraph_init()
-            subgraph.target_node = self.graph_info.tail if self.target_node is None else self.target_node
-            left, _, _, _ = subgraph.visit(node.left)
-            if left is not None and len(left) > 0:
-                left = left[0]
-        elif isinstance(node.left, ast.Name):
-            name = self.visit_Name(node.left)
-            self._extract_dataflow(name)
-        else:
-            print("LEFT VALUE:", node.__dict__)
-            print(astor.to_source(node))
+        components = BinOpComponents()
 
-        if isinstance(node.right, ast.Call):
-            psg = self._param_subgraph_init()
-            psg.target_node = self.graph_info.tail if self.target_node is None else self.target_node
-            right_type, _, _, _ = psg.visit(node.right)
-        elif isinstance(node.right, ast.Constant):
-            # self.visit_Constant(node.right)  # TODO: WHAT TO DO WITH THIS VALUE AND IS IT USEFUL?
-            pass
-        elif isinstance(node.right, ast.Subscript):
-            # self.visit_Subscript(node.right)  # TODO: WHAT TO DO WITH THIS VALUE AND IS IT USEFUL?
-            pass
-        elif isinstance(node.right, ast.Compare):
-            self.visit_Compare(node.right)
-        else:
-            print("RIGHT VALUE:", node.__dict__)
-            print(astor.to_source(node))
+        left_ast_package = get_ast_package(node.left)
+        left_ast_package.analyze_bin_op_branch(self, node, 'left', components)
 
-        left_package = get_package_info(left, self.alias)
-        right_package = get_package_info(right, self.alias)
+        right_ast_package = get_ast_package(node.right)
+        right_ast_package.analyze_bin_op_branch(self, node, 'right', components)
+
+        left_package = get_package(components.left, self.alias)
+        right_package = get_package(components.right, self.alias)
+
         if left_package is not None and right_package is not None:
             if left_package == pd_dataframe or right_package == pd_dataframe:
                 return f'{pd_dataframe.library_path}.{pd_dataframe.name}'
@@ -342,7 +244,7 @@ class NodeVisitor(ast.NodeVisitor):
             pack = right_package.return_types[0]
             return f"{pack.library_path}.{pack.name}"
         else:
-            return astor.to_source(node)
+            return format_node_text(node)
 
     def visit_UnaryOp(self, node: UnaryOp) -> Any:
         pass
@@ -370,12 +272,15 @@ class NodeVisitor(ast.NodeVisitor):
             elif isinstance(value, ast.Name):
                 values.append(self.visit_Name(value))
             elif isinstance(value, ast.Attribute):
-                attr_value, _ = self.visit_Attribute(value)
+                attr_value, _, _ = self.visit_Attribute(value)
                 values.append(attr_value)
             # elif isinstance(value, ast.List):
             #     print(self.visit_List(value))  # TODO: TO FIX
             elif isinstance(value, ast.List):
                 values.append(self.visit_List(value))
+            elif isinstance(value, ast.Call):
+                _, _, _, base = self.visit_Call(value)
+                values.append(base)
             else:
                 print("DICT VALUE:", node.values)
                 print(astor.to_source(node))
@@ -409,148 +314,88 @@ class NodeVisitor(ast.NodeVisitor):
     def visit_Compare(self, node: Compare) -> Any:
         if isinstance(node.left, ast.Subscript):
             self.visit_Subscript(node.left)
+        elif isinstance(node.left, ast.Call):
+            self.visit_Call(node.left)
         else:
             print("COMPARE LEFT:", node.__dict__)
             print(astor.to_source(node))
 
-    def _extract_arguments(self, path_to_library: str, arguments: list, keywords: list):
-        return packages.get(path_to_library).parameters
+        for comparator in node.comparators:
+            if isinstance(comparator, ast.Call):
+                self.visit_Call(comparator)
+
+    def _connect_node_to_column(self, file):
+        if file is None:
+            return
+        self.graph_info.add_columns(file.filename, self.columns)
+        self.columns.clear()
+
+    def _extract_parent_package_information(self, components: CallComponents):
+        if components.package is None:
+            return
+        if isinstance(components.package, list):  # TODO: Create list extraction
+            return
+
+        components.extract_parent_library()
+        pkg = self.variables.get(components.parent_library)
+        components.rewrite_library_path(pkg)
+        self._connect_node_to_column(self.files.get(components.parent_library))
 
     def visit_Call(self, node: Call) -> Any:
-        package = file = base_package = None
-        if isinstance(node.func, ast.Name):
-            package = self.visit_Name(node.func)
-        elif isinstance(node.func, ast.Attribute):
-            package, base_package = self.visit_Attribute(node.func)
-            self._extract_dataflow(base_package)
-            f = self.files.get(base_package)
-            if f is not None and len(self.columns) > 0:
-                self.graph_info.add_columns(f.filename, self.columns)
-                self.columns.clear()
-        else:
-            print("CALL FUNC:", node.__dict__)
-            print(astor.to_source(node))
+        func_package: AstPackage
+        func_package = get_ast_package(node.func)
 
-        if package is not None and not isinstance(package, list):  # TODO: Extract this as method
-            parent_library, *rest = package.split('.')
-            pkg = self.variables.get(parent_library)
-            if pkg is not None and type(pkg) not in (str, list, int):
-                base_package = parent_library
-                package = f"{pkg.library_path}.{pkg.name}.{'.'.join(rest)}"
+        call_components = CallComponents()
+        func_package.extract_func(self, node, call_components)
 
-            linked_file = self.files.get(parent_library)
-            if linked_file is not None and len(self.columns) > 0:
-                self.graph_info.add_columns(linked_file.filename, self.columns)
-                self.columns.clear()
+        self._extract_parent_package_information(call_components)
 
-        call_args = {}
-        file_args = {}
-        class_args = []
-        is_block = False
-        label = ''
-
-        package_class = self._get_package_info(package)
-        keys = iter(package_class.parameters.keys())
+        package_class = self._get_package_info(call_components.package)
         parameters = package_class.parameters.copy()
+        args_components = CallArgumentsComponents(package_class.parameters.keys())
 
         for i in range(len(node.args)):
-            parameter_value = None
-            if not is_block:
-                label = next(keys, '')
-                is_block = '*' in label
-                if is_block:
-                    parameters[label] = []
-            if isinstance(node.args[i], ast.Constant):
-                parameter_value = self.visit_Constant(node.args[i])
-                self._add_to_column(parameter_value, base_package)
-                file = self._file_creation(parameter_value)
-                if parameter_value in self.files.keys():
-                    file = self.files.get(parameter_value)
-                    file_args[i] = parameter_value
-                if parameter_value in self.variables.keys():
-                    call_args[i] = parameter_value
-                if package in self.user_defined_class:
-                    class_args.append(parameter_value)
-            elif isinstance(node.args[i], ast.Name):
-                parameter_value = self.visit_Name(node.args[i])
-                self._extract_dataflow(parameter_value)
-                self._add_to_column(parameter_value, base_package)
+            if not args_components.is_block:
+                args_components.next_label()
+                args_components.is_block = '*' in args_components.label
+                if args_components.is_block:
+                    parameters[args_components.label] = []
 
-                if parameter_value in self.files.keys():
-                    file = self.files.get(parameter_value)
-                    file_args[i] = parameter_value
-                if parameter_value in self.variables.keys():
-                    call_args[i] = parameter_value
-                if parameter_value in self.variables.keys():
-                    variable = self.variables.get(parameter_value)
-                    if isinstance(variable, list):
-                        for col_value in variable:
-                            self._add_to_column(col_value, base_package)
-                            file = self._file_creation(col_value)
-                            if not isinstance(col_value, list) and col_value in self.files.keys():
-                                file = self.files.get(col_value)
-                                file_args[i] = col_value
-            elif isinstance(node.args[i], ast.Call):
-                psg = self._param_subgraph_init()
-                psg.subgraph_node = self.subgraph_node
-                psg.subgraph = self.subgraph
-                psg.visit(node.args[i])
-                if psg.return_type is not None:
-                    if len(psg.return_type) == 1:
-                        parameter_value = psg.return_type[0].name
-                    else:
-                        parameter_value = [psg.return_type[i].name for i in range(len(psg.return_type))]
-            elif isinstance(node.args[i], ast.List):
-                parameter_value = self.visit_List(node.args[i])
-                for arg_list in parameter_value:
-                    self._add_to_column(arg_list, base_package)
-                    if isinstance(arg_list, str) and arg_list in self.files.keys():
-                        file = self.files.get(arg_list)
-            elif isinstance(node.args[i], ast.Dict):
-                parameter_value = self.visit_Dict(node.args[i])
-            elif isinstance(node.args[i], ast.Subscript):
-                arg_subscript = self.visit_Subscript(node.args[i])
-                if not isinstance(arg_subscript, list):
-                    arg_package = self.variables.get(arg_subscript, None)
-                    if isinstance(arg_package, Calls.Call):
-                        parameter_value = arg_package.name
-                    elif arg_package is not None:
-                        parameter_value = arg_package
-            elif isinstance(node.args[i], ast.Lambda):
-                parameter_value = _format_node_text(node.args[i])
-            else:
-                print("CALL ARG:", node.__dict__)
-                print(astor.to_source(node))
+            args_package = get_ast_package(node.args[i])
+            parameter_value = args_package.analyze_call_arguments(self, node, args_components, call_components, i)
 
             if package_class.is_relevant:
-                _insert_parameter(parameters, is_block, label, parameter_value)
+                _insert_parameter(parameters, args_components.is_block, args_components.label, parameter_value)
 
         for kw in node.keywords:
             if isinstance(kw, ast.keyword):
                 edge, value = self.visit_keyword(kw)
                 self._extract_dataflow(value)
-                self._add_to_column(value, base_package)
+                self._add_to_column(value, call_components.base_package)
                 if package_class.is_relevant:
                     parameters[edge] = str(value)
 
         self.graph_info.add_parameters(parameters)
-        self._create_package_call(package_class, package)
+        self._create_package_call(package_class, call_components.package)
 
-        if base_package is not None:
-            variable, *_ = base_package.split('.')
-            current_file = self.files.get(variable)
-            if current_file is not None and len(self.columns) > 0:
-                self.graph_info.add_columns(current_file.filename, self.columns)
-                self.columns = []
+        if call_components.base_package is not None:
+            variable, *_ = call_components.base_package.split('.')
+            self._connect_node_to_column(self.files.get(variable))
 
-        if package in self.user_defined_class:
-            return_type = self._class_subgraph_logic(package, class_args)
-        elif type(package) != list and package in self.subgraph.keys():
-            return_type = self._subgraph_logic(package, file_args, call_args)
-            return return_type, file, package, base_package
+        # TODO: CLEAN THAT MESS
+        if call_components.package in self.user_defined_class:
+            return_type = self._class_subgraph_logic(call_components.package, args_components.class_args)
+        elif type(call_components.package) != list and call_components.package in self.subgraph.keys():
+            return_type = self._subgraph_logic(call_components.package,
+                                               args_components.file_args,
+                                               args_components.call_args)
+            return return_type, call_components.file, call_components.package, call_components.base_package
         elif package_class.is_relevant:
-            return package_class.return_types, file, package, base_package
-        return [], file, package, base_package
+            return (package_class.return_types,
+                    call_components.file,
+                    call_components.package,
+                    call_components.base_package)
+        return [], call_components.file, call_components.package, call_components.base_package
 
     def visit_FormattedValue(self, node: FormattedValue) -> Any:
         pass
@@ -565,68 +410,23 @@ class NodeVisitor(ast.NodeVisitor):
         pass
 
     def visit_Attribute(self, node: Attribute) -> Any:
-        if isinstance(node.value, ast.Name):
-            value = self.visit_Name(node.value)
-            is_column = self._add_to_column(node.attr, value)
-            package = self.variables.get(value)
-            if isinstance(package, str):
-                return f"{package}{'' if is_column else f'.{node.attr}'}", value
-            elif isinstance(package, list):
-                return [f"{el}{'' if is_column else f'.{node.attr}'}" for el in package], value
-            elif type(package) in (int, float):
-                return None, value
-            elif package is not None:
-                return f"{package.library_path}.{package.name}{'' if is_column else f'.{node.attr}'}", value
-            return f"{value}.{node.attr}", value
-        elif isinstance(node.value, ast.Subscript):
-            value = self.visit_Subscript(node.value)
-            return f'{value}.{node.attr}', None
-        elif isinstance(node.value, ast.Call):
-            subgraph = self._param_subgraph_init()
-            subgraph.target_node = self.graph_info.tail if self.target_node is None else self.target_node
-            return_types, file, _, base = subgraph.visit(node.value)
-            self.graph_info.add_concurrent_flow(self.target_node)
-            if len(return_types) > 0:
-                return f"{return_types[0].library_path}.{return_types[0].name}.{node.attr}", base
-            else:
-                print("ATTRIBUTE VALUE CALL: NO RETURN TYPE")
-        elif isinstance(node.value, ast.BinOp):
-            values = self.visit_BinOp(node.value)
-            return f"{values}.{node.attr}", None
-        elif isinstance(node.value, ast.Attribute):
-            values, base = self.visit_Attribute(node.value)
-            return f"{values}.{node.attr}", base
-        else:
-            print("ATTRIBUTE VALUE:", node.__dict__)
-            print(astor.to_source(node))
-        return None, None
+        components = AttributeComponents()
+        attribute_package = get_ast_package(node.value)
+        attribute_package.analyze_attribute_value(self, node, components)
+        return components.path, components.parent_path, components.file
 
     def visit_Subscript(self, node: Subscript) -> Any:
-        name = ''
-        if isinstance(node.value, ast.Name):
-            name = self.visit_Name(node.value)
-        elif isinstance(node.value, ast.Call):
-            return_types, file, name, _ = self.visit_Call(node.value)
-            if name is not None and isinstance(name, str):  # TODO: VERIFY THIS
-                name = name.split('.')[0]
-        elif isinstance(node.value, ast.Attribute):
-            name, _ = self.visit_Attribute(node.value)
-            if name is not None and isinstance(name, str):
-                name = name.split('.')[0]
-        elif isinstance(node.value, ast.Subscript):
-            name = self.visit_Subscript(node.value)
-        else:
-            print("SUBSCRIPT VALUE", node.__dict__)
-            print(astor.to_source(node))
+        value_package = get_ast_package(node.value)
+        name, base = value_package.extract_subscript_value(self, node)
 
         if not isinstance(name, list):
-            var = self.variables.get(name)
-            if var == pd_dataframe and name in self.files.keys():
+            var = self.variables.get(name, self.variables.get(base))
+            file = self.files.get(name, self.files.get(base))
+            if var is pd_dataframe and file is not None:
+                working_file = self.working_file.get(file.filename, pd.DataFrame())
                 if isinstance(node.slice, ast.Index):
                     index = self.visit_Index(node.slice)
-                    file_name = self.files.get(name).filename
-                    file = self.working_file.get(file_name, pd.DataFrame())
-                    column_list = list(file)
+                    column_list = list(working_file)
 
                     if not isinstance(index, list):
                         index = self.variables.get(index, index)
@@ -642,10 +442,34 @@ class NodeVisitor(ast.NodeVisitor):
                                 self.columns.append(value)
                 elif isinstance(node.slice, ast.ExtSlice):
                     self.visit_ExtSlice(node.slice)  # TODO: HOW TO EXPRESS THIS VALUE?
+                elif isinstance(node.slice, ast.Slice):
+                    lower, upper, step = self.visit_Slice(node.slice)
+                    columns = list(working_file)
+                    if lower is None:
+                        lower = 0
+                    if upper is None:
+                        upper = len(columns)
+                    if step is None:
+                        step = 1
+                    if isinstance(lower, int):
+                        for i in range(lower, upper, step):
+                            self.columns.append(columns[i])
+                    elif isinstance(lower, str):
+                        is_checked = False
+                        for col in columns:
+                            if is_checked:
+                                self.columns.append(col)
+                                if col == upper:
+                                    break
+                            else:
+                                if col == lower:
+                                    self.columns.append(col)
+                                    is_checked = True
                 else:
                     print('SUBSCRIPT SOMETHING', node.slice, node.__dict__)
                     print(astor.to_source(node))
-        return name
+                self._connect_node_to_column(file)
+        return name, base
 
     def visit_Starred(self, node: Starred) -> Any:
         pass
@@ -655,21 +479,10 @@ class NodeVisitor(ast.NodeVisitor):
 
     def visit_List(self, node: List) -> Any:
         elements = []
-        for el in node.elts:
-            if isinstance(el, ast.Constant):
-                elements.append(self.visit_Constant(el))
-            elif isinstance(el, ast.Name):
-                elements.append(self.visit_Name(el))
-            elif isinstance(el, ast.Call):
-                package, file, name, _ = self.visit_Call(el)
-                elements.append(name)  # TODO: VERIFY HOW TO RETURN THE VALUE
-            elif isinstance(el, ast.List):
-                elements.append(self.visit_List(el))
-            elif isinstance(el, ast.Subscript):
-                elements.append(self.visit_Subscript(el))
-            else:
-                print("LIST VALUE:", node.__dict__)
-                print(astor.to_source(node))
+        for i in range(len(node.elts)):
+            element_package = get_ast_package(node.elts[i])
+            element_package.extract_list_element(self, node, i, elements)
+
         return elements
 
     def visit_Tuple(self, node: Tuple) -> Any:
@@ -680,7 +493,11 @@ class NodeVisitor(ast.NodeVisitor):
             elif isinstance(element, ast.Constant):
                 elements.append(self.visit_Constant(element))
             elif isinstance(element, ast.Subscript):
-                elements.append(self.visit_Subscript(element))
+                name, _ = self.visit_Subscript(element)
+                elements.append(name)
+            elif isinstance(element, ast.Call):
+                _, _, _, base = self.visit_Call(element)
+                elements.append(base)
             else:
                 print("TUPLE ELTS:", node.__dict__)
                 print(astor.to_source(node))
@@ -798,25 +615,8 @@ class NodeVisitor(ast.NodeVisitor):
         return node.arg
 
     def visit_keyword(self, node: keyword) -> Any:
-        value = None
-        if isinstance(node.value, ast.Constant):
-            value = self.visit_Constant(node.value)
-        elif isinstance(node.value, ast.Name):
-            value = self.visit_Name(node.value)
-        elif isinstance(node.value, ast.List):
-            value = self.visit_List(node.value)
-        elif isinstance(node.value, ast.Tuple):
-            value = self.visit_Tuple(node.value)
-        elif isinstance(node.value, ast.BinOp):
-            value = self.visit_BinOp(node.value)
-        elif isinstance(node.value, ast.Dict):
-            value = self.visit_Dict(node.value)
-        elif isinstance(node.value, ast.Subscript):
-            value = self.visit_Subscript(node.value)
-        elif isinstance(node.value, ast.Attribute):
-            value, _ = self.visit_Attribute(node.value)
-        else:
-            print("KEYWORD VALUE:", node.__dict__)
+        keyword_package = get_ast_package(node.value)
+        value = keyword_package.extract_keyword_value(self, node)
         return node.arg, value
 
     def visit_alias(self, node: alias) -> Any:
@@ -825,11 +625,11 @@ class NodeVisitor(ast.NodeVisitor):
     def visit_withitem(self, node: withitem) -> Any:
         pass
 
-    def visit_ExtSlice(self, node: ExtSlice) -> Any:
+    def visit_ExtSlice(self, node: ast.ExtSlice) -> Any:
         for dim in node.dims:
             sl = None
             if isinstance(dim, ast.Slice):
-                sl = self.visit_Slice(dim)
+                lower, upper, step = self.visit_Slice(dim)
             elif isinstance(dim, ast.Index):
                 sl = self.visit_Index(dim)
             else:
@@ -837,7 +637,7 @@ class NodeVisitor(ast.NodeVisitor):
                 print(astor.to_source(node))
         pass
 
-    def visit_Index(self, node: Index) -> Any:
+    def visit_Index(self, node: ast.Index) -> Any:
         if isinstance(node.value, ast.Constant):
             return self.visit_Constant(node.value)
         elif isinstance(node.value, ast.BinOp):
@@ -854,28 +654,28 @@ class NodeVisitor(ast.NodeVisitor):
             print("INDEX VALUE:", node.__dict__)
             print(astor.to_source(node))
 
-    def visit_Suite(self, node: Suite) -> Any:
+    def visit_Suite(self, node: ast.Suite) -> Any:
         pass
 
-    def visit_AugLoad(self, node: AugLoad) -> Any:
+    def visit_AugLoad(self, node: ast.AugLoad) -> Any:
         pass
 
-    def visit_AugStore(self, node: AugStore) -> Any:
+    def visit_AugStore(self, node: ast.AugStore) -> Any:
         pass
 
-    def visit_Param(self, node: Param) -> Any:
+    def visit_Param(self, node: ast.Param) -> Any:
         pass
 
-    def visit_Num(self, node: Num) -> Any:
+    def visit_Num(self, node: ast.Num) -> Any:
         pass
 
-    def visit_Str(self, node: Str) -> Any:
+    def visit_Str(self, node: ast.Str) -> Any:
         pass
 
-    def visit_Bytes(self, node: Bytes) -> Any:
+    def visit_Bytes(self, node: ast.Bytes) -> Any:
         pass
 
-    def visit_NameConstant(self, node: NameConstant) -> Any:
+    def visit_NameConstant(self, node: ast.NameConstant) -> Any:
         pass
 
     def visit_Ellipsis(self, node: Ellipsis) -> Any:
@@ -908,7 +708,7 @@ class NodeVisitor(ast.NodeVisitor):
     def _class_subgraph_logic(self, package, class_args):
         class_graph = self.subgraph.get(package)
 
-    def _param_subgraph_init(self):
+    def param_subgraph_init(self):
         psg = ParamSubGraph()
         psg.graph_info = self.graph_info
         psg.working_file = self.working_file
@@ -917,6 +717,7 @@ class NodeVisitor(ast.NodeVisitor):
         psg.packages = self.packages
         psg.alias = self.alias
         psg.data_flow_container = self.data_flow_container
+        psg.library_path = self.library_path
         return psg
 
     def _create_package_call(self, package_class, package):
@@ -953,6 +754,8 @@ class NodeVisitor(ast.NodeVisitor):
         return packages.get(library_path, Calls.Call(is_relevant=False))
 
 
+# TODO: Extract sub graphs types
+
 class SubGraph(NodeVisitor):
     __slots__ = ['arguments', 'is_starting', 'return_type']
 
@@ -964,7 +767,7 @@ class SubGraph(NodeVisitor):
     def visit(self, node: AST) -> Any:
         if self.is_starting:
             self.is_starting = False
-            return self.visit_FunctionDef(node)
+            return self.visit_FunctionDef(cast(ast.FunctionDef, node))
         return super().visit(node)
 
     def visit_FunctionDef(self, node: FunctionDef) -> Any:
@@ -1006,7 +809,7 @@ class ParamSubGraph(NodeVisitor):
         info = None
         # if package is not None:
         #     *path, lib = package.split('.')
-        #     info = get_package_info(lib, '.'.join(path))
+        #     info = get_package(lib, '.'.join(path))
         if info is not None:
             self.return_type = return_types[0] if len(return_types) > 0 else None
         self.return_type = return_types
@@ -1020,7 +823,7 @@ class ForSubGraph(NodeVisitor):
 
     def visit(self, node: AST) -> Any:
         if self.is_starting:
-            return self.visit_For(node)
+            return self.visit_For(cast(ast.For, node))
         return super().visit(node)
 
     def visit_For(self, node: For) -> Any:
@@ -1063,7 +866,7 @@ class ClassSubGraph(NodeVisitor):
     def visit(self, node: AST) -> Any:
         if self.is_starting:
             self.is_starting = False
-            return self.visit_FunctionDef(node)
+            return self.visit_FunctionDef(cast(ast.FunctionDef, node))
         return super().visit(node)
 
     def visit_init(self, node: FunctionDef):
@@ -1087,7 +890,7 @@ class ClassSubGraph(NodeVisitor):
 
     def visit_FunctionDef(self, node: FunctionDef) -> Any:
         if node is None:
-            return self.visit_init(node)
+            return self.visit_init(cast(ast.FunctionDef, node))
         for el in node.body:
             self.visit(el)
         self.control_flow.pop()
@@ -1102,3 +905,15 @@ class ClassSubGraph(NodeVisitor):
         else:
             print("SUBGRAPH RETURN VALUE:", node.__dict__)
             print(astor.to_source(node))
+
+
+class ClassObject:
+    def __init__(self):
+        self.variables = {}
+        self.functions = {}
+
+    def visit(self, node_visitor: NodeVisitor, function_name: str):
+        package = self.functions.get(function_name)
+        subgraph: NodeVisitor = node_visitor.param_subgraph_init()
+        node_visitor.variables = self.variables  # TODO: join the node_visitor variables together
+        return subgraph.visit(package)

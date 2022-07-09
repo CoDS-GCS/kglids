@@ -141,7 +141,7 @@ class Neo4JRepository(AbstractRepository):
                              "MERGE (c:Resource {uri: element.uri}) "
                              "MERGE (n)-[:MANIPULATE]->(c) "
                              "))",
-                             nodes=nodes)  # TODO: VERIFY THAT THIS WORKS
+                             nodes=nodes)
             self.session.run("FOREACH (b in $nodes | "
                              "MERGE (n:Resource:Statement { uri: b.uri })"
                              "FOREACH (data in b.dataFlow | "

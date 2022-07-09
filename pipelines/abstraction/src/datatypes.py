@@ -1,9 +1,10 @@
 from typing import Dict, Optional
 
+import Calls
 import util
-from util import (parse_line_text, create_import_uri,
-                  create_file_uri, create_column_name, extract_library_dependencies,
-                  create_built_in_uri)
+from Calls import packages
+from util import (parse_line_text, create_import_uri, create_file_uri, create_column_name,
+                  extract_library_dependencies, create_built_in_uri)
 
 
 class Node:
@@ -27,12 +28,13 @@ class Node:
     def str(self):
         control_flows = [flow for flow in self.control_flow]
         parameters = [value.str() for value in self.parameters]
-        call_array = [value.uri for value in self.calls]
+        call_array = [value.repr() for value in self.calls]
         read_array = [value.repr() for value in self.read]
         data_flow = [value.uri for value in self.data_flow]
 
         return {"uri": self.uri,
                 "previous": self.previous.uri if self.previous is not None else None,
+                "next": self.next.uri if self.next is not None else None,
                 "text": self.text,
                 "control_flow": control_flows,
                 "parameters": parameters,
@@ -53,19 +55,34 @@ class AttrEdge:
         return {'parameter': self.parameter, 'parameter_value': self.parameter_value}
 
 
-class Library:
-    __slots__ = ('uri', 'contain')
+call_types = {
+    Calls.CallType.FUNCTION.value: 'callsFunction',
+    Calls.CallType.CLASS.value: 'callsClass',
+    Calls.CallType.PACKAGE.value: 'callsPackage',
+    Calls.CallType.LIBRARY.value: 'callsLibrary',
+    Calls.CallType.NONE.value: 'callsAPI'
+}
 
-    def __init__(self, uri):
+
+def get_call_type(library_type: str) -> str:
+    return call_types.get(library_type)
+
+
+class Library:
+    __slots__ = ('uri', 'contain', 'type', 'call_type')
+
+    def __init__(self, uri, library_type=None):
         self.uri = uri
         self.contain = dict()
+        self.type = library_type
+        self.call_type = get_call_type(library_type)
 
     def str(self):
         libraries = [value.str() for value in self.contain.values()]
-        return {'uri': self.uri, 'contain': libraries}
+        return {'uri': self.uri, 'contain': libraries, 'type': self.type}
 
     def repr(self):
-        return {'uri': self.uri}
+        return {'uri': self.uri, 'call_type': self.call_type}
 
 
 class File:
@@ -83,7 +100,7 @@ class File:
         return {'uri': self.uri, 'contain': columns}
 
     def repr(self):
-        return {'uri': self.uri}
+        return {'uri': self.uri, 'type': 'readsTable'}
 
 
 class Column:
@@ -99,7 +116,7 @@ class Column:
         return {'uri': self.uri}
 
     def repr(self):
-        return self.str()
+        return {'uri': self.uri, 'type': 'readsColumn'}
 
 
 class GraphInformation:
@@ -123,7 +140,6 @@ class GraphInformation:
         self.dataset_name = dataset_name
 
     def add_node(self, text):
-        # TODO: Make sure the node is passed in pipeline abstraction
         if text.startswith('"""'):
             return
 
@@ -152,17 +168,20 @@ class GraphInformation:
             self.files.get(filename).contain.add(column)
 
     def add_import_node(self, path, func=create_import_uri):
-        packages = extract_library_dependencies(path)
+        dependencies = extract_library_dependencies(path)
         container = self.libraries
-        for i in range(len(packages)):
-            library_path = packages[i]
+        for i in range(len(dependencies)):
+            library_path = dependencies[i]
             lib_uri = func(library_path)
+            if '*' in lib_uri:
+                continue
+
             if lib_uri not in container.keys():
-                library = Library(lib_uri)
+                library = Library(lib_uri, packages.get(library_path, Calls.Call()).call_type.value)
                 container[lib_uri] = library
             else:
                 library = container.get(lib_uri)
-            if i == len(packages) - 1:
+            if i == len(dependencies) - 1:
                 self.tail.calls.append(library)
 
             container = library.contain
