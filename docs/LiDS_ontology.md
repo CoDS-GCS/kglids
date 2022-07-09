@@ -53,10 +53,10 @@
             <tr>
                 <th>Sub-classes</th>
                 <td>
-                    <a href="http://kglids.org/ontology/Function">Function</a><sup class="sup-c" title="class">c</sup><br/>
+                    <a href="http://kglids.org/ontology/Library">Library</a><sup class="sup-c" title="class">c</sup><br/>
                     <a href="http://kglids.org/ontology/Package">Package</a><sup class="sup-c" title="class">c</sup><br/>
                     <a href="http://kglids.org/ontology/Class">Class</a><sup class="sup-c" title="class">c</sup><br/>
-                    <a href="http://kglids.org/ontology/Library">Library</a><sup class="sup-c" title="class">c</sup><br/>
+                    <a href="http://kglids.org/ontology/Function">Function</a><sup class="sup-c" title="class">c</sup><br/>
                 </td>
             </tr>
             <tr>
