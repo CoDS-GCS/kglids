@@ -3,14 +3,12 @@ import pandas as pd
 import zlib
 import re
 import numpy as np
+import seaborn as sns
 from graphviz import Digraph
 from camelsplit import camelsplit
 from matplotlib import pyplot as plt
-
 from data_items.knowledge_graph.src.label import Label
 from api.helpers.helper import execute_query
-from data_items.knowledge_graph.src.word_embedding.embeddings_client import n_similarity
-import seaborn as sns
 
 PREFIXES = """
     PREFIX kglids: <http://kglids.org/ontology/>
