@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from data_items.knowledge_graph.src.label import Label
 from api.helpers.helper import execute_query
 
+
 PREFIXES = """
     PREFIX kglids: <http://kglids.org/ontology/>
     PREFIX data:   <http://kglids.org/ontology/data/>
@@ -17,6 +18,7 @@ PREFIXES = """
     PREFIX rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX pipeline: <http://kglids.org/ontology/pipeline/>
+    PREFIX lib: <http://kglids.org/resource/library/> 
     """
 
 CLASSIFIERS = {'RandomForestClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/RandomForestClassifier>',
@@ -174,29 +176,6 @@ def show_graph_info(config, show_query):
     pipelines = execute_query(config, query3)
     columns = execute_query(config, query4)
     return pd.concat([dataset, pipelines, tables, columns], axis=1)
-
-
-
-
-    # def count_nodes(node: str):
-    #     return PREFIXES + """
-    #     SELECT (COUNT(?n_%s) as ?total_number_of_%s)
-    #     WHERE
-    #     {
-    #         ?n_%s rdf:type 	kglids:%s	.
-    #     }
-    #     """ % (node, node, node, node.capitalize())
-    #
-    # result = []
-    # for i in ['dataset', 'table', 'column']:
-    #     if show_query:
-    #         count_nodes(i)
-    #     res = execute_query(config, count_nodes(i))
-    #     for r in res["results"]["bindings"]:
-    #         result.append(r["total_number_of_{}".format(i)]["value"])
-    #
-    # return pd.DataFrame({'Total_datasets': [result[0]], 'Total_tables': [result[1]],
-    #                      'Total_columns': [result[2]], 'Total_pipelines': ['Not yet supported!']})
 
 
 def get_table_path(config, dataset, table):
@@ -586,44 +565,6 @@ def get_path_between_tables(config, source_table_info, target_table_info, hops, 
     return dot
 
 
-def get_unionable_columns(self, df1: pd.DataFrame, df2: pd.DataFrame, sim_threshold: float = 0.5) -> pd.DataFrame:
-    def _drop_duplicates(cn1: list, cn2: list):
-        duplicates = set(cn1).intersection(set(cn2))
-        for d in duplicates:
-            cn1.remove(d)
-            cn2.remove(d)
-        return cn1, cn2
-
-    def _create_combinations(colname1: str, colname2: str) -> pd.DataFrame:
-        colname1_tokens = colname1.split(' ')
-        colname2_tokens = colname2.split(' ')
-        if len(colname1_tokens) > 1 and len(colname2_tokens) > 1:
-            colname1_tokens, colname2_tokens = _drop_duplicates(colname1_tokens, colname2_tokens)
-        combs = itertools.product(colname1_tokens, colname2_tokens)
-        return list(combs)
-
-    def _calculate_similarity(comb: list):
-        if not comb:
-            return 1.0
-        similarity_sum = 0
-        for t1, t2 in combinations:
-            similarity_sum += n_similarity([str(t1)], [str(t2)])
-        return similarity_sum / len(comb)
-
-    if not (isinstance(df1, pd.DataFrame) and isinstance(df2, pd.DataFrame)):
-        raise TypeError('The inputs have to be of type pandas dataframes')
-    matched = []
-    for c1, c2 in itertools.product(df1.columns, df2.columns):
-        c1_label = generate_label(c1, 'en').get_text()
-        c2_label = generate_label(c2, 'en').get_text()
-        combinations = _create_combinations(c1_label, c2_label)
-        similarity = _calculate_similarity(combinations)
-        if similarity >= sim_threshold:
-            matched.append((c1, c2))
-    unionable_df = pd.DataFrame(matched, columns=['First dataframe columns', 'Second dataframe columns'])
-    return unionable_df
-
-
 def get_top_scoring_ml_model(config, dataset, show_query):
     query = """
     PREFIX kglids: <http://kglids.org/ontology/>
@@ -843,7 +784,6 @@ def get_library_usage(config, dataset, k, show_query):
         dataset = '?Dataset    schema:name        "{}"        .\n\t\t' \
                   '?Pipeline   kglids:isPartOf    ?Dataset  .'.format(dataset)
     query = PREFIXES + """
-    PREFIX lib: <http://kglids.org/resource/library/> 
     SELECT ?Library (COUNT(?Library) as ?Usage)
     WHERE
     {
@@ -868,4 +808,40 @@ def get_library_usage(config, dataset, k, show_query):
     sns.set_theme(style='darkgrid')
     ax = sns.barplot(x="Library", y="Usage", data=df, palette='viridis')
     ax = ax.set_xticklabels(ax.get_xticklabels(), rotation=30)
+
+
+def get_top_used_libraries(config, task, show_query):
+    if task == 'classification':
+        task ='classifi'
+    elif task =='clustering':
+        task = 'cluster'
+    elif task == 'visualization':
+        task = 'plot'
+    else:
+        task = 'regress'
+    query = PREFIXES + """
+    SELECT DISTINCT ?Library ?Module ?Pipeline ?Dataset 
+    WHERE
+    {
+        ?Pipeline_id    rdf:type                    kglids:Pipeline         ;
+                        rdfs:label                  ?Pipeline               ;
+                        kglids:isPartOf             ?dataset_id             .
+        
+        ?dataset_id     schema:name                 ?Dataset                .
+        
+        GRAPH ?Pipeline_id
+        {
+            ?statement  pipeline:callsLibrary    ?l                         .
+            BIND(STRAFTER(str(?l), str(lib:)) as ?l1)                       .
+            BIND(STRBEFORE(str(?l1), str('/')) as ?Library)                 .  
+            BIND(STRAFTER(str(?l), str(?Library)) as ?m)                    .     
+            BIND(STRAFTER(str(?m), str('/')) as ?Module)                    .  
+        }    
+    
+        FILTER(regex(?l, "%s", "i"))             
+    }""" % task
+    if show_query:
+        print(query)
+
+    return execute_query(config, query)
 

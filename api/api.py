@@ -1,5 +1,7 @@
 from api.template import *
 from api.helpers.helper import *
+from collections import Counter
+from tqdm import tqdm
 
 
 class KGLiDS:
@@ -139,3 +141,35 @@ class KGLiDS:
 
     def get_top_k_library_used(self, dataset: str = '', k: int = 5, show_query=False):
         return get_library_usage(self.conn, dataset, k, show_query)
+
+    def get_top_used_libraries(self, k: int = 5, task: str = 'classification', show_query: bool = False):
+        supported_tasks = ['classification', 'regression', 'visualization', 'clustering']
+        if task not in supported_tasks:
+            raise ValueError(' invalid task, try using one of the following tasks: \n'
+                             'classification, regression, visualization or clustering!')
+        else:
+            library_info = get_top_used_libraries(self.conn, task, show_query)
+            library_info['Module'] = library_info['Module'].apply(lambda module: module.replace('/', '.'))
+            # fetch top k libraries by maximum occurrence
+            libraries = library_info['Library']
+            library_count = Counter(libraries)
+            if k > len(library_count):
+                k = len(library_count)
+                if k == 1:
+                    print('Single library was found for {}: '.format(k, task))
+                else:
+                    print('Maximum {} libraries were found for {}: '.format(k, task))
+            else:
+                if k == 1:
+                    print('Showing the top used library for {}: '.format(task))
+                else:
+                    print('Showing the top {} libraries for {}: '.format(k, task))
+            libraries = sorted(library_count, key=library_count.get, reverse=True)[:k]
+
+            for i in libraries[:len(libraries)-1]:
+                print(i + ',', end=' ')
+            print(libraries[-1])
+            for k, v in tqdm(library_info.to_dict('index').items()):
+                if v['Library'] not in libraries:
+                    library_info = library_info.drop(k)
+            return library_info.sort_values(by=['Library']).reset_index(drop=True)
