@@ -103,7 +103,7 @@ stardog data add --format turtle db dataset_graph.nq
 ```
 3. Add the pipeline default graph and named-graphs to the database
 ```
-stardog data add --format turtle db dataset_graph.nq
+stardog data add --format turtle db pipeline_default_graph.nq
 ```
 ```python
 conn = stardog.Connection(database_name, **connection_details)
