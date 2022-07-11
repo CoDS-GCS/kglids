@@ -14,10 +14,10 @@ from collections import deque
 
 import pandas as pd
 
-import Calls
+import src.Calls as Calls
 from src.datatypes import GraphInformation
-from Calls import File, pd_dataframe, packages
-from util import is_file, ControlFlow, format_node_text, get_package
+from src.Calls import File, pd_dataframe, packages
+from src.util import is_file, ControlFlow, format_node_text, get_package
 from src.ast_package import AstPackage, get_ast_package
 from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
     AttributeComponents
@@ -357,9 +357,7 @@ class NodeVisitor(ast.NodeVisitor):
         for i in range(len(node.args)):
             if not args_components.is_block:
                 args_components.next_label()
-                args_components.is_block = '*' in args_components.label
-                if args_components.is_block:
-                    parameters[args_components.label] = []
+                args_components.set_is_block(parameters)
 
             args_package = get_ast_package(node.args[i])
             parameter_value = args_package.analyze_call_arguments(self, node, args_components, call_components, i)

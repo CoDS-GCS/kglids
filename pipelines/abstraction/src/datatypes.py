@@ -1,10 +1,10 @@
 from typing import Dict, Optional
 
-import Calls
-import util
-from Calls import packages
-from util import (parse_line_text, create_import_uri, create_file_uri, create_column_name,
-                  extract_library_dependencies, create_built_in_uri)
+import src.Calls as Calls
+import src.util as util
+from src.Calls import packages
+from src.util import (parse_line_text, create_import_uri, create_file_uri, create_column_name,
+                      extract_library_dependencies, create_built_in_uri)
 
 
 class Node:

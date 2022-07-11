@@ -4,8 +4,8 @@ import astor
 import ast
 from enum import Enum
 
-import Calls
-from Calls import packages
+import src.Calls as Calls
+from src.Calls import packages
 
 
 def is_file(string):

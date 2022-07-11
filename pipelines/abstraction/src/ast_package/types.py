@@ -42,6 +42,11 @@ class CallArgumentsComponents:
     def next_label(self):
         self.label = next(self.keys, '')
 
+    def set_is_block(self, parameters):
+        self.is_block = '*' in self.label
+        if self.is_block:
+            parameters[self.label] = []
+
 
 class AssignComponents:
     file: str or None

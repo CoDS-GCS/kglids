@@ -4,8 +4,8 @@ import os
 import pandas as pd
 import time
 
-import Calls
-import util
+import src.Calls as Calls
+import src.util as util
 from typing import Dict
 
 from src.datatypes import Library
@@ -23,7 +23,7 @@ def main():
 
     dataset: os.DirEntry
     # loop through datasets & pipelines
-    for dataset in os.scandir('../data/kaggle'):
+    for dataset in os.scandir('data/kaggle'):
         pipeline: os.DirEntry
         if dataset.is_dir():
             working_file = {}

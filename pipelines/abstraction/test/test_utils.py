@@ -1,6 +1,6 @@
 import unittest
-from Calls import pd_dataframe
-import util
+from src.Calls import pd_dataframe
+import src.util as util
 
 
 class TestUtilsFunctions(unittest.TestCase):

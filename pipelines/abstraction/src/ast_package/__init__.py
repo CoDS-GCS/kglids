@@ -2,8 +2,8 @@ import ast
 import astor
 from typing import cast
 
-import Calls
-from util import format_node_text
+import src.Calls as Calls
+from src.util import format_node_text
 from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
     AttributeComponents
 
@@ -140,9 +140,6 @@ class Attribute(AstPackage):
         node_visitor._extract_dataflow(components.base_package)
         f = node_visitor.files.get(components.base_package)
         node_visitor._connect_node_to_column(f)
-        # if f is not None and len(node_visitor.columns) > 0:
-        #     node_visitor.graph_info.add_columns(f.filename, node_visitor.columns)
-        #     node_visitor.columns.clear()
 
     def extract_assign_value(self, node_visitor: ast.NodeVisitor, node: ast.Assign, components: AssignComponents):
         components.value, base, components.file = node_visitor.visit_Attribute(cast(ast.Attribute, node.value))
@@ -333,8 +330,6 @@ class Subscript(AstPackage):
             node_visitor.data_flow_container[variable] = node_visitor.graph_info.tail
             file = node_visitor.files.get(variable)
             node_visitor._connect_node_to_column(file)
-            # if variable in node_visitor.files.keys():
-            #     node_visitor.graph_info.add_columns(node_visitor.files.get(variable).filename, node_visitor.columns)
 
         return variable
 

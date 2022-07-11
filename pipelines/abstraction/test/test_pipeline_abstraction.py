@@ -2,13 +2,13 @@ import unittest
 import ast
 import pandas as pd
 
-import Calls
-import util
+import src.Calls as Calls
+import src.util as util
 import src.datatypes as DataTypes
 from src.datatypes import GraphInformation
-from Calls import pd_dataframe, File, packages
+from src.Calls import pd_dataframe, File, packages
 from src.pipeline_abstraction import NodeVisitor
-from util import ControlFlow
+from src.util import ControlFlow
 
 kglids_library = "http://kglids.org/pipeline/library/"
 FILENAME = "test.py"
@@ -1698,6 +1698,13 @@ class TestFileContainingElement(Test):
         print(tree.__dict__)
         parse_and_visit_node(value, self.graph)
 
+    def test_random_thing(self):
+        value = "print(pandas.DataFrame(columns=['a']))"
+        node_visitor = parse_and_visit_node(value, self.graph)
+
+        print(self.graph.head.text)
+        print(self.graph.head.calls[0].uri)
+        self.assertEqual(1, 1)
 
 if __name__ == '__main__':
     unittest.main()

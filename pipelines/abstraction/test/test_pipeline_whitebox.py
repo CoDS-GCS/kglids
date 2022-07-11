@@ -7,8 +7,8 @@ from src.ast_package import (Name, Attribute, Constant, Call, List, Dict, Subscr
                              get_ast_package, Compare)
 from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
     AttributeComponents
-from Calls import packages, pd_dataframe, File
-import util
+from src.Calls import packages, pd_dataframe, File
+import src.util as util
 
 kglids_library = "http://kglids.org/pipeline/library/"
 FILENAME = "test.py"

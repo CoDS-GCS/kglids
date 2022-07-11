@@ -1,7 +1,7 @@
 import unittest
 
-import util
-from Calls import CallType
+import src.util as util
+from src.Calls import CallType
 from src.datatypes import GraphInformation
 
 PYTHON_FILE = 'test.py'
