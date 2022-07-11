@@ -20,9 +20,9 @@ conventional data science pipeline.
 | 12.  | `search_classifier()`                       | Shows all the classifiers used for a dataset                                                                                                                                                                                    |
 | 13.  | `get_hyperparameters()`                     | Returns the hyperparameter values that were used for a given classifier                                                                                                                                                         |
 | 14.  | `get_top_k_library_used()`                  | Visualizes the top-k libraries that were used overall or for a given dataset                                                                                                                                                    |
+| 15.  | `get_top_used_libraries()`                  | Retrieve the top-k libraries used in a particular task. Task here could be:<br>1. Classification<br>2. Clustering<br>3. Regression<br>4. Visualization                                                                          |
 
-
-<br/>
+<br>
 <b>API examples:</b>
 
 1. `kglids.query()`
@@ -42,7 +42,7 @@ kglids.query(my_custom_query)
 |-----|--------|
 | 0.  | kaggle | 
 
-<hr/>
+<hr>
 
 2. `kglids.show_graph_info()`
 ```python
@@ -52,7 +52,7 @@ kglids.show_graph_info()
 |-----|----------|--------|---------|-----------|
 | 0.  | 101      | 969    | 418     | 9502      |
 
-<hr/>
+<hr>
 
 3. `kglids.show_dataset_info()`
 ```python
@@ -74,6 +74,7 @@ kglids.show_dataset_info()
 | 99	  | vitaliymalcev.russian-passenger-air-service-20... | 	14                |
 | 100  | 	ylchang.coffee-shop-sample-data-1113             | 	10                |
 
+<hr>
 
 4. `kglids.show_table_info()`
 ```python
@@ -82,16 +83,16 @@ kglids.show_table_info()
 
 Showing all available table(s):
 
-|  | Table                      | 	Dataset                                 | 	Path_to_table                                     |
-|---|----------------------------|------------------------------------------|----------------------------------------------------|
-|0	| state_level_daily.csv      | 	COVID-19 Corona Virus India Dataset     | 	/data/datasets/data_lake/COVID-19 Coro... |
-|2	| patients_data.csv          | 	COVID-19 Corona Virus India Dataset  	  | /data/datasets/data_lake/COVID-19 Coro...  |
-|3	| nation_level_daily.csv	    | COVID-19 Corona Virus India Dataset	     | /data/datasets/data_lake/COVID-19 Coro...  |
-|...| 	...                       | 	...	                                    | ...                                                |
-|414| 	201904 sales reciepts.csv | 	ylchang.coffee-shop-sample-data-1113    | 	/data/datasets/data_lake/ylchang.coffe... |
-|415| 	sales_outlet.csv	         | ylchang.coffee-shop-sample-data-1113	    | /data/datasets/data_lake/ylchang.coffe...  |
-|416| 	product.csv	              | ylchang.coffee-shop-sample-data-1113     | 	/data/datasets/data_lake/ylchang.coffe... |
-|417| 	Dates.csv                 | 	ylchang.coffee-shop-sample-data-1113	   | /data/datasets/data_lake/ylchang.coffe... |
+|      | Table                      | 	Dataset                                  | 	Path_to_table                              |
+|------|----------------------------|-------------------------------------------|---------------------------------------------|
+| 0	   | state_level_daily.csv      | 	COVID-19 Corona Virus India Dataset      | 	/data/datasets/data_lake/COVID-19 Coro...  |
+| 2	   | patients_data.csv          | 	COVID-19 Corona Virus India Dataset  	   | /data/datasets/data_lake/COVID-19 Coro...   |
+| 3	   | nation_level_daily.csv	    | COVID-19 Corona Virus India Dataset	      | /data/datasets/data_lake/COVID-19 Coro...   |
+| ...  | 	...                       | 	...	                                     | ...                                         |
+| 414  | 	201904 sales reciepts.csv | 	ylchang.coffee-shop-sample-data-1113     | 	/data/datasets/data_lake/ylchang.coffe...  |
+| 415  | 	sales_outlet.csv	         | ylchang.coffee-shop-sample-data-1113	     | /data/datasets/data_lake/ylchang.coffe...   |
+| 416  | 	product.csv	              | ylchang.coffee-shop-sample-data-1113      | 	/data/datasets/data_lake/ylchang.coffe...  |
+| 417  | 	Dates.csv                 | 	ylchang.coffee-shop-sample-data-1113	    | /data/datasets/data_lake/ylchang.coffe...   |
 
 ```python
 kglids.get_tables_info(dataset='UK COVID-19 Data')
@@ -100,13 +101,45 @@ kglids.get_tables_info(dataset='UK COVID-19 Data')
 Showing table(s) for 'UK COVID-19 Data' dataset: 
 
 
-|  | Table                                          | 	Dataset                                 | 	Path_to_table                                     |
-|---|------------------------------------------------|------------------------------------------|----------------------------------------------------|
-|0| 	UK_Devolved_Nations_COVID_Dataset.csv         |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
-|1| 	UK_Local_Authority_UTLA_COVID_Dataset.csv     |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
-|2| 	England_Regions_COVID_Dataset.csv             |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
-|3| 	UK_National_Total_COVID_Dataset.csv           |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
-|4| 	NEW_Official_Population_Data_ONS_mid-2019.csv |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
-|5| 	Populations_for_UK_and_Devolved_Nations.csv   |	UK COVID-19 Data|	/data/datasets/data_lake/UK COVID-19 D...|
+|     | Table                                           | 	Dataset           | 	Path_to_table                              |
+|-----|-------------------------------------------------|--------------------|---------------------------------------------|
+| 0   | 	UK_Devolved_Nations_COVID_Dataset.csv          | 	UK COVID-19 Data  | 	/data/datasets/data_lake/UK COVID-19 D...  |
+| 1   | 	UK_Local_Authority_UTLA_COVID_Dataset.csv      | 	UK COVID-19 Data  | 	/data/datasets/data_lake/UK COVID-19 D...  |
+| 2   | 	England_Regions_COVID_Dataset.csv              | 	UK COVID-19 Data  | 	/data/datasets/data_lake/UK COVID-19 D...  |
+| 3   | 	UK_National_Total_COVID_Dataset.csv            | 	UK COVID-19 Data  | 	/data/datasets/data_lake/UK COVID-19 D...  |
+| 4   | 	NEW_Official_Population_Data_ONS_mid-2019.csv  | 	UK COVID-19 Data  | 	/data/datasets/data_lake/UK COVID-19 D...  |
+| 5   | 	Populations_for_UK_and_Devolved_Nations.csv    | 	UK COVID-19 Data  | 	/data/datasets/data_lake/UK COVID-19 D...  |
 
+<hr>
 
+5. `kglids.show_table_info()`
+```python
+kglids.search_tables_on(conditions=[['player', 'club']])
+```
+Showing recommendations as per the following conditions:
+Condition =  [['player', 'club']]
+
+| 	    | Dataset                                         | 	Table                         | 	Number_of_columns | 	Number_of_rows | 	Path_to_table                                           |
+|------|-------------------------------------------------|--------------------------------|--------------------|-----------------|----------------------------------------------------------|
+| 0	   | FIFA 21 complete player dataset                 | 	players_21.csv                | 	106               | 	18944          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
+| 1	   | FIFA 21 complete player dataset                 | 	players_20.csv                | 	106	              | 18483           | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
+| 2	   | FIFA 20 complete player dataset                 | 	players_20.csv                | 	104               | 	18278          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
+| 3	   | FIFA 21 complete player dataset                 | 	players_19.csv                | 	106               | 	18085          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
+| 4	   | FIFA 20 complete player dataset                 | 	players_19.csv                | 	104               | 	17770          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
+| 5	   | FIFA 20 complete player dataset                 | 	players_18.csv                | 	104               | 	17592          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
+| 6	   | FIFA 21 complete player dataset                 | 	players_18.csv                | 	106               | 	17954          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
+| 7	   | FIFA 21 complete player dataset                 | 	players_17.csv                | 	106               | 	17597          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
+| 8	   | FIFA 20 complete player dataset                 | 	players_17.csv                | 	104               | 	17009          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
+| 9	   | FIFA 20 complete player dataset                 | 	players_16.csv                | 	104               | 	14881          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
+| 10	  | FIFA 21 complete player dataset                 | 	players_16.csv                | 	106               | 	15623          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
+| 11	  | FIFA 21 complete player dataset                 | 	players_15.csv                | 	106               | 	16155          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
+| 12	  | FIFA 20 complete player dataset                 | 	players_15.csv                | 	104               | 	15465          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
+| 13	  | open-source-sports.mens-professional-basketball | 	basketball_player_allstar.csv | 	23                | 	1609           | 	/data/shubham/datasets/data_lake/open-source-s...       |
+| 14	  | open-source-sports.mens-professional-basketball | 	basketball_draft.csv          | 	11                | 	9003           | 	/data/shubham/datasets/data_lake/open-source-s...       |
+| 15	  | open-source-sports.mens-professional-basketball | 	basketball_awards_players.csv | 	6                 | 	1719           | 	/data/shubham/datasets/data_lake/open-source-s...       |
+| 16	  | FIFA22 OFFICIAL DATASET                         | 	FIFA22_official_data.csv      | 	65                | 	16710          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |
+| 17	  | FIFA22 OFFICIAL DATASET                         | 	FIFA21_official_data.csv      | 	65                | 	17108          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |
+| 18	  | FIFA22 OFFICIAL DATASET                         | 	FIFA20_official_data.csv      | 	65                | 	17104          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |
+| 19	  | FIFA22 OFFICIAL DATASET                         | 	FIFA19_official_data.csv      | 	64                | 	17943          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |
+| 20	  | FIFA22 OFFICIAL DATASET                         | 	FIFA18_official_data.csv      | 	64                | 	17927          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |
+| 21	  | FIFA22 OFFICIAL DATASET                         | 	FIFA17_official_data.csv      | 	63                | 	17560          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |

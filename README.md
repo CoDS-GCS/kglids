@@ -37,10 +37,23 @@ conda activate kglids
 ```
 
 ## Quickstart
-<b>Try the [Sample Colab notebook](https://colab.research.google.com/drive/1XbjJkppz5_nTufgnD53gEBzxyLYViGAi?usp=sharing) for a quick hands-on!</b><hr>
+
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>HTML Link Color</title>
+   </head>
+   <body>
+      <h2>About</h2>
+      <p>
+         <b>Try the Sample <a href="https://colab.research.google.com/drive/1XbjJkppz5_nTufgnD53gEBzxyLYViGAi?usp=sharing" style="color: orange"> KGLiDS Colab notebook</a>
+            for a quick hands-on! </b>
+      </p>
+   </body>
+</html>
 
 <b>Generating the LiDS graph:</b>
-1. Add your configurations to [config,yml]():
+1. Add your configurations to [config.yml]():
 ```python
 # sample configurations
 datasource: "kaggle" 
@@ -65,20 +78,20 @@ datasource/
 ├ ...
 ...
 ```
-2. Run the [Data profiler]()
+2. Run the [Data profiler](data_items/profiler/src/main.py)
 ```commandline
 cd kglids/data_items/profiler/src/
 python main.py
 ```
-3. Run the [Knowledge graph builder]() to generate the data_items graph 
+3. Run the [Knowledge graph builder](data_items/knowledge_graph/src/knowledge_graph_builder.py) to generate the data_items graph 
 ```commandline/
 cd kglids/data_items/knowledge_graph/src/
 python knowledge_graph_builder.py
 ```
-4. Run the [Pipeline abstractor]() to generate the pipeline named graph(s)
+4. Run the [Pipeline abstractor](pipelines/abstraction) to generate the pipeline named graph(s)
 ```
-cd kglids/pipelines/src/
-python run.py
+cd kglids/pipelines/abstraction/
+python pipelines_analysis.py
 ```
 <hr>
 
@@ -131,7 +144,8 @@ The following benchmark datasets were used to evaluate KGLiDS:
 * Dataset Discovery in Data Lakes
   * [Smaller Real](https://github.com/alex-bogatu/d3l)
   * [Synthetic](https://github.com/RJMillerLab/table-union-search-benchmark)<br>
-    (more info on data discovery benchmarks [here]((https://arxiv.org/pdf/2011.10427.pdf))) 
+    (more info on data discovery benchmarks [here](https://arxiv.org/pdf/2011.10427.pdf)) 
+
 * Kaggle
   * [`setup_kaggle_data.py`](pipelines/utils/setup_kaggle_data.py)
 
