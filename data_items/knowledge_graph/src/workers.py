@@ -122,7 +122,9 @@ def _compute_content_similarity(col1_profile, col2_profile, ontology,
     # TODO: [Refactor] have the names of predicates read from global project ontology object
     content_similarity_triples = []
     if col1_profile.is_numeric():
-
+        # TODO: [Implement] Remove non-deep similarities
+        return []
+        
         # Content similarity without deep embedding
         # TODO: [Implement] This original implementation generates duplicated similarity triples between columns with 
         #       different scores.
@@ -174,6 +176,7 @@ def _compute_content_similarity(col1_profile, col2_profile, ontology,
     return content_similarity_triples
 
 
+# TODO: [Refactor] combine this with content similarity method
 def _compute_numerical_deep_content_similarity(col1_profile, col2_profile, ontology,
                                                deep_embedding_content_threshold):
     deep_content_similarity_triples = []
@@ -183,7 +186,7 @@ def _compute_numerical_deep_content_similarity(col1_profile, col2_profile, ontol
                             (norm(col1_profile.get_deep_embedding()) * norm(col2_profile.get_deep_embedding()))
         if embedding_cos_sim >= deep_embedding_content_threshold:
             deep_content_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                                     'hasDeepEmbeddingContentSimilarity',
+                                                                                     'hasContentSimilarity',
                                                                                      embedding_cos_sim,
                                                                                      ontology))
     return deep_content_similarity_triples
@@ -268,14 +271,17 @@ def _compute_primary_key_foreign_key_similarity(col1_profile, col2_profile, onto
     
     highest_cardinality = max(col1_cardinality, col2_cardinality)
     pkfk_similarity_triples = []
-    if inclusion_dependency_triples or (col1_profile.is_textual() and content_similarity_triples):
+
+    if col1_profile.is_numeric() and deep_content_similarity_triples:
+        pkfk_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
+                                                                         'hasPrimaryKeyForeignKeySimilarity',
+                                                                         highest_cardinality, ontology))
+    
+    elif col1_profile.is_textual() and content_similarity_triples:
         pkfk_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile, 
                                                                          'hasPrimaryKeyForeignKeySimilarity', 
                                                                          highest_cardinality, ontology))
-    if deep_content_similarity_triples:
-        pkfk_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                         'hasDeepPrimaryKeyForeignKeySimilarity',
-                                                                         highest_cardinality, ontology))
+
 
     return pkfk_similarity_triples
 
