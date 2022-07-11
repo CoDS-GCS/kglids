@@ -33,9 +33,10 @@ import pandas as pd
 kglids = KGLiDS()
 
 my_custom_query = """
-SELECT ?source {
-?source_id rdf:type    kglids:Source    ;
-           schema:name ?source          . } """
+SELECT ?Source 
+{
+    ?source_id  rdf:type    kglids:Source    ;
+                schema:name ?source          .  } """
 kglids.query(my_custom_query)
 ```
 |     | Source |
