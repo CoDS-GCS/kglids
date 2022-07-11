@@ -1,4 +1,4 @@
-# KGLiDS - A Knowledge Graph-Based Platform for Linked Data Science
+# KGLiDS - Linked Data Science powered by Knowledge Graphs
 
 ![alt text](docs/graphics/kglids_architecture.jpg)
 
@@ -145,6 +145,9 @@ See the full list of supported APIs [here](docs/KGLiDS_apis.md).
 
 ## Citing Our Work
 If you find our work useful, please cite it in your research:
+
+## Publicity
+This repository is part of our submission to SIGMOD23. We will make it available to the public research community upon acceptance. 
 
 ## Questions
 For any questions please contact us at:<br/>mossad.helali@concordia.ca, shubham.vashisth@concordia.ca, philippe.carrier@concordia.ca, khose@cs.aau.dk, essam.mansour@concordia.ca
