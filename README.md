@@ -37,20 +37,11 @@ conda activate kglids
 ```
 
 ## Quickstart
+<p>
+<b>Try the Sample <a href="https://colab.research.google.com/drive/1XbjJkppz5_nTufgnD53gEBzxyLYViGAi?usp=sharing" style="color: orange"> KGLiDS Colab notebook</a>
+for a quick hands-on! </b>
+</p>
 
-<!DOCTYPE html>
-<html>
-   <head>
-      <title>HTML Link Color</title>
-   </head>
-   <body>
-      <h2>About</h2>
-      <p>
-         <b>Try the Sample <a href="https://colab.research.google.com/drive/1XbjJkppz5_nTufgnD53gEBzxyLYViGAi?usp=sharing" style="color: orange"> KGLiDS Colab notebook</a>
-            for a quick hands-on! </b>
-      </p>
-   </body>
-</html>
 
 <b>Generating the LiDS graph:</b>
 1. Add your configurations to [config.yml]():
