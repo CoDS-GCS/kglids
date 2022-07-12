@@ -23,7 +23,7 @@ def main():
 
     dataset: os.DirEntry
     # loop through datasets & pipelines
-    for dataset in os.scandir('data/kaggle'):
+    for dataset in os.scandir('../data/kaggle'):
         pipeline: os.DirEntry
         if dataset.is_dir():
             working_file = {}

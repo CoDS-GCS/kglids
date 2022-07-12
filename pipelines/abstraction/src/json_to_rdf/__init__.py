@@ -1,3 +1,4 @@
+import json
 from functools import reduce
 from typing import List
 
@@ -58,7 +59,7 @@ def build_read_to_rdf(read_type: str, reads: List[dict]) -> str:
 
 
 def has_text_to_rdf(text: str) -> str:
-    return f'\tpipeline:hasText "{text}";\n'
+    return f'\tpipeline:hasText {escape_characters(text)};\n'
 
 
 def has_parameter_to_rdf(parameters: List[dict]) -> str:
@@ -69,7 +70,7 @@ def has_parameter_to_rdf(parameters: List[dict]) -> str:
 
 
 def create_quoted_value(word: str) -> str:
-    return f'"{word}"'
+    return json.dumps(word)
 
 
 def create_quoted_parameter_value(param: dict) -> str:
@@ -155,16 +156,16 @@ def pipeline_uri_to_rdf(uri: str):
     return f"<{uri}> a kglids:Pipeline;\n"
 
 
-def escape_double_quote(word: str) -> str:
-    return word.replace('"', '\'')
+def escape_characters(word: str) -> str:
+    return json.dumps(word)
 
 
 def title_to_rdf(title: str) -> str:
-    return f"\trdfs:label \"{escape_double_quote(title)}\";\n"
+    return f"\trdfs:label {escape_characters(title)};\n"
 
 
 def author_to_rdf(author: str) -> str:
-    return f"\tpipeline:isWrittenBy \"{author}\";\n"
+    return f"\tpipeline:isWrittenBy {escape_characters(author)};\n"
 
 
 def votes_to_rdf(votes: int) -> str:
@@ -172,7 +173,7 @@ def votes_to_rdf(votes: int) -> str:
 
 
 def date_to_rdf(date: str) -> str:
-    return f"\tpipeline:isWrittenOn \"{date}\";\n"
+    return f"\tpipeline:isWrittenOn {escape_characters(date)};\n"
 
 
 def tags_to_rdf(tags: List[str]) -> str:
@@ -182,7 +183,7 @@ def tags_to_rdf(tags: List[str]) -> str:
 
 
 def source_to_rdf(source: str) -> str:
-    return f"\tpipeline:hasSourceURL \"{source}\";\n"
+    return f"\tpipeline:hasSourceURL {escape_characters(source)};\n"
 
 
 def score_to_rdf(score: float) -> str:

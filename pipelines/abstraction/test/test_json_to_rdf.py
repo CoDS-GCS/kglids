@@ -4,7 +4,7 @@ from src.json_to_rdf import (create_prefix, library_call_to_rdf, read_to_rdf, ha
                              create_statement_uri, control_flow_to_rdf, build_statement_rdf,
                              build_table_rdf, build_column_rdf, build_parameter_rdf, build_library_rdf,
                              build_sub_library_rdf, build_pipeline_rdf, build_pipeline_rdf_page, build_library_rdf_page,
-                             build_default_rdf_page, title_to_rdf)
+                             build_default_rdf_page, title_to_rdf, date_to_rdf, author_to_rdf, source_to_rdf)
 
 
 class MyTestCase(unittest.TestCase):
@@ -542,12 +542,36 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_title_to_rdf(self):
-        expected = f'\trdfs:label "\'I sneezed and now I can\'t move\' Back pain study";\n'
+        expected = '\trdfs:label "\\"I sneezed and now I can\'t move\\" Back pain study";\n'
         title = '"I sneezed and now I can\'t move" Back pain study'
 
         result = title_to_rdf(title)
 
         print(result)
+        self.assertEqual(expected, result)
+
+    def test_date_to_rdf(self):
+        expected = '\tpipeline:isWrittenOn "2017-09-22 20:18:19";\n'
+        date = "2017-09-22 20:18:19"
+
+        result = date_to_rdf(date)
+
+        self.assertEqual(expected, result)
+
+    def test_author_to_rdf(self):
+        expected = '\tpipeline:isWrittenBy "Cam Nugent";\n'
+        author = "Cam Nugent"
+
+        result = author_to_rdf(author)
+
+        self.assertEqual(expected, result)
+
+    def test_author_to_rdf(self):
+        expected = '\tpipeline:hasSourceURL "https://www.kaggle.com/camnugent/nhl-player-salary-prediction-xgboost-rf-and-svm";\n'
+        source = "https://www.kaggle.com/camnugent/nhl-player-salary-prediction-xgboost-rf-and-svm"
+
+        result = source_to_rdf(source)
+
         self.assertEqual(expected, result)
 
 
