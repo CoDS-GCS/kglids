@@ -173,7 +173,9 @@ class KnowledgeGraphBuilder:
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
         word_embedding = self.word_embedding
-        column_profile_indexes_rdd = self.spark.parallelize(list(range(len(self.column_profiles))))
+        column_profile_indexes = list(range(len(self.column_profiles)))
+        random.shuffle(column_profile_indexes)
+        column_profile_indexes_rdd = self.spark.parallelize(column_profile_indexes)
         column_profile_indexes_rdd.map(
             lambda x: column_pair_similarity_worker(column_idx=x,
                                                     column_profiles=column_profiles,
