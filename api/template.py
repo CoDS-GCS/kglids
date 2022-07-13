@@ -10,7 +10,6 @@ from matplotlib import pyplot as plt
 from data_items.knowledge_graph.src.label import Label
 from api.helpers.helper import execute_query
 
-
 PREFIXES = """
     PREFIX kglids: <http://kglids.org/ontology/>
     PREFIX data:   <http://kglids.org/ontology/data/>
@@ -646,22 +645,22 @@ def get_top_k_scoring_pipelines_for_dataset(config, dataset, k, show_query):
 
 
 CLASSIFIERS = {'RandomForestClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/RandomForestClassifier>',
-                'SVC': '<http://kglids.org/resource/library/sklearn/svm/SVC>',
-                'KNeighborsClassifier': '<http:/kglids.org/resource/library/sklearn/neighbors/KNeighborsClassifier>',
-                'GradientBoostingClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/GradientBoostingClassifier>',
-                'LogisticRegression': '<http://kglids.org/resource/library/sklearn/linear_model/LogisticRegression>',
-                'DecisionTreeClassifier': '<http://kglids.org/resource/library/sklearn/tree/DecisionTreeClassifier>',
-                'AdaBoostClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/AdaBoostClassifier>',
-                'SGDClassifier': '<http://kglids.org/resource/library/sklearn/linear_model/SGDClassifier>',
-                'MLPClassifier': '<http://kglids.org/resource/library/sklearn/neural_network/MLPClassifier>',
-                'XGBClassifier': '<http://kglids.org/resource/library/xgboost/XGBClassifier>',
-                'VotingClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/VotingClassifier>',
-                'PassiveAggressiveClassifier': '<http://kglids.org/resource/library/sklearn/linear_model/PassiveAggressiveClassifier>',
-                'BaggingClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/BaggingClassifier>',
-                'RidgeClassifier': '<http://kglids.org/resource/library/sklearn/linear_model/RidgeClassifier>',
-                'RadiusNeighborsClassifier': '<http://kglids.org/resource/library/sklearn/neighbors/RadiusNeighborsClassifier>',
-                'ExtraTreesClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/ExtraTreesClassifier>',
-                'TFDistilBertForSequenceClassification': '<http://kglids.org/resource/library/transformers/TFDistilBertForSequenceClassification>'}
+               'SVC': '<http://kglids.org/resource/library/sklearn/svm/SVC>',
+               'KNeighborsClassifier': '<http:/kglids.org/resource/library/sklearn/neighbors/KNeighborsClassifier>',
+               'GradientBoostingClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/GradientBoostingClassifier>',
+               'LogisticRegression': '<http://kglids.org/resource/library/sklearn/linear_model/LogisticRegression>',
+               'DecisionTreeClassifier': '<http://kglids.org/resource/library/sklearn/tree/DecisionTreeClassifier>',
+               'AdaBoostClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/AdaBoostClassifier>',
+               'SGDClassifier': '<http://kglids.org/resource/library/sklearn/linear_model/SGDClassifier>',
+               'MLPClassifier': '<http://kglids.org/resource/library/sklearn/neural_network/MLPClassifier>',
+               'XGBClassifier': '<http://kglids.org/resource/library/xgboost/XGBClassifier>',
+               'VotingClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/VotingClassifier>',
+               'PassiveAggressiveClassifier': '<http://kglids.org/resource/library/sklearn/linear_model/PassiveAggressiveClassifier>',
+               'BaggingClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/BaggingClassifier>',
+               'RidgeClassifier': '<http://kglids.org/resource/library/sklearn/linear_model/RidgeClassifier>',
+               'RadiusNeighborsClassifier': '<http://kglids.org/resource/library/sklearn/neighbors/RadiusNeighborsClassifier>',
+               'ExtraTreesClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/ExtraTreesClassifier>',
+               'TFDistilBertForSequenceClassification': '<http://kglids.org/resource/library/transformers/TFDistilBertForSequenceClassification>'}
 
 
 def search_classifier(config, dataset, show_query):
@@ -697,7 +696,7 @@ def search_classifier(config, dataset, show_query):
              {
                 ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/ensemble/RandomForestClassifier>  .
                 BIND('RandomForestClassifier' as ?Classifier)
-             }"""+sub_graph_query+"""
+             }""" + sub_graph_query + """
                           
          }
     %s
@@ -766,16 +765,16 @@ def get_library_usage(config, dataset, k, show_query):
     plt.rcParams['figure.dpi'] = 300
     plt.rcParams['savefig.dpi'] = 300
     sns.set_theme(style='darkgrid')
-    df['Usage (in %)'] = list(map(lambda x: x*100, [int(i) / sum(df['Usage'].
-                                                tolist()) for i in (df['Usage'].tolist())]))
+    df['Usage (in %)'] = list(map(lambda x: x * 100, [int(i) / sum(df['Usage'].
+                                                                   tolist()) for i in (df['Usage'].tolist())]))
     ax = sns.barplot(x="Library", y="Usage (in %)", data=df, palette='viridis')
     ax = ax.set_xticklabels(ax.get_xticklabels(), rotation=30)
 
 
 def get_top_used_libraries(config, task, show_query):
     if task == 'classification':
-        task ='classifi'
-    elif task =='clustering':
+        task = 'classifi'
+    elif task == 'clustering':
         task = 'cluster'
     elif task == 'visualization':
         task = 'plot'
@@ -807,3 +806,34 @@ def get_top_used_libraries(config, task, show_query):
 
     return execute_query(config, query)
 
+
+def get_pipelines_calling_libraries(config, components, show_query):
+    sub_query = ''
+    for i in range(len(components)):
+        sub_query = sub_query + \
+                    '?Statement_{}   pipeline:callsLibrary   <http://kglids.org/resource/library/{}> .\n        ' \
+                        .format(i + 1, components[i].replace('.', '/'))
+
+    query = PREFIXES + """
+    SELECT DISTINCT ?Pipeline ?Dataset ?Author ?Score ?Number_of_votes
+    WHERE 
+    {
+    
+        ?Pipeline_id    rdf:type                kglids:Pipeline     ;
+                        pipeline:hasVotes       ?Number_of_votes    ;
+                        rdfs:label              ?Pipeline           ;
+                        pipeline:isWrittenOn    ?Written_on         ;
+                        pipeline:isWrittenBy    ?Author             ;
+                        pipeline:hasScore       ?Score              ;
+                        kglids:isPartOf         ?Dataset_id         ;
+        
+        graph ?Pipeline_id
+        {
+        %s
+        }  
+        ?Dataset_id     schema:name             ?Dataset            . 
+    } ORDER BY DESC(?Score)""" % sub_query
+    if show_query:
+        print(query)
+
+    return execute_query(config, query)

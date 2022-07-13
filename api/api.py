@@ -104,7 +104,7 @@ class KGLiDS:
         data = search_tables_on(self.conn, parsed_conditions(conditions), show_query)
         print('Showing recommendations as per the following conditions:\nCondition = ', conditions)
         df = pd.DataFrame(list(data), columns=['Dataset', 'Table', 'Number_of_columns',
-                                                 'Number_of_rows', 'Path_to_table']).sort_values('Table',
+                                                 'Number_of_rows', 'Path_to_table']).sort_values('Number_of_rows',
                                                                                                  ignore_index=True,
                                                                                                ascending=False)
         df['Number_of_rows'] = df['Number_of_rows'].apply(lambda x: int(x))
@@ -179,3 +179,7 @@ class KGLiDS:
                 if v['Library'] not in libraries:
                     library_info = library_info.drop(k)
             return library_info.sort_values(by=['Library']).reset_index(drop=True)
+
+    def get_pipelines_calling_libraries(self, components: list, show_query: bool = False):
+        return get_pipelines_calling_libraries(self.conn, components, show_query)
+
