@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --account=def-emansour
-#SBATCH --time=00:01:00
-#SBATCH --nodes=16
-#SBATCH --mem=8G
+#SBATCH --time=02:00:00
+#SBATCH --nodes=33
+#SBATCH --mem=64G
 #SBATCH --cpus-per-task=16
 #SBATCH --ntasks-per-node=1
 
@@ -19,7 +19,7 @@ export SPARK_WORKER_DIR=$SLURM_TMPDIR
 export SLURM_SPARK_MEM=$(printf "%.0f" $((${SLURM_MEM_PER_NODE} *95/100)))
 
 date
-echo "Spark KGLiDS 16 nodes."
+echo "Spark KGLiDS ${SLURM_NTASKS-1} nodes"
 
 start-master.sh
 sleep 5
