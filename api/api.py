@@ -9,9 +9,6 @@ class KGLiDS:
         self.conn = connect_to_stardog(endpoint, port, db)
         self.conn.begin()
 
-    def get_table(self, path_to_table: str):
-        return pd.read_csv(path_to_table)
-
     def get_datasets_info(self, show_query: bool = False):
         return get_datasets_info(self.conn, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
 
@@ -34,6 +31,9 @@ class KGLiDS:
             table = table["Table"]
             recommendations = recommend_tables(self.conn, dataset, table, k, 'data:hasPrimaryKeyForeignKeySimilarity',
                                                show_query)
+            recommendations['Score'] = list(map(lambda x: round(x, 2), [float(i) / max(recommendations['Score'].
+                                                       tolist()) for i in (recommendations['Score'].tolist())]))
+
             print('Showing the top-{} joinable table recommendations:'.format(len(recommendations)))
             return recommendations
 
@@ -49,6 +49,9 @@ class KGLiDS:
             table = table["Table"]
             recommendations = recommend_tables(self.conn, dataset, table, k, 'data:hasSemanticSimilarity',
                                                show_query)
+            recommendations['Score'] = list(map(lambda x: round(x, 2), [float(i) / max(recommendations['Score'].
+                                                tolist()) for i in (recommendations['Score'].tolist())]))
+
             print('Showing the top-{} unionable table recommendations:'.format(len(recommendations)))
             return recommendations
 
@@ -100,17 +103,17 @@ class KGLiDS:
 
         data = search_tables_on(self.conn, parsed_conditions(conditions), show_query)
         print('Showing recommendations as per the following conditions:\nCondition = ', conditions)
-        return pd.DataFrame(list(data), columns=['Dataset', 'Table', 'Number_of_columns',
+        df = pd.DataFrame(list(data), columns=['Dataset', 'Table', 'Number_of_columns',
                                                  'Number_of_rows', 'Path_to_table']).sort_values('Table',
                                                                                                  ignore_index=True,
-                                                                                                 ascending=False)
+                                                                                               ascending=False)
+        df['Number_of_rows'] = df['Number_of_rows'].apply(lambda x: int(x))
+        df['Number_of_columns'] = df['Number_of_columns'].apply(lambda x: int(x))
+        return df
 
     def get_path_between_tables(self, source_table: pd.Series, target_table: pd.Series, hops: int,
                                 relation: str = 'data:hasPrimaryKeyForeignKeySimilarity', show_query: bool = False):
         return get_path_between_tables(self.conn, source_table, target_table, hops, relation, show_query)
-
-    def get_unionable_columns(self, df1, df2, thresh: float = 0.50):
-        return get_unionable_columns(self.conn, df1, df2, thresh)
 
     def query(self, rdf_query: str):
         return query_kglids(self.conn, rdf_query)
@@ -131,7 +134,7 @@ class KGLiDS:
     def get_most_popular_parameters(self, library: str, parameters='all'):
         pass
 
-    def search_classifier(self, dataset: str, show_query=False):
+    def search_classifier(self, dataset: str = '', show_query=False):
         return search_classifier(self.conn, dataset, show_query)
 
     def get_hyperparameters(self, classifier: pd.Series, show_query=False):
@@ -149,6 +152,9 @@ class KGLiDS:
                              'classification, regression, visualization or clustering!')
         else:
             library_info = get_top_used_libraries(self.conn, task, show_query)
+            if len(library_info) == 0:
+                print('No library found for {}'.format(task))
+                return
             library_info['Module'] = library_info['Module'].apply(lambda module: module.replace('/', '.'))
             # fetch top k libraries by maximum occurrence
             libraries = library_info['Library']

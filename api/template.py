@@ -21,16 +21,8 @@ PREFIXES = """
     PREFIX lib: <http://kglids.org/resource/library/> 
     """
 
-CLASSIFIERS = {'RandomForestClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/RandomForestClassifier>',
-               'SVC': '<http://kglids.org/resource/library/sklearn/svm/SVC>',
-               'KNeighborsClassifier': '<http:/kglids.org/resource/library/sklearn/neighbors/KNeighborsClassifier>',
-               'GradientBoostingClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/GradientBoostingClassifier>',
-               'LogisticRegression': '<http://kglids.org/resource/library/sklearn/linear_model/LogisticRegression>',
-               'DecisionTreeClassifier': '<http://kglids.org/resource/library/sklearn/tree/DecisionTreeClassifier>'}
-
 
 def query_kglids(config, rdf_query):
-    # return execute_query(config, PREFIXES + rdf_query)["results"]["bindings"]
     return execute_query(config, PREFIXES + rdf_query)
 
 
@@ -653,57 +645,49 @@ def get_top_k_scoring_pipelines_for_dataset(config, dataset, k, show_query):
     return execute_query(config, query)
 
 
-# def get_classifier(config, dataset, show_query):
-#     for k, v in CLASSIFIERS.items():
-#         graph_url = k
-#         classifier = v.get('name')
-#         query = PREFIXES + """
-#         SELECT DISTINCT ?Pipeline ?Score ?Parameter ?Parameter_value
-#         WHERE
-#         {
-#             ?Dataset_id     schema:name '%s'   .
-#             ?Pipeline_id    kglids:isPartOf   ?Dataset_id    ;
-#                             rdfs:label        ?Pipeline      ;
-#                             pipeline:hasScore ?Score         .
-#            graph ?Pipeline_id
-#              {
-#                  ?Statement_number    pipeline:callsLibrary %s  .
-#                  << ?Statement_number pipeline:hasParameter ?Parameter >> pipeline:withParameterValue ?Parameter_value  .
-#              }
-#         } ORDER BY DESC(?Score)
-#         """ % (dataset, graph_url)
-#
-#         df = pd.read_csv(io.BytesIO(execute_query(config, query)))
-#
-#         if np.shape(df)[0] == 0:
-#             continue
-#         else:
-#             df = df.loc[df[df.columns[0]] == df.iloc[0][df.columns[0]]]
-#             print('Found ', classifier + '()', ' in "{}" pipeline'.format(df.iloc[0][0].replace(" ", '')))
-#             df_parameter_info = df.drop(df.columns[:2], axis=1).rename(
-#                 columns={'Parameter': classifier + '_parameters'})
-#
-#             if classifier == 'RandomForestClassifier':
-#                 return RandomForestClassifier(n_estimators=100)
-#
-#             return df_parameter_info
-#
-#     #     if show_query:
-#     #         print(query)
-#     # #
-#     # # df = pd.read_csv(io.BytesIO(execute_query(config, query)))
-#     # # df = df.loc[df[df.columns[0]] == df.iloc[0][df.columns[0]]]
-#     # return None
-#     # # df_parameter_info = df.drop(df.columns[:2], axis=1)
-#     # # df_pipeline_info = df.drop(df.columns[:2], axis=1)
+CLASSIFIERS = {'RandomForestClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/RandomForestClassifier>',
+                'SVC': '<http://kglids.org/resource/library/sklearn/svm/SVC>',
+                'KNeighborsClassifier': '<http:/kglids.org/resource/library/sklearn/neighbors/KNeighborsClassifier>',
+                'GradientBoostingClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/GradientBoostingClassifier>',
+                'LogisticRegression': '<http://kglids.org/resource/library/sklearn/linear_model/LogisticRegression>',
+                'DecisionTreeClassifier': '<http://kglids.org/resource/library/sklearn/tree/DecisionTreeClassifier>',
+                'AdaBoostClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/AdaBoostClassifier>',
+                'SGDClassifier': '<http://kglids.org/resource/library/sklearn/linear_model/SGDClassifier>',
+                'MLPClassifier': '<http://kglids.org/resource/library/sklearn/neural_network/MLPClassifier>',
+                'XGBClassifier': '<http://kglids.org/resource/library/xgboost/XGBClassifier>',
+                'VotingClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/VotingClassifier>',
+                'PassiveAggressiveClassifier': '<http://kglids.org/resource/library/sklearn/linear_model/PassiveAggressiveClassifier>',
+                'BaggingClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/BaggingClassifier>',
+                'RidgeClassifier': '<http://kglids.org/resource/library/sklearn/linear_model/RidgeClassifier>',
+                'RadiusNeighborsClassifier': '<http://kglids.org/resource/library/sklearn/neighbors/RadiusNeighborsClassifier>',
+                'ExtraTreesClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/ExtraTreesClassifier>',
+                'TFDistilBertForSequenceClassification': '<http://kglids.org/resource/library/transformers/TFDistilBertForSequenceClassification>'}
 
 
 def search_classifier(config, dataset, show_query):
+    sub_graph_query = """
+    """
+    for classifier, classifier_url in CLASSIFIERS.items():
+        if classifier != 'RandomForestClassifier':
+            query = """
+            UNION
+                     {
+                        ?Statement_number    pipeline:callsLibrary %s.
+                        BIND('%s' as ?Classifier)
+                     }
+            """ % (classifier_url, classifier)
+            sub_graph_query = sub_graph_query + query
+
+    filter_for_dataset = ''
+    if dataset != '':
+        filter_for_dataset = '?Dataset_id    schema:name "{}".'.format(dataset)
+
     query = PREFIXES + """
-        SELECT DISTINCT ?Pipeline ?Classifier ?Score
+    SELECT DISTINCT ?Dataset ?Pipeline ?Classifier ?Score
     WHERE 
     {
-        ?Dataset_id     schema:name '%s'   .
+        ?Dataset_id     rdf:type          kglids:Dataset ;
+                        schema:name       ?Dataset       .
         ?Pipeline_id    kglids:isPartOf   ?Dataset_id    ;
                         rdfs:label        ?Pipeline      ;
                         pipeline:hasScore ?Score         .
@@ -713,36 +697,11 @@ def search_classifier(config, dataset, show_query):
              {
                 ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/ensemble/RandomForestClassifier>  .
                 BIND('RandomForestClassifier' as ?Classifier)
-             }
-             UNION
-             {
-                ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/svm/SVC>  .
-                BIND('SVC' as ?Classifier)
-             }
-             UNION
-             {
-                ?Statement_number    pipeline:callsLibrary <http:/kglids.org/resource/library/sklearn/neighbors/KNeighborsClassifier>  .
-                BIND('KNeighborsClassifier' as ?Classifier)
-             }
-             UNION
-             {
-                ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/ensemble/GradientBoostingClassifier>  .
-                BIND('GradientBoostingClassifier' as ?Classifier)
-             }
-             UNION
-             {
-                ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/linear_model/LogisticRegression>  .
-                BIND('LogisticRegression' as ?Classifier)
-             }
-             UNION
-             {
-                ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/tree/DecisionTreeClassifier>  .
-                BIND('DecisionTreeClassifier' as ?Classifier)
-             }
+             }"""+sub_graph_query+"""
+                          
          }
-         
-    } ORDER BY DESC(?Score) 
-    """ % dataset
+    %s
+    } ORDER BY DESC(?Score) """ % filter_for_dataset
 
     if show_query:
         print(query)
@@ -765,9 +724,7 @@ def get_hyperparameters(config, pipeline, classifier, show_query):
                  ?Statement_number    pipeline:callsLibrary   %s .
                  << ?Statement_number pipeline:hasParameter %s >> pipeline:withParameterValue ?Value  .
              }
-        } ORDER BY DESC(?Score)
-    
-    """ % (parameter_heading, pipeline, classifier_url, parameter_heading)
+        } ORDER BY DESC(?Score)""" % (parameter_heading, pipeline, classifier_url, parameter_heading)
 
     if show_query:
         print(query)
@@ -802,11 +759,16 @@ def get_library_usage(config, dataset, k, show_query):
     if show_query:
         print(query)
     df = execute_query(config, query)
+    if len(df) == 0:
+        print("No library found")
+        return
     plt.rcParams['figure.figsize'] = 10, 5
     plt.rcParams['figure.dpi'] = 300
     plt.rcParams['savefig.dpi'] = 300
     sns.set_theme(style='darkgrid')
-    ax = sns.barplot(x="Library", y="Usage", data=df, palette='viridis')
+    df['Usage (in %)'] = list(map(lambda x: x*100, [int(i) / sum(df['Usage'].
+                                                tolist()) for i in (df['Usage'].tolist())]))
+    ax = sns.barplot(x="Library", y="Usage (in %)", data=df, palette='viridis')
     ax = ax.set_xticklabels(ax.get_xticklabels(), rotation=30)
 
 
