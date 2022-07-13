@@ -183,3 +183,5 @@ class KGLiDS:
     def get_pipelines_calling_libraries(self, components: list, show_query: bool = False):
         return get_pipelines_calling_libraries(self.conn, components, show_query)
 
+    def get_pipelines_for_deep_learning(self, show_query: bool = False):
+        return get_pipelines_for_deep_learning(self.conn, show_query)
