@@ -139,6 +139,9 @@ The following benchmark datasets were used to evaluate KGLiDS:
 * Kaggle
   * [`setup_kaggle_data.py`](pipelines/utils/setup_kaggle_data.py)
 
+## Technical Report
+Our technical report is available [here](technical_report.pdf)
+
 ## KGLiDS APIs
 See the full list of supported APIs [here](docs/KGLiDS_apis.md).
 
