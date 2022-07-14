@@ -185,3 +185,6 @@ class KGLiDS:
 
     def get_pipelines_for_deep_learning(self, show_query: bool = False):
         return get_pipelines_for_deep_learning(self.conn, show_query)
+
+    def recommend_transformations(self, show_query: bool = False):
+        return recommend_transformations(self.conn, show_query)

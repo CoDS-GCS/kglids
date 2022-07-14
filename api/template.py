@@ -861,3 +861,38 @@ def get_pipelines_for_deep_learning(config, show_query):
         print(query)
 
     return execute_query(config, query)
+
+
+def recommend_transformations(config, show_query):
+    query = PREFIXES + """
+    SELECT DISTINCT ?Transformation ?Pipeline (?Table_id as ?Table) ?Dataset 
+    WHERE
+    {
+    ?Pipeline_id    rdf:type                kglids:Pipeline     ;
+                    pipeline:hasVotes       ?Number_of_votes    ;
+                    rdfs:label              ?Pipeline           ;
+                    pipeline:isWrittenOn    ?Written_on         ;
+                    pipeline:isWrittenBy    ?Author             ;
+                    pipeline:hasScore       ?Score              ;
+                    pipeline:hasTag         ?Tag                ;
+                    kglids:isPartOf         ?Dataset_id         .
+    
+    ?Dataset_id     schema:name             ?Dataset            . 
+    
+    graph ?Pipeline_id
+    {   
+        ?s          pipeline:callsLibrary    ?l                 . 
+        BIND(STRAFTER(str(?l), str(lib:)) as ?Transformation)   . 
+        ?Table_id   rdf:type                 kglids:Table       . 
+                            
+    }
+    FILTER(regex(?l, "preprocessing", "i"))
+    } ORDER BY DESC(?Score) """
+
+    if show_query:
+        print(query)
+
+    df = execute_query(config, query)
+    df['Table'] = df['Table'].apply(lambda x: x.rsplit('/', 1)[-1])
+    df['Transformation'] = df['Transformation'].apply(lambda x: x.replace('/', '.'))
+    return df
