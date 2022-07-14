@@ -1,6 +1,6 @@
 # KGLiDS - Linked Data Science powered by Knowledge Graphs
 
-![alt text](docs/graphics/kglids_architecture.jpg)
+![KGLiDS_architecture](docs/graphics/kglids_architecture.jpg)
 
 
 <div style="text-align: justify">In recent years, we have witnessed a growing interest in data science
@@ -32,7 +32,7 @@ such as datasets and pipeline recommendation.</div>
 * Clone the `kglids` repo 
 * Create `kglids` Conda environment (Python 3.8) and install pip requirements.
 * Activate the `kglids` environment
-```
+```commandline
 conda activate kglids
 ```
 
@@ -89,27 +89,26 @@ python pipelines_analysis.py
 <b>Uploading LiDS graph to the graph-engine (we recommend using [Stardog](https://www.stardog.com/)):</b>
 1. Create a database 
 Note: enable support for <i>RDF *</i> (example given below) more info [here](https://docs.stardog.com/query-stardog/edge-properties)
+```commandline
+stardog-admin db create -o edge.properties=true -n Database_name
+```
+2. Add the dataset-graph to the database
+```commandline
+stardog data add --format turtle Database_name dataset_graph.nq
+```
+3. Add the pipeline default graph and named-graphs to the database
+```commandline
+stardog data add --format turtle Database_name pipeline_default_graph.nq
+```
 ```python
+import os
 import stardog
-database_name = 'db'
+database_name = 'Database_name'
 connection_details = {
       'endpoint': 'http://localhost:5820',
       'username': 'admin',
       'password': 'admin'}
-with stardog.Admin(**connection_details) as admin:
-    if database_name in [db.name for db in admin.databases()]:
-        admin.database(database_name).drop()
-    db = admin.new_database(database_name, {'edge.properties': True})
-```
-2. Add the dataset-graph to the database
-```
-stardog data add --format turtle db dataset_graph.nq
-```
-3. Add the pipeline default graph and named-graphs to the database
-```
-stardog data add --format turtle db pipeline_default_graph.nq
-```
-```python
+
 conn = stardog.Connection(database_name, **connection_details)
 conn.begin()
 ttl_files = [i for i in os.listdir(graphs_dir) if i.endswith('ttl')]

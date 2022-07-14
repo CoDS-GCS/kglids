@@ -21,9 +21,11 @@ conventional data science pipeline.
 | 13.  | `get_hyperparameters()`                     | Returns the hyperparameter values that were used for a given classifier                                                                                                                                                         |
 | 14.  | `get_top_k_library_used()`                  | Visualizes the top-k libraries that were used overall or for a given dataset                                                                                                                                                    |
 | 15.  | `get_top_used_libraries()`                  | Retrieve the top-k libraries used in a particular task. Task here could be:<br>1. Classification<br>2. Clustering<br>3. Regression<br>4. Visualization                                                                          |
-
+| 16.  | `get_pipelines_calling_libraries()`         | Returns a list of pipelines matching the criteria along with other important metadata, such as author, language, etc.                                                                                                           |
+| 17.  | `recommend_transformations()`               | Returns the possible set of transformation for tables                                                                                                                                                                           |
 <br>
-<b>API examples:</b>
+<hr>
+<b>API examples:</b><br>
 
 1. `kglids.query()`
 ```python
@@ -115,32 +117,78 @@ Showing table(s) for 'UK COVID-19 Data' dataset:
 
 5. `kglids.show_table_info()`
 ```python
-kglids.search_tables_on(conditions=[['player', 'club']])
+table_info = kglids.search_tables_on(conditions=[['player', 'club']])
+table_info
 ```
 Showing recommendations as per the following conditions:
 Condition =  [['player', 'club']]
 
-| 	    | Dataset                                         | 	Table                         | 	Number_of_columns | 	Number_of_rows | 	Path_to_table                                           |
-|------|-------------------------------------------------|--------------------------------|--------------------|-----------------|----------------------------------------------------------|
-| 0	   | FIFA 21 complete player dataset                 | 	players_21.csv                | 	106               | 	18944          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
-| 1	   | FIFA 21 complete player dataset                 | 	players_20.csv                | 	106	              | 18483           | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
-| 2	   | FIFA 20 complete player dataset                 | 	players_20.csv                | 	104               | 	18278          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
-| 3	   | FIFA 21 complete player dataset                 | 	players_19.csv                | 	106               | 	18085          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
-| 4	   | FIFA 20 complete player dataset                 | 	players_19.csv                | 	104               | 	17770          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
-| 5	   | FIFA 20 complete player dataset                 | 	players_18.csv                | 	104               | 	17592          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
-| 6	   | FIFA 21 complete player dataset                 | 	players_18.csv                | 	106               | 	17954          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
-| 7	   | FIFA 21 complete player dataset                 | 	players_17.csv                | 	106               | 	17597          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
-| 8	   | FIFA 20 complete player dataset                 | 	players_17.csv                | 	104               | 	17009          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
-| 9	   | FIFA 20 complete player dataset                 | 	players_16.csv                | 	104               | 	14881          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
-| 10	  | FIFA 21 complete player dataset                 | 	players_16.csv                | 	106               | 	15623          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
-| 11	  | FIFA 21 complete player dataset                 | 	players_15.csv                | 	106               | 	16155          | 	/data/shubham/datasets/data_lake/FIFA 21 compl...       |
-| 12	  | FIFA 20 complete player dataset                 | 	players_15.csv                | 	104               | 	15465          | 	/data/shubham/datasets/data_lake/FIFA 20 compl...       |
-| 13	  | open-source-sports.mens-professional-basketball | 	basketball_player_allstar.csv | 	23                | 	1609           | 	/data/shubham/datasets/data_lake/open-source-s...       |
-| 14	  | open-source-sports.mens-professional-basketball | 	basketball_draft.csv          | 	11                | 	9003           | 	/data/shubham/datasets/data_lake/open-source-s...       |
-| 15	  | open-source-sports.mens-professional-basketball | 	basketball_awards_players.csv | 	6                 | 	1719           | 	/data/shubham/datasets/data_lake/open-source-s...       |
-| 16	  | FIFA22 OFFICIAL DATASET                         | 	FIFA22_official_data.csv      | 	65                | 	16710          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |
-| 17	  | FIFA22 OFFICIAL DATASET                         | 	FIFA21_official_data.csv      | 	65                | 	17108          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |
-| 18	  | FIFA22 OFFICIAL DATASET                         | 	FIFA20_official_data.csv      | 	65                | 	17104          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |
-| 19	  | FIFA22 OFFICIAL DATASET                         | 	FIFA19_official_data.csv      | 	64                | 	17943          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |
-| 20	  | FIFA22 OFFICIAL DATASET                         | 	FIFA18_official_data.csv      | 	64                | 	17927          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |
-| 21	  | FIFA22 OFFICIAL DATASET                         | 	FIFA17_official_data.csv      | 	63                | 	17560          | 	/data/shubham/datasets/data_lake/FIFA22 OFFICI...       |
+| 	    | Dataset                                         | 	Table                         | 	Number_of_columns | 	Number_of_rows | 	Path_to_table                                 |
+|------|-------------------------------------------------|--------------------------------|--------------------|-----------------|------------------------------------------------|
+| 0	   | FIFA 21 complete player dataset                 | 	players_21.csv                | 	106               | 	18944          | 	/data/datasets/data_lake/FIFA 21 compl...     |
+| 1	   | FIFA 21 complete player dataset                 | 	players_20.csv                | 	106	              | 18483           | 	/data/datasets/data_lake/FIFA 21 compl...     |
+| 2	   | FIFA 20 complete player dataset                 | 	players_20.csv                | 	104               | 	18278          | 	/data/datasets/data_lake/FIFA 20 compl...     |
+| 3	   | FIFA 21 complete player dataset                 | 	players_19.csv                | 	106               | 	18085          | 	/data/datasets/data_lake/FIFA 21 compl...     |
+| 4	   | FIFA 20 complete player dataset                 | 	players_19.csv                | 	104               | 	17770          | 	/data/datasets/data_lake/FIFA 20 compl...     |
+| 5	   | FIFA 20 complete player dataset                 | 	players_18.csv                | 	104               | 	17592          | 	/data/datasets/data_lake/FIFA 20 compl...     |
+| 6	   | FIFA 21 complete player dataset                 | 	players_18.csv                | 	106               | 	17954          | 	/data/datasets/data_lake/FIFA 21 compl...     |
+| 7	   | FIFA 21 complete player dataset                 | 	players_17.csv                | 	106               | 	17597          | 	/data/datasets/data_lake/FIFA 21 compl...     |
+| 8	   | FIFA 20 complete player dataset                 | 	players_17.csv                | 	104               | 	17009          | 	/data/datasets/data_lake/FIFA 20 compl...     |
+| 9	   | FIFA 20 complete player dataset                 | 	players_16.csv                | 	104               | 	14881          | 	/data/datasets/data_lake/FIFA 20 compl...     |
+| 10	  | FIFA 21 complete player dataset                 | 	players_16.csv                | 	106               | 	15623          | 	/data/datasets/data_lake/FIFA 21 compl...     |
+| 11	  | FIFA 21 complete player dataset                 | 	players_15.csv                | 	106               | 	16155          | 	/data/datasets/data_lake/FIFA 21 compl...     |
+| 12	  | FIFA 20 complete player dataset                 | 	players_15.csv                | 	104               | 	15465          | 	/data/datasets/data_lake/FIFA 20 compl...     |
+| 13	  | open-source-sports.mens-professional-basketball | 	basketball_player_allstar.csv | 	23                | 	1609           | 	/data/datasets/data_lake/open-source-s...     |
+| 14	  | open-source-sports.mens-professional-basketball | 	basketball_draft.csv          | 	11                | 	9003           | 	/data/datasets/data_lake/open-source-s...     |
+| 15	  | open-source-sports.mens-professional-basketball | 	basketball_awards_players.csv | 	6                 | 	1719           | 	/data/datasets/data_lake/open-source-s...     |
+| 16	  | FIFA22 OFFICIAL DATASET                         | 	FIFA22_official_data.csv      | 	65                | 	16710          | 	/data/datasets/data_lake/FIFA22 OFFICI...     |
+| 17	  | FIFA22 OFFICIAL DATASET                         | 	FIFA21_official_data.csv      | 	65                | 	17108          | 	/data/datasets/data_lake/FIFA22 OFFICI...     |
+| 18	  | FIFA22 OFFICIAL DATASET                         | 	FIFA20_official_data.csv      | 	65                | 	17104          | 	/data/datasets/data_lake/FIFA22 OFFICI...     |
+| 19	  | FIFA22 OFFICIAL DATASET                         | 	FIFA19_official_data.csv      | 	64                | 	17943          | 	/data/datasets/data_lake/FIFA22 OFFICI...     |
+| 20	  | FIFA22 OFFICIAL DATASET                         | 	FIFA18_official_data.csv      | 	64                | 	17927          | 	/data/datasets/data_lake/FIFA22 OFFICI...     |
+| 21	  | FIFA22 OFFICIAL DATASET                         | 	FIFA17_official_data.csv      | 	63                | 	17560          | 	/data/datasets/data_lake/FIFA22 OFFICI...     |
+
+<hr>
+
+6. `kglids.recommend_k_unionable_tables(table_info: pandas.Series, k: int)`
+```python
+recommendations_union =kglids.recommend_k_unionable_tables(table_info.iloc[0], k = 5)
+recommendations_union
+```
+Showing the top-5 unionable table recommendations:
+
+| Dataset | 	Recommended_table                | 	Score           | 	Path_to_table |
+|---------|-----------------------------------|------------------|----------------|
+| 0       | 	FIFA 20 complete player dataset  | 	players_20.csv  | 	1.00          |	/data/datasets/data_lake/FIFA 20 compl...|
+| 1       | 	FIFA 20 complete player dataset  | 	players_19.csv  | 	0.85          |	/data/datasets/data_lake/FIFA 20 compl...|
+| 2       | 	FIFA 20 complete player dataset  | 	players_18.csv  | 	0.85          |	/data/datasets/data_lake/FIFA 20 compl...|
+| 3       | 	FIFA 20 complete player dataset  | 	players_17.csv  | 	0.85          |	/data/datasets/data_lake/FIFA 20 compl...|
+| 4       | 	FIFA 20 complete player dataset  | 	players_15.csv  | 	0.84          |	/data/datasets/data_lake/FIFA 20 compl...|
+
+<hr>
+
+7. `kglids.recommend_k_joinable_tables(table_info: pd.Series, k: int)`
+```python
+recommendations_join = kglids.kglids.recommend_k_joinable_tables((table_info.iloc[0], k = 2)
+recommendations_join
+```
+Showing the top-2 joinable table recommendations:
+
+| Dataset | 	Recommended_table                | 	Score                      | 	Path_to_table   |
+|---------|-----------------------------------|-----------------------------|------------------|
+| 0       | 	FIFA 20 complete player dataset  | 	players_20.csv             | 	1.0             |	/data/datasets/data_lake/FIFA 20 compl...|
+| 1       | 	FIFA22 OFFICIAL DATASET          | 	FIFA22_official_data.csv   | 	0.5             |	/data/datasets/data_lake/FIFA22 OFFICI...|
+
+<hr>
+
+8. `kglids.get_path_between_tables(source_table_info: pd.Series, target_table_info: pd.Series, hops: int)`
+```python
+kglids.get_path_between_tables(table_info.iloc[0], recommendations_join.iloc[1], hops=1)
+```
+
+![get_path_between_tables](graphics/get_path_between_tables.png)
+
+
+
+
+
