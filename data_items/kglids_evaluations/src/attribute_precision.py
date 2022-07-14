@@ -6,6 +6,7 @@ from helper.config import *
 from helper.queries import *
 from helper.cache import *
 from helper.plot import *
+from helper.comparsion_plot import plot_comparison
 
 # **************************CONFIGURATIONS*****************************
 THRESHOLD = 0.75
@@ -15,7 +16,9 @@ EXPERIMENT_NAME = 'attribute_precision'
 NAMESPACE = 'kglids_smallerReal'
 # *********************************************************************
 SAVE_RESULT_AS = EXPERIMENT_NAME + '_' + DATASET + '_' + str(THRESHOLD)
-SPARQL = connect_to_blazegraph(PORT, NAMESPACE)
+
+
+# SPARQL = connect_to_blazegraph(PORT, NAMESPACE)
 # *********************************************************************
 
 
@@ -160,13 +163,20 @@ def run_experiment(df):
 
 
 def main():
-    df = load_ground_truth()
-    t1 = time.time()
-    run_experiment(df)
-    print('\nTotal time taken: ', time.time() - t1)
+    # df = load_ground_truth()
+    # t1 = time.time()
+    # run_experiment(df)
+    # print('\nTotal time taken: ', time.time() - t1)
 
-    # exp_res = load_cache('../cache/attribute_precision_synthetic_k-350_with_de.pkl')
-    # visualize(exp_res, EXPERIMENT_NAME.replace('_', ' ').capitalize(), DATASET)
+    exp_res = load_cache('cache/attribute_precision_smallerReal_k-260.pkl')
+    plt.figure(figsize=(12, 5))
+    plt.subplot(1, 2, 1)
+    attribute_precision_plot = visualize(exp_res, EXPERIMENT_NAME.replace('_', ' ').capitalize(), DATASET)
+    plt.subplot(1, 2, 2)
+    comparison_plot = plot_comparison()
+    plt.tight_layout()
+    plt.savefig('../plots/{}.pdf'.format(EXPERIMENT_NAME), dpi=300)
+    # plt.show()
 
 
 main()
