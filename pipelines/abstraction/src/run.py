@@ -28,9 +28,9 @@ def main():
         if dataset.is_dir():
             working_file = {}
             table: os.DirEntry
-            if not os.path.isdir(f'../kaggle/{dataset.name}'):
+            if not os.path.isdir(f'../kaggle_small/{dataset.name}'):
                 continue
-            for table in os.scandir(f'../kaggle/{dataset.name}'):
+            for table in os.scandir(f'../kaggle_small/{dataset.name}'):
                 if table.name != '.DS_Store':
                     try:
                         working_file[table.name] = pd.read_csv(table.path, nrows=1)
@@ -64,10 +64,10 @@ def main():
     # with open('kaggle/default.json', 'w') as f:
     #     json.dump(default_graph, f)
 
-    with open(f'pipelines_rdf/library.ttl', 'w') as f:
+    with open(f'pipelines_small_rdf/library.ttl', 'w') as f:
         f.write(build_library_rdf_page(libs))
 
-    with open(f'pipelines_rdf/default.ttl', 'w') as f:
+    with open(f'pipelines_small_rdf/default.ttl', 'w') as f:
         f.write(build_default_rdf_page(default_graph))
 
 
@@ -131,10 +131,10 @@ def pipeline_analysis(working_file, dataset: os.DirEntry, file_path, pipeline_in
     #
     # with open(f'kaggle/{output_filename}-files.json', 'w') as f:
     #     json.dump(file_elements, f)
-    if not os.path.isdir(f'pipelines_rdf/{DATASET_NAME}'):
-        os.mkdir(f'pipelines_rdf/{DATASET_NAME}')
+    if not os.path.isdir(f'pipelines_small_rdf/{DATASET_NAME}'):
+        os.mkdir(f'pipelines_small_rdf/{DATASET_NAME}')
 
-    with open(f'pipelines_rdf/{DATASET_NAME}/{output_filename}.ttl', 'w') as f:
+    with open(f'pipelines_small_rdf/{DATASET_NAME}/{output_filename}.ttl', 'w') as f:
         f.write(build_pipeline_rdf_page(nodes, file_elements))
 
     pipeline_info['uri'] = util.create_pipeline_uri(SOURCE, DATASET_NAME, output_filename)

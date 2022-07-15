@@ -122,7 +122,7 @@ def build_column_rdf(table_uri: str, column_uri: str) -> str:
 
 
 def build_parameter_rdf(statement_uri: str, parameter: str, parameter_value: str) -> str:
-    return f'<<<{statement_uri}> pipeline:hasParameter "{parameter}">> pipeline:withParameterValue "{parameter_value}" .\n'
+    return f'<<<{statement_uri}> pipeline:hasParameter {escape_characters(parameter)}>> pipeline:withParameterValue {escape_characters(parameter_value)} .\n'
 
 
 def build_library_rdf(library: dict) -> str:
@@ -251,7 +251,8 @@ def build_sub_libraries_part(parent_library: str, sub_libraries: List[dict]) -> 
 def build_default_rdf_page(pipelines: List[dict]) -> str:
     return ''.join([
         create_prefix(),
-        build_pipeline_part(pipelines)
+        build_pipeline_part(pipelines),
+        "\n"
     ])
 
 
