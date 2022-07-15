@@ -748,8 +748,8 @@ def get_library_usage(config, dataset, k, show_query):
         GRAPH ?Pipeline
         {
             ?Statement pipeline:callsLibrary ?l                 .
-            BIND(STRAFTER(str(?l), str(lib:)) as ?Library)      .
-            # BIND(STRBEFORE(str(?l1), str('/')) as ?Library)     .
+            BIND(STRAFTER(str(?l), str(lib:)) as ?l1)      .
+            BIND(STRBEFORE(str(?l1), str('/')) as ?Library)     .
         }
         FILTER (?Library != "")              .
         FILTER (?Library != "builtin")       .         

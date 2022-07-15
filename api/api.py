@@ -2,7 +2,7 @@ from api.template import *
 from api.helpers.helper import *
 from collections import Counter
 from tqdm import tqdm
-from pygooglechart import PieChart3D
+
 
 class KGLiDS:
     def __init__(self, endpoint: str = 'localhost', port=5820, db: str = 'kglids'):
