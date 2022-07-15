@@ -2,7 +2,7 @@ from api.template import *
 from api.helpers.helper import *
 from collections import Counter
 from tqdm import tqdm
-
+from pygooglechart import PieChart3D
 
 class KGLiDS:
     def __init__(self, endpoint: str = 'localhost', port=5820, db: str = 'kglids'):
@@ -188,3 +188,44 @@ class KGLiDS:
 
     def recommend_transformations(self, show_query: bool = False):
         return recommend_transformations(self.conn, show_query)
+
+    def get_pipelines_by_tags(self, tag: str = '', show_query: bool = False):
+        return get_pipelines_by_tags(self.conn, tag, show_query)
+
+    def show_pipeline_usage_by_task(self, show_query: bool = False):
+        usage = dict()
+        usage['classification'] = sum(get_pipelines_by_tags(self.conn, tag='classification', show_query=show_query)['Number_of_pipelines'].tolist())
+        usage['clustering'] = sum(get_pipelines_by_tags(self.conn, tag='clustering', show_query=show_query)['Number_of_pipelines'].tolist())
+        usage['visualization'] = sum(get_pipelines_by_tags(self.conn, tag='visualization', show_query=show_query)['Number_of_pipelines'].tolist())
+        usage['cleaning'] = sum(get_pipelines_by_tags(self.conn, tag='cleaning', show_query=show_query)['Number_of_pipelines'].tolist())
+        usage['regression'] = sum(get_pipelines_by_tags(self.conn, tag='regression', show_query=show_query)['Number_of_pipelines'].tolist())
+        usage['deep learning'] = sum(get_pipelines_by_tags(self.conn, tag='deep learning', show_query=show_query)['Number_of_pipelines'].tolist()) + \
+                        sum(get_pipelines_by_tags(self.conn, tag='neural networks', show_query=show_query)['Number_of_pipelines'].tolist())
+
+        tasks = list(usage.keys())
+        data = list(usage.values())
+        colors = ("red", "orange", "yellow", "limegreen", "seagreen", "dodgerblue")
+
+        def func(pct):
+            return "{:.1f}%".format(pct)
+
+        wp = {'linewidth': 0, 'edgecolor': "black"}
+        label_data = [str(i) + " pipelines" for i in data]
+        fig, ax = plt.subplots(figsize=(10, 8))
+        wedges, texts, autotexts = ax.pie(data,
+                                          autopct=lambda pct: func(pct),
+                                          colors=colors,
+                                          labels=label_data,
+                                          textprops=dict(color="black"),
+                                          wedgeprops=wp)
+        ax.legend(wedges, tasks,
+                  loc="center left",
+                  bbox_to_anchor=(1.2, 0, 0.5, 1), fontsize=15)
+
+        plt.setp(autotexts, size=10, weight='bold')
+        plt.title("Pipeline usage by tasks", fontsize=15)
+        plt.show()
+
+
+
+

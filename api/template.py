@@ -748,8 +748,8 @@ def get_library_usage(config, dataset, k, show_query):
         GRAPH ?Pipeline
         {
             ?Statement pipeline:callsLibrary ?l                 .
-            BIND(STRAFTER(str(?l), str(lib:)) as ?l1)           .
-            BIND(STRBEFORE(str(?l1), str('/')) as ?Library)     .
+            BIND(STRAFTER(str(?l), str(lib:)) as ?Library)      .
+            # BIND(STRBEFORE(str(?l1), str('/')) as ?Library)     .
         }
         FILTER (?Library != "")              .
         FILTER (?Library != "builtin")       .         
@@ -901,3 +901,20 @@ def recommend_transformations(config, show_query):
     df['Table'] = df['Table'].apply(lambda x: x.rsplit('/', 1)[-1])
     df['Transformation'] = df['Transformation'].apply(lambda x: x.replace('/', '.'))
     return df
+
+
+def get_pipelines_by_tags(config, tag, show_query):
+    if tag != '':
+        tag = 'FILTER(regex(?Tag, "{}", "i"))'.format(tag)
+    query = PREFIXES + """
+    SELECT DISTINCT ?Tag (COUNT (?Pipeline_id) AS ?Number_of_pipelines) 
+    WHERE
+    {
+    ?Pipeline_id    rdf:type                kglids:Pipeline     ;
+                    pipeline:hasTag         ?Tag                .
+    %s
+    } GROUP BY ?Tag ORDER BY DESC(?Number_of_pipelines)
+    """ % tag
+    if show_query:
+        print(query)
+    return execute_query(config, query)
