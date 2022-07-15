@@ -7,7 +7,7 @@ import src.util as util
 import src.datatypes as DataTypes
 from src.datatypes import GraphInformation
 from src.Calls import pd_dataframe, File, packages
-from src.pipeline_abstraction import NodeVisitor
+from src.pipeline_abstraction import NodeVisitor, insert_parameter
 from src.util import ControlFlow
 
 kglids_library = "http://kglids.org/pipeline/library/"
@@ -1705,6 +1705,12 @@ class TestFileContainingElement(Test):
         print(self.graph.head.text)
         print(self.graph.head.calls[0].uri)
         self.assertEqual(1, 1)
+
+    def test_insert_parameters(self):
+        value = "x = sklearn.svm.SVC(**ssss)"
+        parse_and_visit_node(value, self.graph)
+        for edge in self.graph.tail.parameters:
+            print(edge.str())
 
 if __name__ == '__main__':
     unittest.main()

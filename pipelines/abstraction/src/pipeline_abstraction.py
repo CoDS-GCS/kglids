@@ -23,11 +23,14 @@ from src.ast_package.types import CallComponents, CallArgumentsComponents, Assig
     AttributeComponents
 
 
-def _insert_parameter(parameters: dict, is_block: bool, parameter: str, value):
+def insert_parameter(parameters: dict, is_block: bool, parameter: str, value):
+    print('<><><><>', parameter)
+    if parameter is None:
+        return
     if is_block:
-        parameters[parameter].append(value)
+        parameters[str(parameter)].append(value)
     else:
-        parameters[parameter] = value
+        parameters[str(parameter)] = value
 
 
 class NodeVisitor(ast.NodeVisitor):
@@ -363,14 +366,14 @@ class NodeVisitor(ast.NodeVisitor):
             parameter_value = args_package.analyze_call_arguments(self, node, args_components, call_components, i)
 
             if package_class.is_relevant:
-                _insert_parameter(parameters, args_components.is_block, args_components.label, parameter_value)
+                insert_parameter(parameters, args_components.is_block, args_components.label, parameter_value)
 
         for kw in node.keywords:
             if isinstance(kw, ast.keyword):
                 edge, value = self.visit_keyword(kw)
                 self._extract_dataflow(value)
                 self._add_to_column(value, call_components.base_package)
-                if package_class.is_relevant:
+                if package_class.is_relevant and edge is not None:
                     parameters[edge] = str(value)
 
         self.graph_info.add_parameters(parameters)

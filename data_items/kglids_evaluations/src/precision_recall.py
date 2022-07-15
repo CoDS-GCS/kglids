@@ -22,7 +22,7 @@ SPARQL = connect_to_blazegraph(PORT, NAMESPACE)
 
 
 def load_cache(load_as='cache'):
-    with open('../cache/' + load_as, 'rb') as handle:
+    with open('cache/' + load_as, 'rb') as handle:
         return pickle.load(handle)
 
 
@@ -103,7 +103,8 @@ def run_experiment(df, test_mapping: list):
 
 
 def visualize(exp_res: dict):
-    def plot_scores(k: list, metric: list, metric_name: str, d3l, aurum, tus):
+    def plot_scores(k: list, metric: list, metric_name: str, title, d3l, aurum, tus):
+        label_size = 15
         default_ticks = range(len(k))
         plt.plot(default_ticks, metric, 'g', label='KGLiDS', marker="x")
         plt.plot(default_ticks, d3l, 'cornflowerblue', label='D3L', marker="s")
@@ -112,9 +113,9 @@ def visualize(exp_res: dict):
         plt.xticks(default_ticks, k)
         plt.ylim(ymin=0)
         plt.yticks(np.arange(0.0, 1.1, 0.1))
-        plt.xlabel('K')
-        plt.ylabel(metric_name.strip('(ab)'))
-        plt.title(metric_name)
+        plt.xlabel('K', fontsize=label_size)
+        plt.ylabel(metric_name, fontsize=label_size)
+        plt.title(title, y=-0.20, fontsize = label_size)
         plt.legend(loc='lower right')
         plt.grid()
         return plt
@@ -139,26 +140,26 @@ def visualize(exp_res: dict):
     scores_precision['KGLids'] = precision
     scores_recall['KGLids'] = recall
 
-    plt.figure(figsize=(13, 5))
+    plt.figure(figsize=(12, 5))
     plt.subplot(1, 2, 1)
-    fig1 = plot_scores(k, precision, '(a) Precision', d3l_precision, aurum_precision, tus_precision)
+    fig1 = plot_scores(k, precision, 'Precision', '(a)', d3l_precision, aurum_precision, tus_precision)
     plt.subplot(1, 2, 2)
-    fig2 = plot_scores(k, recall, '(b) Recall', d3l_recall, aurum_recall, tus_recall)
+    fig2 = plot_scores(k, recall, 'Recall', '(b)', d3l_recall, aurum_recall, tus_recall)
     plt.tight_layout()
-    plt.savefig('../plots/{}.pdf'.format(SAVE_RESULT_AS))
-    plt.show()
+    plt.savefig('../plots/{}.pdf'.format(SAVE_RESULT_AS), dpi=300)
+    # plt.show()
 
 
 def main():
 
-    df = load_groundtruth()
-    test_mapping = get_table_mapping(df)
-    t1 = time.time()
-    run_experiment(df, test_mapping)
-    print('Total time taken: ', time.time()-t1)
+    # df = load_groundtruth()
+    # test_mapping = get_table_mapping(df)
+    # t1 = time.time()
+    # run_experiment(df, test_mapping)
+    # print('Total time taken: ', time.time()-t1)
 
-    # exp_res = load_cache('precision_recall_smallerReal_k-185.pkl')
-    # visualize(exp_res)
+    exp_res = load_cache('precision_recall_smallerReal.pkl')
+    visualize(exp_res)
 
 
 main()

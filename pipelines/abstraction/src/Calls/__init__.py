@@ -700,7 +700,21 @@ packages['sklearn.svm'] = Call(name='svm', library_path='sklearn', call_type=Cal
 # sklearn # svm # SVC
 svc = Call('SVC',
            'sklearn.svm',
-           {},
+           {'C': 1.0,
+            'kernel': 'rbf',
+            'degree': 3,
+            'gamma': 'scale',
+            'coef0': 0.0,
+            'shrinking': True,
+            'probability': False,
+            'tol': 0.001,
+            'cache_size': 200,
+            'class_weight': None,
+            'verbose': False,
+            'max_iter': -1,
+            'decision_function_shape': 'ovr',
+            'break_ties': False,
+            'random_state': None},
            True,
            CallType.CLASS)
 packages[f'{svc.library_path}.{svc.name}'] = svc
