@@ -753,20 +753,25 @@ def get_library_usage(config, dataset, k, show_query):
         }
         FILTER (?Library != "")              .
         FILTER (?Library != "builtin")       .         
-    } GROUP BY ?Library ORDER BY DESC(?Usage) LIMIT %s
-    """ % (dataset, k)
+    } GROUP BY ?Library ORDER BY DESC(?Usage)
+    """ % dataset
     if show_query:
         print(query)
     df = execute_query(config, query)
+    df['Usage (in %)'] = list(map(lambda x: x * 100, [int(i) / sum(df['Usage'].
+                                                                   tolist()) for i in (df['Usage'].tolist())]))
     if len(df) == 0:
         print("No library found")
         return
+    if len(df) < k:
+        print('Maximum {} libraries were found'.format(len(df)))
+        print('Showing top-{} libraries'.format(len(df)))
+        k = len(df)
+    df = df.head(k)
     plt.rcParams['figure.figsize'] = 10, 5
     plt.rcParams['figure.dpi'] = 300
     plt.rcParams['savefig.dpi'] = 300
     sns.set_theme(style='darkgrid')
-    df['Usage (in %)'] = list(map(lambda x: x * 100, [int(i) / sum(df['Usage'].
-                                                                   tolist()) for i in (df['Usage'].tolist())]))
     ax = sns.barplot(x="Library", y="Usage (in %)", data=df, palette='viridis')
     ax = ax.set_xticklabels(ax.get_xticklabels(), rotation=30)
 
