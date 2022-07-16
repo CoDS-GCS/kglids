@@ -226,6 +226,14 @@ class KGLiDS:
         plt.title("Pipeline usage by tasks", fontsize=15)
         plt.show()
 
+    def show_top_k_models_by_task(self, task: str, k: int = 5, show_query: bool = False):
+        if task == 'classification':
+            plot_top_k_classifiers(self.conn, k, show_query)
 
+        elif task == 'regression':
+            plot_top_k_regressors(self.conn, k, show_query)
 
+        else:
+            raise ValueError(' invalid task, try using one of the following tasks: \n'
+                                 'classification or regression')
 

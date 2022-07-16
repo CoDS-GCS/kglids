@@ -918,3 +918,101 @@ def get_pipelines_by_tags(config, tag, show_query):
     if show_query:
         print(query)
     return execute_query(config, query)
+
+
+def plot_top_k_classifiers(config, k, show_query):
+    query = PREFIXES + """
+    SELECT DISTINCT ?Module (COUNT (?Module) as ?Usage)
+    WHERE
+    {
+    ?Pipeline_id    rdf:type                    kglids:Pipeline         ;
+                    rdfs:label                  ?Pipeline               ;
+                    kglids:isPartOf             ?dataset_id             .
+    
+    ?dataset_id     schema:name                 ?Dataset                .
+    
+    GRAPH ?Pipeline_id
+    {
+        ?statement  pipeline:callsLibrary    ?l                         .
+        BIND(STRAFTER(str(?l), str(lib:)) as ?l1)                       .
+        BIND(STRBEFORE(str(?l1), str('/')) as ?Library)                 .  
+        BIND(STRAFTER(str(?l), str(?Library)) as ?m)                    .     
+        BIND(STRAFTER(str(?m), str('/')) as ?Module)                    .  
+    }    
+    
+    FILTER(regex(?l, "classifier", "i"))
+    FILTER (!regex(?l, "report", "i"))
+    FILTER (!regex(?l, "ROCAUC", "i"))  
+    FILTER (!regex(?l, "threshold", "i"))  
+    } GROUP BY ?Module ORDER BY DESC(?Usage)"""
+
+    if show_query:
+        print(query)
+    df = execute_query(config, query)
+    df['Usage (in %)'] = list(map(lambda x: x * 100, [int(i) / sum(df['Usage'].
+                                                                   tolist()) for i in (df['Usage'].tolist())]))
+
+    df['Classifier'] = df['Module'].apply(lambda x: x.rsplit('/', 1)[-1])
+
+    if len(df) == 0:
+        print("No classifier found")
+        return
+    if len(df) < k:
+        print('Maximum {} classifier(s) were found'.format(len(df)))
+        print('Showing top-{} classifiers'.format(len(df)))
+        k = len(df)
+    df = df.head(k)
+    plt.rcParams['figure.figsize'] = 10, 5
+    plt.rcParams['figure.dpi'] = 300
+    plt.rcParams['savefig.dpi'] = 300
+    sns.set_theme(style='darkgrid')
+    ax = sns.barplot(x="Classifier", y="Usage (in %)", data=df, palette='viridis')
+    ax = ax.set_xticklabels(ax.get_xticklabels(), rotation=40)
+
+
+def plot_top_k_regressors(config, k , show_query):
+    query = PREFIXES + """
+    SELECT DISTINCT ?Module (COUNT (?Module) as ?Usage)
+    WHERE
+    {
+    ?Pipeline_id    rdf:type                    kglids:Pipeline         ;
+                    rdfs:label                  ?Pipeline               ;
+                    kglids:isPartOf             ?dataset_id             .
+
+    ?dataset_id     schema:name                 ?Dataset                .
+
+    GRAPH ?Pipeline_id
+    {
+        ?statement  pipeline:callsLibrary    ?l                         .
+        BIND(STRAFTER(str(?l), str(lib:)) as ?l1)                       .
+        BIND(STRBEFORE(str(?l1), str('/')) as ?Library)                 .  
+        BIND(STRAFTER(str(?l), str(?Library)) as ?m)                    .     
+        BIND(STRAFTER(str(?m), str('/')) as ?Module)                    .  
+    }    
+
+    FILTER(regex(?l, "regres", "i"))
+    } GROUP BY ?Module ORDER BY DESC(?Usage)"""
+
+    if show_query:
+        print(query)
+
+    df = execute_query(config, query)
+    df['Usage (in %)'] = list(map(lambda x: x * 100, [int(i) / sum(df['Usage'].
+                                                                    tolist()) for i in (df['Usage'].tolist())]))
+
+    df['Regressor'] = df['Module'].apply(lambda x: x.rsplit('/', 1)[-1])
+
+    if len(df) == 0:
+        print("No classifier found")
+        return
+    if len(df) < k:
+        print('Maximum {} regressor(s) were found'.format(len(df)))
+        print('Showing top-{} regressors'.format(len(df)))
+        k = len(df)
+    df = df.head(k)
+    plt.rcParams['figure.figsize'] = 10, 5
+    plt.rcParams['figure.dpi'] = 300
+    plt.rcParams['savefig.dpi'] = 300
+    sns.set_theme(style='darkgrid')
+    ax = sns.barplot(x="Regressor", y="Usage (in %)", data=df, palette='viridis')
+    ax = ax.set_xticklabels(ax.get_xticklabels(), rotation=40)
