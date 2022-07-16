@@ -90,7 +90,6 @@ def main():
             if os.path.isdir(f'../CFGDemo/{dataset_path}/notebooks/{dir_path}'):
                 elements = os.listdir(f'../CFGDemo/{dataset_path}/notebooks/{dir_path}')
                 if f'{file_name}.py' in elements:
-                    count += 1
                     with open(f'../CFGDemo/{dataset_path}/notebooks/{dir_path}/pipeline_info.json', 'w') as f:
                         json.dump({
                             'url': f"https://www.kaggle.com/{nb_row['ref']}",
