@@ -24,7 +24,6 @@ from src.ast_package.types import CallComponents, CallArgumentsComponents, Assig
 
 
 def insert_parameter(parameters: dict, is_block: bool, parameter: str, value):
-    print('<><><><>', parameter)
     if parameter is None:
         return
     if is_block:
@@ -82,17 +81,7 @@ class NodeVisitor(ast.NodeVisitor):
         pass
 
     def visit_ClassDef(self, node: ClassDef) -> Any:
-        class_subgraph = ClassSubGraph()
-        class_subgraph.graph_info = self.graph_info
-        class_subgraph.working_file = self.working_file
-        for base in node.bases:
-            if isinstance(base, ast.Name):
-                print(self.visit_Name(base))
-            else:
-                print("CLASS_DEF BASE:", node.__dict__)
-                print(astor.to_source(node))
-
-        el: ast.FunctionDef
+        pass
 
     def visit_Return(self, node: Return) -> Any:
         pass
@@ -239,7 +228,7 @@ class NodeVisitor(ast.NodeVisitor):
         if left_package is not None and right_package is not None:
             if left_package == pd_dataframe or right_package == pd_dataframe:
                 return f'{pd_dataframe.library_path}.{pd_dataframe.name}'
-            return astor.to_source(node)  # TODO: FIX THIS RETURN TYPE
+            return astor.to_source(node)
         elif left_package is not None and len(left_package.return_types) > 0:
             pack = left_package.return_types[0]
             return f"{pack.library_path}.{pack.name}"
@@ -277,8 +266,6 @@ class NodeVisitor(ast.NodeVisitor):
             elif isinstance(value, ast.Attribute):
                 attr_value, _, _ = self.visit_Attribute(value)
                 values.append(attr_value)
-            # elif isinstance(value, ast.List):
-            #     print(self.visit_List(value))  # TODO: TO FIX
             elif isinstance(value, ast.List):
                 values.append(self.visit_List(value))
             elif isinstance(value, ast.Call):
@@ -336,7 +323,7 @@ class NodeVisitor(ast.NodeVisitor):
     def _extract_parent_package_information(self, components: CallComponents):
         if components.package is None:
             return
-        if isinstance(components.package, list):  # TODO: Create list extraction
+        if isinstance(components.package, list):
             return
 
         components.extract_parent_library()
@@ -383,10 +370,7 @@ class NodeVisitor(ast.NodeVisitor):
             variable, *_ = call_components.base_package.split('.')
             self._connect_node_to_column(self.files.get(variable))
 
-        # TODO: CLEAN THAT MESS
-        if call_components.package in self.user_defined_class:
-            return_type = self._class_subgraph_logic(call_components.package, args_components.class_args)
-        elif type(call_components.package) != list and call_components.package in self.subgraph.keys():
+        if type(call_components.package) != list and call_components.package in self.subgraph.keys():
             return_type = self._subgraph_logic(call_components.package,
                                                args_components.file_args,
                                                args_components.call_args)
@@ -706,9 +690,6 @@ class NodeVisitor(ast.NodeVisitor):
         s_graph.visit(self.subgraph_node.get(package))
         return s_graph.return_type
 
-    def _class_subgraph_logic(self, package, class_args):
-        class_graph = self.subgraph.get(package)
-
     def param_subgraph_init(self):
         psg = ParamSubGraph()
         psg.graph_info = self.graph_info
@@ -754,8 +735,6 @@ class NodeVisitor(ast.NodeVisitor):
         library_path = self._create_library_path(package_name)
         return packages.get(library_path, Calls.Call(is_relevant=False))
 
-
-# TODO: Extract sub graphs types
 
 class SubGraph(NodeVisitor):
     __slots__ = ['arguments', 'is_starting', 'return_type']
@@ -854,67 +833,3 @@ class ForSubGraph(NodeVisitor):
                 self.visit(el)
         else:
             super().visit_For(node)
-
-
-class ClassSubGraph(NodeVisitor):
-    __slots__ = ['arguments', 'return_type']
-
-    def __init__(self):
-        super().__init__()
-        self.is_starting = True
-        self.return_type = None
-
-    def visit(self, node: AST) -> Any:
-        if self.is_starting:
-            self.is_starting = False
-            return self.visit_FunctionDef(cast(ast.FunctionDef, node))
-        return super().visit(node)
-
-    def visit_init(self, node: FunctionDef):
-        args = [function_arg for function_arg in self.visit_arguments(node.args) if arg != 'self']
-        # for function_arg in args:
-        #     if
-        # for el in node.body:
-        #     if isinstance(el, ast.Assign):
-        #
-        #     else:
-        #         print("CLASS INIT BODY", node.__dict__)
-        #         print(astor.to_source(node))
-        print(node.__dict__)
-        pass
-
-    def visit_method(self, node: FunctionDef):
-        self.control_flow.append(ControlFlow.METHOD)
-        print(node.__dict__)
-        self.control_flow.pop()
-        pass
-
-    def visit_FunctionDef(self, node: FunctionDef) -> Any:
-        if node is None:
-            return self.visit_init(cast(ast.FunctionDef, node))
-        for el in node.body:
-            self.visit(el)
-        self.control_flow.pop()
-
-    def visit_Return(self, node: Return) -> Any:
-        if isinstance(node.value, ast.Call):
-            self.visit_Call(node.value)
-        elif isinstance(node.value, ast.Name):
-            name = self.visit_Name(node.value)
-            self.return_type = self.variables.get(name).return_types
-            print(self.variables.get(name))
-        else:
-            print("SUBGRAPH RETURN VALUE:", node.__dict__)
-            print(astor.to_source(node))
-
-
-class ClassObject:
-    def __init__(self):
-        self.variables = {}
-        self.functions = {}
-
-    def visit(self, node_visitor: NodeVisitor, function_name: str):
-        package = self.functions.get(function_name)
-        subgraph: NodeVisitor = node_visitor.param_subgraph_init()
-        node_visitor.variables = self.variables  # TODO: join the node_visitor variables together
-        return subgraph.visit(package)

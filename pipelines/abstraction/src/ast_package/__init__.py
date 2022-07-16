@@ -129,11 +129,6 @@ class Name(AstPackage):
 
 
 class Attribute(AstPackage):
-    def analyze_call_arguments(self, node_visitor: ast.NodeVisitor, node: ast.Call, components: CallArgumentsComponents,
-                               call_components: CallComponents, pos: int):
-        # TODO: Write the logic of this
-        super().analyze_call_arguments(node_visitor, node, components, call_components, pos)
-
     def extract_func(self, node_visitor: ast.NodeVisitor, node: ast.Call, components: CallComponents):
         components.package, components.base_package, components.file = node_visitor.visit_Attribute(cast(ast.Attribute, node.func))
 
@@ -153,7 +148,7 @@ class Attribute(AstPackage):
         name, base, _ = node_visitor.visit_Attribute(cast(ast.Attribute, node.value))
         try:
             if name is not None and isinstance(name, str):
-                package = Calls.packages.get(name)  # TODO: Verify that this is working
+                package = Calls.packages.get(name)
                 name = package.return_types[0].full_path()
         finally:
             return name, base
@@ -293,9 +288,6 @@ class Dict(AstPackage):
 
     def extract_keyword_value(self, node_visitor: ast.NodeVisitor, node: ast):
         return node_visitor.visit_Dict(node.value)
-
-    # def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int, list_elements: list):
-    #     list_elements.append(node_visitor.visit_Dict(cast(ast.Dict, node.elts[pos])))
 
 
 class Subscript(AstPackage):
