@@ -528,6 +528,245 @@ label_encoder_transform = Call('transform',
                                [pd_dataframe])
 packages[f'{label_encoder_transform.library_path}.{label_encoder_transform.name}'] = label_encoder_transform
 
+# sklearn # preprocessing # LabelBinarizer
+label_binarizer = Call('LabelBinarizer',
+                       'sklearn.preprocessing',
+                       {'neg_label': 0,
+                        'pos_label': 1,
+                        'sparse_output': False},
+                       True,
+                       CallType.CLASS)
+packages[f'{label_binarizer.library_path}.{label_binarizer.name}'] = label_binarizer
+
+label_binarizer_fit_transform = Call('fit_transform',
+                                     'sklearn.preprocessing.LabelBinarizer',
+                                     {'y': None},
+                                     False,
+                                     CallType.FUNCTION,
+                                     [pd_dataframe])
+packages[
+    f'{label_binarizer_fit_transform.library_path}.{label_binarizer_fit_transform.name}'] = label_binarizer_fit_transform
+
+label_binarizer_transform = Call('transform',
+                                 'sklearn.preprocessing.LabelBinarizer',
+                                 {'y': None},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [pd_dataframe])
+packages[f'{label_binarizer_transform.library_path}.{label_binarizer_transform.name}'] = label_binarizer_transform
+
+label_binarizer_fit = Call('fit',
+                           'sklearn.preprocessing.LabelBinarizer',
+                           {'y': None},
+                           False,
+                           CallType.FUNCTION,
+                           [label_binarizer])
+packages[f'{label_binarizer_fit.library_path}.{label_binarizer_fit.name}'] = label_binarizer_fit
+
+# sklearn # preprocessing # StandardScaler
+standard_scaler = Call('StandardScaler',
+                       'sklearn.preprocessing',
+                       {'copy': True,
+                        'with_mean': True,
+                        'with_std': True},
+                       True,
+                       CallType.CLASS)
+packages[f'{standard_scaler.library_path}.{standard_scaler.name}'] = standard_scaler
+
+standard_scaler_fit_transform = Call('fit_transform',
+                                     'sklearn.preprocessing.StandardScaler',
+                                     {'X': None,
+                                      'y': None},
+                                     False,
+                                     CallType.FUNCTION,
+                                     [pd_dataframe])
+packages[
+    f'{standard_scaler_fit_transform.library_path}.{standard_scaler_fit_transform.name}'] = standard_scaler_fit_transform
+
+standard_scaler_transform = Call('transform',
+                                 'sklearn.preprocessing.StandardScaler',
+                                 {'X': None,
+                                  'copy': None},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [pd_dataframe])
+packages[f'{standard_scaler_transform.library_path}.{standard_scaler_transform.name}'] = standard_scaler_transform
+
+standard_scaler_fit = Call('fit',
+                           'sklearn.preprocessing.StandardScaler',
+                           {'X': None,
+                            'y': None,
+                            'sample_weight': None},
+                           False,
+                           CallType.FUNCTION,
+                           [standard_scaler])
+packages[f'{standard_scaler_fit.library_path}.{standard_scaler_fit.name}'] = standard_scaler_fit
+
+# sklearn # preprocessing # MinMaxScaler
+min_max_scaler = Call('MinMaxScaler',
+                      'sklearn.preprocessing',
+                      {'feature_range': (0, 1),
+                       'copy': True,
+                       'clip': False},
+                      True,
+                      CallType.CLASS)
+packages[f'{min_max_scaler.library_path}.{min_max_scaler.name}'] = min_max_scaler
+
+min_max_scaler_fit_transform = Call('fit_transform',
+                                    'sklearn.preprocessing.MinMaxScaler',
+                                    {'X': None,
+                                     'y': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[
+    f'{min_max_scaler_fit_transform.library_path}.{min_max_scaler_fit_transform.name}'] = min_max_scaler_fit_transform
+
+min_max_scaler_transform = Call('transform',
+                                'sklearn.preprocessing.MinMaxScaler',
+                                {'X': None},
+                                False,
+                                CallType.FUNCTION,
+                                [pd_dataframe])
+packages[f'{min_max_scaler_transform.library_path}.{min_max_scaler_transform.name}'] = min_max_scaler_transform
+
+min_max_scaler_fit = Call('fit',
+                          'sklearn.preprocessing.MinMaxScaler',
+                          {'X': None,
+                           'y': None},
+                          False,
+                          CallType.FUNCTION,
+                          [min_max_scaler])
+packages[f'{min_max_scaler_fit.library_path}.{min_max_scaler_fit.name}'] = min_max_scaler_fit
+
+# sklearn # preprocessing # OneHotEncoder
+one_hot_encoder = Call('OneHotEncoder',
+                       'sklearn.preprocessing',
+                       {'categories': 'auto',
+                        'drop': None,
+                        'sparse': True,
+                        'dtype': "<class 'numpy.float64'>",
+                        'handle_unknown': 'error',
+                        'min_frequency': None,
+                        'max_categories': None},
+                       True,
+                       CallType.CLASS)
+packages[f'{one_hot_encoder.library_path}.{one_hot_encoder.name}'] = one_hot_encoder
+
+one_hot_encoder_fit_transform = Call('fit_transform',
+                                     'sklearn.preprocessing.OneHotEncoder',
+                                     {'X': None,
+                                      'y': None},
+                                     False,
+                                     CallType.FUNCTION,
+                                     [pd_dataframe])
+packages[
+    f'{one_hot_encoder_fit_transform.library_path}.{one_hot_encoder_fit_transform.name}'] = one_hot_encoder_fit_transform
+
+one_hot_encoder_transform = Call('transform',
+                                 'sklearn.preprocessing.OneHotEncoder',
+                                 {'X': None},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [pd_dataframe])
+packages[f'{one_hot_encoder_transform.library_path}.{one_hot_encoder_transform.name}'] = one_hot_encoder_transform
+
+one_hot_encoder_fit = Call('fit',
+                           'sklearn.preprocessing.OneHotEncoder',
+                           {'X': None,
+                            'y': None},
+                           False,
+                           CallType.FUNCTION,
+                           [one_hot_encoder])
+packages[f'{one_hot_encoder_fit.library_path}.{one_hot_encoder_fit.name}'] = one_hot_encoder_fit
+
+# sklearn # preprocessing # RobustScaler
+robust_scaler = Call('RobustScaler',
+                     'sklearn.preprocessing',
+                     {'with_centering': True,
+                      'with_scaling': True,
+                      'quantile_range': (25.0, 75.0),
+                      'copy': True,
+                      'unit_variance': False},
+                     True,
+                     CallType.CLASS)
+packages[f'{robust_scaler.library_path}.{robust_scaler.name}'] = robust_scaler
+
+robust_scaler_fit_transform = Call('fit_transform',
+                                   'sklearn.preprocessing.RobustScaler',
+                                   {'X': None,
+                                    'y': None},
+                                   False,
+                                   CallType.FUNCTION,
+                                   [pd_dataframe])
+packages[
+    f'{robust_scaler_fit_transform.library_path}.{robust_scaler_fit_transform.name}'] = robust_scaler_fit_transform
+
+robust_scaler_transform = Call('transform',
+                               'sklearn.preprocessing.RobustScaler',
+                               {'X': None},
+                               False,
+                               CallType.FUNCTION,
+                               [pd_dataframe])
+packages[f'{robust_scaler_transform.library_path}.{robust_scaler_transform.name}'] = robust_scaler_transform
+
+robust_scaler_fit = Call('fit',
+                         'sklearn.preprocessing.RobustScaler',
+                         {'X': None,
+                          'y': None},
+                         False,
+                         CallType.FUNCTION,
+                         [robust_scaler])
+packages[f'{robust_scaler_fit.library_path}.{robust_scaler_fit.name}'] = robust_scaler_fit
+
+# sklearn.preprocessing.MaxAbsScaler
+max_abs_scaler = Call('MaxAbsScaler',
+                      'sklearn.preprocessing',
+                      {'copy': True},
+                      True,
+                      CallType.CLASS)
+packages[f'{max_abs_scaler.library_path}.{max_abs_scaler.name}'] = max_abs_scaler
+
+max_abs_scaler_fit_transform = Call('fit_transform',
+                                    'sklearn.preprocessing.MaxAbsScaler',
+                                    {'X': None,
+                                     'y': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[
+    f'{max_abs_scaler_fit_transform.library_path}.{max_abs_scaler_fit_transform.name}'] = max_abs_scaler_fit_transform
+
+max_abs_scaler_transform = Call('transform',
+                                'sklearn.preprocessing.MaxAbsScaler',
+                                {'X': None},
+                                False,
+                                CallType.FUNCTION,
+                                [pd_dataframe])
+packages[f'{max_abs_scaler_transform.library_path}.{max_abs_scaler_transform.name}'] = max_abs_scaler_transform
+
+max_abs_scaler_fit = Call('fit',
+                          'sklearn.preprocessing.MaxAbsScaler',
+                          {'X': None,
+                           'y': None},
+                          False,
+                          CallType.FUNCTION,
+                          [max_abs_scaler])
+packages[f'{max_abs_scaler_fit.library_path}.{max_abs_scaler_fit.name}'] = max_abs_scaler_fit
+
+# sklearn # preprocessing # scale
+preprocessing_scale = Call('scale',
+                           'sklearn.preprocessing',
+                           {'X': None,
+                            'axis': 0,
+                            'with_mean': True,
+                            'with_std': True,
+                            'copy': True},
+                           False,
+                           CallType.FUNCTION,
+                           [pd_dataframe])
+packages[f'{preprocessing_scale.library_path}.{preprocessing_scale.name}'] = preprocessing_scale
+
 # sklearn # model_selection
 packages['sklearn.model_selection'] = Call(name='model_selection', library_path='sklearn', call_type=CallType.PACKAGE)
 
