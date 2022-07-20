@@ -57,7 +57,7 @@ def create_column_name(source: str, dataset: str, table_name: str, column: str):
 
 def create_statement_uri(source: str, dataset_name: str, python_file_name: str, line_id: int):
     return f"http://kglids.org/resource/{source}/" \
-           f"{url_encode(dataset_name)}/{url_encode(python_file_name)}/" \
+           f"{url_encode(dataset_name)}/dataResource/{url_encode(python_file_name)}/" \
            f"s{line_id}"
 
 
