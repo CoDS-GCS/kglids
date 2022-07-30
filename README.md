@@ -28,6 +28,9 @@ discovery benchmarks and the Kaggle portal, and show that KGLiDS
 significantly outperforms state-of-the-art systems on related tasks,
 such as datasets and pipeline recommendation.</div>
 
+## Technical Report
+Our technical report is available [here](techincal_report.pdf)
+
 ## Installation
 * Clone the `kglids` repo 
 * Create `kglids` Conda environment (Python 3.8) and install pip requirements.
@@ -44,7 +47,7 @@ for a quick hands-on! </b>
 
 
 <b>Generating the LiDS graph:</b>
-1. Add your configurations to [config.yml]():
+1. Add your configurations to [config.yml](data_items/profiler/config/config.yml):
 ```python
 # sample configurations
 datasource: "kaggle" 
@@ -98,7 +101,7 @@ stardog data add --format turtle Database_name dataset_graph.nq
 ```
 3. Add the pipeline default graph and named-graphs to the database
 ```commandline
-stardog data add --format turtle Database_name pipeline_default_graph.nq
+stardog data add --format turtle Database_name default.ttl library.ttl
 ```
 ```python
 import os
@@ -139,9 +142,6 @@ The following benchmark datasets were used to evaluate KGLiDS:
 * Kaggle
   * [`setup_kaggle_data.py`](pipelines/utils/setup_kaggle_data.py)
 
-## Technical Report
-Our technical report is available [here](technical_report.pdf)
-
 ## KGLiDS APIs
 See the full list of supported APIs [here](docs/KGLiDS_apis.md).
 
@@ -152,4 +152,4 @@ If you find our work useful, please cite it in your research:
 This repository is part of our submission to SIGMOD23. We will make it available to the public research community upon acceptance. 
 
 ## Questions
-For any questions please contact us at:<br/>mossad.helali@concordia.ca, shubham.vashisth@concordia.ca, philippe.carrier@concordia.ca, khose@cs.aau.dk, essam.mansour@concordia.ca
+For any questions please contact us at:<br/>essam.mansour@concordia.ca, mossad.helali@concordia.ca, shubham.vashisth@concordia.ca, philippe.carrier@concordia.ca, khose@cs.aau.dk
