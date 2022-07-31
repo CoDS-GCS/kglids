@@ -740,7 +740,7 @@ def get_library_usage(config, dataset, k, show_query):
         dataset = '?Dataset    schema:name        "{}"        .\n\t\t' \
                   '?Pipeline   kglids:isPartOf    ?Dataset  .'.format(dataset)
     query = PREFIXES + """
-    SELECT ?Library (COUNT(?Library) as ?Usage)
+    SELECT ?Library (COUNT(distinct ?Pipeline) as ?Usage)
     WHERE
     {
         %s
@@ -763,17 +763,21 @@ def get_library_usage(config, dataset, k, show_query):
     if len(df) == 0:
         print("No library found")
         return
-    if len(df) < k:
-        print('Maximum {} libraries were found'.format(len(df)))
-        print('Showing top-{} libraries'.format(len(df)))
-        k = len(df)
+    
     df = df.head(k)
-    plt.rcParams['figure.figsize'] = 10, 5
-    plt.rcParams['figure.dpi'] = 300
-    plt.rcParams['savefig.dpi'] = 300
-    sns.set_theme(style='darkgrid')
-    ax = sns.barplot(x="Library", y="Usage (in %)", data=df, palette='viridis')
-    ax = ax.set_xticklabels(ax.get_xticklabels(), rotation=30)
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.bar(range(len(df)), df['Usage'].tolist(), color='mediumseagreen')
+    ax.set_xticks(range(len(df)))
+    ax.set_xticklabels(df['Library'].tolist(), rotation=20)
+    ax.set_ylabel('Number of Pipelines')
+    for i, usage in enumerate(df['Usage']):
+        ax.text(i-0.35, usage + 200, str(usage), color='k', fontweight='bold')
+    ax.set_ylim(0, df['Usage'].max() + 2000)
+    plt.grid(axis='y')
+    plt.tight_layout()
+    plt.savefig('library_usage_stats.pdf')
+    plt.show()
+
 
 
 def get_top_used_libraries(config, task, show_query):
