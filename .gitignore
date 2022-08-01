@@ -1,18 +1,22 @@
 
-/storage
 
-pipelines/data/
-pipelines/experiments/**/*.tsv
-pipelines/experiments/**/*.pickle
 
-data_items/data/
-data_items/profiler/src/storage/meta_data/
-data_items/profiler/src/temp_spark/
-data_items/profiler/src/storage/metadata/
+/experiments/pipeline_abstraction_experiments/tmp/
+/experiments/pipeline_abstraction_experiments/**/*.tsv
+/experiments/pipeline_abstraction_experiments/**/*.pickle
 
-data_items/knowledge_graph/src/out/
+kg_governor/data_profiling/src/temp_spark/
+kg_governor/data_profiling/src/storage
+kg_governor/knowledge_graph_construction/src/out
+kg_governor/knowledge_graph_construction/src/utils/glove_embeddings/*
+!kg_governor/knowledge_graph_construction/src/utils/glove_embeddings/README.md
 
-elasticsearch-7.10.2/
+
+/storage/data_sources/*
+!/storage/data_sources/README.md
+/storage/knowledge_graph/*
+!/storage/knowledge_graph/README.md
+
 .idea/
 __pycache__/
 *.py[cod]
@@ -20,4 +24,5 @@ __pycache__/
 .ipynb_checkpoints
 
 wandb/
-/pipelines/experiments/tmp/
+
+
