@@ -1,0 +1,1 @@
+place here glove embeddings under the name glove.6B.100d.txt
