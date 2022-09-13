@@ -204,7 +204,7 @@ def main():
     parser.add_argument('--column-profiles-path', type=str,  
                         default='../../data_profiling/src/storage/metadata/profiles', help='Path to column profiles')
     parser.add_argument('--out-graph-path', type=str,
-                        default='../../../storage/knowledge_graph/data_global_schema/data_global_schema_graph.nt',
+                        default='../../../storage/knowledge_graph/data_global_schema/data_global_schema_graph.ttl',
                         help='Path to save the graph, including graph file name.')
     parser.add_argument('--spark-mode', type=str, default='local', help="Possible values: 'local' or 'cluster'")
     args = parser.parse_args()
@@ -230,7 +230,7 @@ def main():
     print(datetime.now(), '• 3. Combining intermediate subgraphs from workers\n')
     knowledge_graph_builder.build_graph()
 
-    print(datetime.now(), '\n• Done. Graph Saved to: out/kglids_data_items_graph.nt\n')
+    print(datetime.now(), '\n• Done. Graph Saved to: out/kglids_data_items_graph.ttl\n')
 
     end_all = datetime.now()
     print(datetime.now(), "Total time to build graph: " + str(end_all - start_all))

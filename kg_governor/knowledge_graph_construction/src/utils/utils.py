@@ -21,6 +21,7 @@ class Label:
         return str(self.__repr__())
 
 
+# TODO: [Implement] Serialize as Turtle-star (needs RDFlib-star see: https://github.com/RDFLib/rdflib/discussions/1554)
 class RDFResource:
     def __init__(self, content, namespace=None, isBlank=False):
         self.content = content
@@ -34,11 +35,9 @@ class RDFResource:
         if self.isBlank:
             return '_:{}'.format(self.content)
         if isinstance(self.content, str):
-            return '\"{}\"'.format(self.content)
-        if isinstance(self.content, int):
-            return '\"{}\"^^xsd:integer'.format(self.content)
+            return '"{}"'.format(self.content)
         if isinstance(self.content, float):
-            return '\"{}\"^^xsd:double'.format(round(self.content, 3)) 
+            return round(self.content, 3)
         if isinstance(self.content, Label):
             return str(self.content)
         
