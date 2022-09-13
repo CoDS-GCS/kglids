@@ -140,7 +140,7 @@ The following benchmark datasets were used to evaluate KGLiDS:
     (more info on data discovery benchmarks [here](https://arxiv.org/pdf/2011.10427.pdf)) 
 
 * Kaggle
-  * [`setup_kaggle_data.py`](pipelines/utils/setup_kaggle_data.py)
+  * [`setup_kaggle_data.py`](storage/utils/setup_kaggle_data.py)
 
 ## KGLiDS APIs
 See the full list of supported APIs [here](docs/KGLiDS_apis.md).
