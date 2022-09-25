@@ -92,6 +92,5 @@ class TestLibrary(unittest.TestCase):
         self.assertEqual(CallType.CLASS.value, df.get('type'))
 
 
-
 if __name__ == '__main__':
     unittest.main()

@@ -1,29 +1,20 @@
 import unittest
 import ast
 import pandas as pd
-from src.datatypes import GraphInformation, File as DataFile
-from src.pipeline_abstraction import NodeVisitor
+
+from src.datatypes import File as DataFile
 from src.ast_package import (Name, Attribute, Constant, Call, List, Dict, Subscript, Lambda, BinOp, Tuple,
                              get_ast_package, Compare)
 from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
     AttributeComponents
 from src.Calls import packages, pd_dataframe, File
 import src.util as util
+from test.test_pipeline_abstraction import Test
 
 kglids_library = "http://kglids.org/pipeline/library/"
 FILENAME = "test.py"
 SOURCE = "<SOURCE>"
 DATASET_NAME = "<DATASET_NAME>"
-
-
-class Test(unittest.TestCase):
-    def setUp(self) -> None:
-        graph = GraphInformation(
-            python_file_name=FILENAME,
-            source=SOURCE,
-            dataset_name=DATASET_NAME
-        )
-        self.node_visitor = NodeVisitor(graph)
 
 
 class AstPackageSelection(Test):

@@ -510,7 +510,7 @@ class MyTestCase(unittest.TestCase):
                    "\tpipeline:hasTag \"arts and entertainment\";\n" \
                    "\tpipeline:hasSourceURL \"https://www.kaggle.com/camnugent/nhl-player-salary-prediction-xgboost-rf-and-svm\";\n" \
                    "\tpipeline:hasScore 0.632134442843743;\n" \
-                   "\tkglids:isPartOf <http://kglids.org/resource/kaggle/camnugent.predict-nhl-player-salaries> .\n"
+                   "\tkglids:isPartOf <http://kglids.org/resource/kaggle/camnugent.predict-nhl-player-salaries> .\n\n"
 
         pipelines = [
             {

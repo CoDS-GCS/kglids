@@ -1712,5 +1712,6 @@ class TestFileContainingElement(Test):
         for edge in self.graph.tail.parameters:
             print(edge.str())
 
+
 if __name__ == '__main__':
     unittest.main()
