@@ -51,7 +51,7 @@ def create_file_id(source: str, dataset: str, table_name: str) -> str:
 
 def create_column_name(source: str, dataset: str, table_name: str, column: str):
     return f"http://kglids.org/resource/{url_encode(source)}/" \
-           f"{url_encode(dataset)}/{url_encode(table_name)}/" \
+           f"{url_encode(dataset)}/dataResource/{url_encode(table_name)}/" \
            f"{url_encode(column)}"
 
 
@@ -80,7 +80,7 @@ def create_built_in_uri(library_name):
 
 def create_file_uri(source: str, dataset_name: str, file_name: str):
     return f"http://kglids.org/resource/{url_encode(source)}/" \
-           f"{url_encode(dataset_name)}/{url_encode(file_name)}"
+           f"{url_encode(dataset_name)}/dataResource/{url_encode(file_name)}"
 
 
 def create_dataset_uri(source: str, dataset_name: str):
