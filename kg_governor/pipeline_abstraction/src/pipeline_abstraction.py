@@ -42,7 +42,6 @@ class NodeVisitor(ast.NodeVisitor):
         self.files = {}
         self.variables = {}
         self.alias = {}
-        self.packages = {}
         self.subgraph = {}
         self.subgraph_node = {}
         self.control_flow = deque()
@@ -116,7 +115,6 @@ class NodeVisitor(ast.NodeVisitor):
         fsg.working_file = self.working_file
         fsg.files = self.files.copy()
         fsg.variables = self.variables.copy()
-        fsg.packages = self.packages
         fsg.alias = self.alias
         fsg.subgraph = self.subgraph
         fsg.subgraph_node = self.subgraph_node
@@ -339,7 +337,6 @@ class NodeVisitor(ast.NodeVisitor):
         func_package.extract_func(self, node, call_components)
 
         self._extract_parent_package_information(call_components)
-
         package_class = self._get_package_info(call_components.package)
         parameters = package_class.parameters.copy()
         args_components = CallArgumentsComponents(package_class.parameters.keys())
@@ -353,6 +350,7 @@ class NodeVisitor(ast.NodeVisitor):
             parameter_value = args_package.analyze_call_arguments(self, node, args_components, call_components, i)
 
             if package_class.is_relevant:
+
                 insert_parameter(parameters, args_components.is_block, args_components.label, parameter_value)
 
         for kw in node.keywords:
@@ -696,7 +694,6 @@ class NodeVisitor(ast.NodeVisitor):
         psg.working_file = self.working_file
         psg.files = self.files
         psg.variables = self.variables
-        psg.packages = self.packages
         psg.alias = self.alias
         psg.data_flow_container = self.data_flow_container
         psg.library_path = self.library_path

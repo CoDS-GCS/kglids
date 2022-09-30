@@ -2,19 +2,29 @@ import unittest
 import ast
 import pandas as pd
 
-from src.datatypes import File as DataFile
+from src.datatypes import File as DataFile, GraphInformation
 from src.ast_package import (Name, Attribute, Constant, Call, List, Dict, Subscript, Lambda, BinOp, Tuple,
                              get_ast_package, Compare)
 from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
     AttributeComponents
 from src.Calls import packages, pd_dataframe, File
+from src.pipeline_abstraction import NodeVisitor
 import src.util as util
-from test.test_pipeline_abstraction import Test
 
 kglids_library = "http://kglids.org/pipeline/library/"
 FILENAME = "test.py"
 SOURCE = "<SOURCE>"
 DATASET_NAME = "<DATASET_NAME>"
+
+
+class Test(unittest.TestCase):
+    def setUp(self) -> None:
+        graph = GraphInformation(
+            python_file_name=FILENAME,
+            source=SOURCE,
+            dataset_name=DATASET_NAME
+        )
+        self.node_visitor = NodeVisitor(graph)
 
 
 class AstPackageSelection(Test):
@@ -129,7 +139,7 @@ class AstNameTest(Test):
 
         result = self.name.analyze_call_arguments(self.node_visitor, call, arg_components, call_components, 0)
 
-        self.assertEqual('train', result, 'argument does not match')
+        self.assertEqual('here', result, 'argument does not match')
         self.assertEqual('train.csv', call_components.file, 'argument linked file is missing')
         self.assertEqual('train', arg_components.file_args[0], 'argument component missing linked file')
 

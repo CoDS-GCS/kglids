@@ -33,7 +33,8 @@ class AstPackage:
         print("LIST VALUE:", node.__dict__)
         print(astor.to_source(node))
 
-    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str, components: BinOpComponents):
+    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str,
+                              components: BinOpComponents):
         print(f"BinOp {side.upper()} BRANCH VALUE:", node.__dict__)
         print(astor.to_source(node))
 
@@ -71,6 +72,8 @@ class Name(AstPackage):
                     if not isinstance(col_value, list) and col_value in node_visitor.files.keys():
                         call_components.file = node_visitor.files.get(col_value)
                         components.file_args[pos] = col_value
+            node_visitor._add_to_column(variable, call_components.base_package)
+            return variable
 
         return parameter_value
 
@@ -87,19 +90,25 @@ class Name(AstPackage):
                 node_visitor.files[name] = node_visitor.files.get(components.value)
             if components.value in node_visitor.variables.keys():
                 node_visitor.variables[name] = node_visitor.variables.get(components.value)
+            else:
+                node_visitor.variables[name] = components.value
         elif isinstance(components.value, list):
-            if len(components.value) > 0:
+            if len(components.value) == 1 and isinstance(components.value[0], Calls.Call):
                 node_visitor.variables[name] = components.value[0]
+            elif len(components.value) > 0:
+                node_visitor.variables[name] = components.value
+
             if components.file is not None:
                 node_visitor.files[name] = components.file
 
     def extract_keyword_value(self, node_visitor: ast.NodeVisitor, node: ast):
         return node_visitor.visit_Name(node.value)
 
-    def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int,  list_elements: list):
+    def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int, list_elements: list):
         list_elements.append(node_visitor.visit_Name(cast(ast.Name, node.elts[pos])))
 
-    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str, components: BinOpComponents):
+    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str,
+                              components: BinOpComponents):
         name = node_visitor.visit_Name(getattr(node, side))
         node_visitor._extract_dataflow(name)
 
@@ -116,8 +125,12 @@ class Name(AstPackage):
             components.path = f"{package}{'' if is_column else f'.{node.attr}'}"
             components.parent_path = value
         elif isinstance(package, list):
-            components.path = [f"{el}{'' if is_column else f'.{node.attr}'}" for el in package]
-            components.parent_path = value
+            if len(package) == 1 and isinstance(package[0], Calls.Call):
+                components.path = f"{package[0].full_path()}{'' if is_column else f'.{node.attr}'}"
+                components.parent_path = value
+            else:
+                components.path = [f"{el}{'' if is_column else f'.{node.attr}'}" for el in package]
+                components.parent_path = value
         elif type(package) in (int, float):
             components.parent_path = value
         elif package is not None:
@@ -130,7 +143,8 @@ class Name(AstPackage):
 
 class Attribute(AstPackage):
     def extract_func(self, node_visitor: ast.NodeVisitor, node: ast.Call, components: CallComponents):
-        components.package, components.base_package, components.file = node_visitor.visit_Attribute(cast(ast.Attribute, node.func))
+        components.package, components.base_package, components.file = node_visitor.visit_Attribute(
+            cast(ast.Attribute, node.func))
 
         node_visitor._extract_dataflow(components.base_package)
         f = node_visitor.files.get(components.base_package)
@@ -156,7 +170,6 @@ class Attribute(AstPackage):
     def analyze_attribute_value(self, node_visitor: ast.NodeVisitor, node: ast.Attribute,
                                 components: AttributeComponents):
         path, components.parent_path, components.file = node_visitor.visit_Attribute(cast(ast.Attribute, node.value))
-
         components.path = f"{path}.{node.attr}"
 
 
@@ -165,19 +178,17 @@ class Constant(AstPackage):
                                call_components: CallComponents, pos: int):
         parameter_value = node_visitor.visit_Constant(cast(ast.Constant, node.args[pos]))
 
-        if call_components.file:
-            return parameter_value
+        if not call_components.file:
+            node_visitor._add_to_column(parameter_value, call_components.base_package)
+            call_components.file = node_visitor._file_creation(parameter_value)
 
-        node_visitor._add_to_column(parameter_value, call_components.base_package)
-        call_components.file = node_visitor._file_creation(parameter_value)
-
-        if parameter_value in node_visitor.files.keys():
-            call_components.file = node_visitor.files.get(parameter_value)
-            components.file_args[pos] = parameter_value
-        if parameter_value in node_visitor.variables.keys():
-            components.call_args[pos] = parameter_value
-        if call_components.package in node_visitor.user_defined_class:
-            components.class_args.append(parameter_value)
+            if parameter_value in node_visitor.files.keys():
+                call_components.file = node_visitor.files.get(parameter_value)
+                components.file_args[pos] = parameter_value
+            if parameter_value in node_visitor.variables.keys():
+                components.call_args[pos] = parameter_value
+            if call_components.package in node_visitor.user_defined_class:
+                components.class_args.append(parameter_value)
 
         return parameter_value
 
@@ -188,10 +199,11 @@ class Constant(AstPackage):
     def extract_keyword_value(self, node_visitor: ast.NodeVisitor, node: ast):
         return node_visitor.visit_Constant(node.value)
 
-    def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int,  list_elements: list):
+    def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int, list_elements: list):
         list_elements.append(node_visitor.visit_Constant(cast(ast.Constant, node.elts[pos])))
 
-    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str, components: BinOpComponents):
+    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str,
+                              components: BinOpComponents):
         node_visitor.visit_Constant(getattr(node, side))
         setattr(components, side, None)
 
@@ -217,11 +229,12 @@ class Call(AstPackage):
         _, _, _, base = node_visitor.visit_Call(cast(ast.Call, node.value))
         return base
 
-    def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int,  list_elements: list):
+    def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int, list_elements: list):
         package, file, name, _ = node_visitor.visit_Call(cast(ast.Call, node.elts[pos]))
         list_elements.append(name)  # TODO: VERIFY HOW TO RETURN THE VALUE
 
-    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str, components: BinOpComponents):
+    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str,
+                              components: BinOpComponents):
         subgraph = node_visitor.param_subgraph_init()
         subgraph.target_node = node_visitor.graph_info.tail if node_visitor.target_node is None else node_visitor.target_node
         value, _, _, _ = subgraph.visit(getattr(node, side))
@@ -274,7 +287,7 @@ class List(AstPackage):
     def extract_keyword_value(self, node_visitor: ast.NodeVisitor, node: ast):
         return node_visitor.visit_List(node.value)
 
-    def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int,  list_elements: list):
+    def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int, list_elements: list):
         list_elements.append(node_visitor.visit_List(cast(ast.List, node.elts[pos])))
 
 
@@ -329,11 +342,12 @@ class Subscript(AstPackage):
         name, _ = node_visitor.visit_Subscript(node.value)
         return name
 
-    def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int,  list_elements: list):
+    def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int, list_elements: list):
         name, _ = node_visitor.visit_Subscript(cast(ast.Subscript, node.elts[pos]))
         list_elements.append(name)
 
-    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str, components: BinOpComponents):
+    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str,
+                              components: BinOpComponents):
         element_name, _ = node_visitor.visit_Subscript(getattr(node, side))
         element_package = node_visitor.variables.get(element_name, element_name)
         setattr(components, side, element_package)
@@ -360,7 +374,8 @@ class BinOp(AstPackage):
     def extract_keyword_value(self, node_visitor: ast.NodeVisitor, node: ast):
         return node_visitor.visit_BinOp(node.value)
 
-    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str, components: BinOpComponents):
+    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str,
+                              components: BinOpComponents):
         setattr(components, side, node_visitor.visit_BinOp(getattr(node, side)))
 
     def analyze_attribute_value(self, node_visitor: ast.NodeVisitor, node: ast.Attribute,
@@ -389,7 +404,8 @@ class Tuple(AstPackage):
 
 
 class Compare(AstPackage):
-    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str, components: BinOpComponents):
+    def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str,
+                              components: BinOpComponents):
         node_visitor.visit_Compare(getattr(node, side))
 
 
