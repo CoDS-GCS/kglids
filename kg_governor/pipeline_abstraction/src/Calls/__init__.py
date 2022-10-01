@@ -834,6 +834,81 @@ standard_scaler = Call('StandardScaler',
                        CallType.CLASS)
 packages[f'{standard_scaler.library_path}.{standard_scaler.name}'] = standard_scaler
 
+standard_scaler_fit_transform = Call('fit_transform',
+                                    'sklearn.preprocessing.StandardScaler',
+                                    {'X': None,
+                                     'y': None,
+                                     '**fit_params': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[
+    f'{standard_scaler_fit_transform.library_path}.{standard_scaler_fit_transform.name}'] = standard_scaler_fit_transform
+
+standard_scaler_transform = Call('transform',
+                                'sklearn.preprocessing.StandardScaler',
+                                {'X': None,
+                                 'copy': None},
+                                False,
+                                CallType.FUNCTION,
+                                [pd_dataframe])
+packages[f'{standard_scaler_transform.library_path}.{standard_scaler_transform.name}'] = standard_scaler_transform
+
+standard_scaler_fit = Call('fit',
+                          'sklearn.preprocessing.StandardScaler',
+                          {'X': None,
+                           'y': None,
+                           'sample_weight': None},
+                          False,
+                          CallType.FUNCTION,
+                          [standard_scaler])
+packages[f'{standard_scaler_fit.library_path}.{standard_scaler_fit.name}'] = standard_scaler_fit
+
+standard_scaler_get_params = Call('get_params',
+                           'sklearn.preprocessing.StandardScaler',
+                           {'deep': True},
+                           False,
+                           CallType.FUNCTION,
+                           [dataframe_from_dict])
+packages[
+    f'{standard_scaler_get_params.library_path}.{standard_scaler_get_params.name}'] = standard_scaler_get_params
+
+standard_scaler_set_params = Call('set_params',
+                           'sklearn.preprocessing.StandardScaler',
+                           {'**params': None},
+                           False,
+                           CallType.FUNCTION,
+                           [standard_scaler])
+packages[
+    f'{standard_scaler_set_params.library_path}.{standard_scaler_set_params.name}'] = standard_scaler_set_params
+
+standard_scaler_inverse_transform = Call('inverse_transform',
+                                 'sklearn.preprocessing.StandardScaler',
+                                 {'X': None,
+                                  'copy': None},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [pd_dataframe])
+packages[f'{standard_scaler_inverse_transform.library_path}.{standard_scaler_inverse_transform.name}'] = standard_scaler_inverse_transform
+
+standard_scaler_partial_fit = Call('partial_fit',
+                          'sklearn.preprocessing.StandardScaler',
+                          {'X': None,
+                           'y': None,
+                           'sample_weight': None},
+                          False,
+                          CallType.FUNCTION,
+                          [standard_scaler])
+packages[f'{standard_scaler_partial_fit.library_path}.{standard_scaler_partial_fit.name}'] = standard_scaler_partial_fit
+
+standard_scaler_get_feature_names_out = Call('get_feature_names_out',
+                          'sklearn.preprocessing.StandardScaler',
+                          {'input_features': None},
+                          False,
+                          CallType.FUNCTION,
+                          [pd_dataframe])
+packages[f'{standard_scaler_get_feature_names_out.library_path}.{standard_scaler_get_feature_names_out.name}'] = standard_scaler_get_feature_names_out
+
 # sklearn # preprocessing # LabelBinarizer
 label_binarizer = Call('LabelBinarizer',
                        'sklearn.preprocessing',
@@ -935,6 +1010,132 @@ standard_scaler_fit = Call('fit',
                            CallType.FUNCTION,
                            [standard_scaler])
 packages[f'{standard_scaler_fit.library_path}.{standard_scaler_fit.name}'] = standard_scaler_fit
+
+# sklearn # preprocessing # add_dummy_feature
+add_dummy_feature = Call('add_dummy_feature',
+                       'sklearn.preprocessing',
+                       {'X': None,
+                        'value': None},
+                         False,
+                         CallType.FUNCTION,
+                         [pd_dataframe])
+packages[f'{add_dummy_feature.library_path}.{add_dummy_feature.name}'] = add_dummy_feature
+
+# sklearn # preprocessing # binarize
+binarize = Call('binarize',
+                'sklearn.preprocessing',
+                {'X': None,
+                 'threshold': 0.0,
+                 'copy': True},
+                False,
+                CallType.FUNCTION,
+                [pd_dataframe])
+packages[f'{binarize.library_path}.{binarize.name}'] = binarize
+
+# sklearn # preprocessing # label_binarize
+label_binarize = Call('label_binarize',
+                'sklearn.preprocessing',
+                {'y': None,
+                 'classes': None,
+                 'neg_label': 0,
+                 'pos_label': 1,
+                 'sparse_output': False},
+                False,
+                CallType.FUNCTION,
+                [pd_dataframe])
+packages[f'{label_binarize.library_path}.{label_binarize.name}'] = label_binarize
+
+# sklearn # preprocessing # maxabs_scale
+maxabs_scale = Call('maxabs_scale',
+                'sklearn.preprocessing',
+                {'X': None,
+                 'axis': 0,
+                 'copy': True},
+                False,
+                CallType.FUNCTION,
+                [pd_dataframe])
+packages[f'{maxabs_scale.library_path}.{maxabs_scale.name}'] = maxabs_scale
+
+# sklearn # preprocessing # maxabs_scale
+minmax_scale = Call('minmax_scale',
+                'sklearn.preprocessing',
+                {'X': None,
+                 'feature_range': (0,1),
+                 'axis': 0,
+                 'copy': True},
+                False,
+                CallType.FUNCTION,
+                [pd_dataframe])
+packages[f'{minmax_scale.library_path}.{minmax_scale.name}'] = minmax_scale
+
+# sklearn # preprocessing # normalize
+normalize = Call('normalize',
+                'sklearn.preprocessing',
+                {'X': None,
+                 'norm': 'l2',
+                 'axis': 1,
+                 'copy': True,
+                 'return_norm': False},
+                False,
+                CallType.FUNCTION,
+                [pd_dataframe])
+packages[f'{normalize.library_path}.{normalize.name}'] = normalize
+
+# sklearn # preprocessing # quantile_transform
+quantile_transform = Call('quantile_transform',
+                          'sklearn.preprocessing',
+                          {'X': None,
+                           'axis': 0,
+                           'n_quantiles': 1000,
+                           'output_distribution': 'uniform',
+                           'ignore_implicit_zeros': False,
+                           'subsample': 1e5,
+                           'random_state': None,
+                           'copy': True},
+                          False,
+                          CallType.FUNCTION,
+                          [pd_dataframe])
+packages[f'{quantile_transform.library_path}.{quantile_transform.name}'] = quantile_transform
+
+# sklearn # preprocessing # robust_scale
+robust_scale = Call('robust_scale',
+                    'sklearn.preprocessing',
+                    {'X': None,
+                     'axis': 0,
+                     'with_centering': True,
+                     'with_scaling': True,
+                     'quantile_range': (25.0, 75.0),
+                     'copy': True,
+                     'unit_variance': False},
+                    False,
+                    CallType.FUNCTION,
+                    [pd_dataframe])
+packages[f'{robust_scale.library_path}.{robust_scale.name}'] = robust_scale
+
+# sklearn # preprocessing # scale
+scale = Call('scale',
+             'sklearn.preprocessing',
+             {'X': None,
+              'axis': 0,
+              'with_mean': True,
+              'with_std': True,
+              'copy': True},
+             False,
+             CallType.FUNCTION,
+             [pd_dataframe])
+packages[f'{scale.library_path}.{scale.name}'] = scale
+
+# sklearn # preprocessing # power_transform
+power_transform = Call('power_transform',
+                       'sklearn.preprocessing',
+                       {'X': None,
+                        'method': 'yeo-johnson',
+                        'standardize': True,
+                        'copy': True},
+                       False,
+                       CallType.FUNCTION,
+                       [pd_dataframe])
+packages[f'{power_transform.library_path}.{power_transform.name}'] = power_transform
 
 # sklearn # preprocessing # MinMaxScaler
 min_max_scaler = Call('MinMaxScaler',
@@ -1312,7 +1513,7 @@ power_transformer = Call('PowerTransformer',
                              'copy': True},
                             True,
                             CallType.CLASS)
-packages[f'{polynomial_features.library_path}.{polynomial_features.name}'] = polynomial_features
+packages[f'{power_transformer.library_path}.{power_transformer.name}'] = power_transformer
 
 power_transformer_fit_transform = Call('fit_transform',
                                      'sklearn.preprocessing.PowerTransformer',
@@ -1376,6 +1577,82 @@ power_transformer_get_feature_names_out = Call('get_feature_names_out',
                                         [pd_dataframe])
 packages[f'{power_transformer_get_feature_names_out.library_path}.{power_transformer_get_feature_names_out.name}'] = power_transformer_get_feature_names_out
 
+# sklearn # preprocessing # QuantileTransformer
+quantile_transformer = Call('QuantileTransformer',
+                            'sklearn.preprocessing',
+                            {'n_quantiles': 1000,
+                             'output_distribution': 'uniform',
+                             'ignore_implicit_zeros':False,
+                             'subsample': 1e5,
+                             'random_state': None,
+                             'copy': True},
+                            True,
+                            CallType.CLASS)
+packages[f'{quantile_transformer.library_path}.{quantile_transformer.name}'] = quantile_transformer
+
+quantile_transformer_fit_transform = Call('fit_transform',
+                                     'sklearn.preprocessing.QuantileTransformer',
+                                     {'X': None,
+                                      'y': None,
+                                      '**fit_params': None},
+                                     False,
+                                     CallType.FUNCTION,
+                                     [pd_dataframe])
+packages[
+    f'{quantile_transformer_fit_transform.library_path}.{quantile_transformer_fit_transform.name}'] = quantile_transformer_fit_transform
+
+quantile_transformer_transform = Call('transform',
+                                 'sklearn.preprocessing.QuantileTransformer',
+                                 {'X': None},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [pd_dataframe])
+packages[f'{quantile_transformer_transform.library_path}.{quantile_transformer_transform.name}'] = quantile_transformer_transform
+
+quantile_transformer_fit = Call('fit',
+                           'sklearn.preprocessing.QuantileTransformer',
+                           {'X': None,
+                            'y': None},
+                           False,
+                           CallType.FUNCTION,
+                           [quantile_transformer])
+packages[f'{quantile_transformer_fit.library_path}.{quantile_transformer_fit.name}'] = quantile_transformer_fit
+
+quantile_transformer_inverse_transform = Call('inverse_transform',
+                                     'sklearn.preprocessing.QuantileTransformer',
+                                     {'X': None},
+                                     False,
+                                     CallType.FUNCTION,
+                                     [pd_dataframe])
+packages[
+    f'{quantile_transformer_inverse_transform.library_path}.{quantile_transformer_inverse_transform.name}'] = quantile_transformer_inverse_transform
+
+quantile_transformer_get_params = Call('get_params',
+                            'sklearn.preprocessing.QuantileTransformer',
+                            {'deep': True},
+                            False,
+                            CallType.FUNCTION,
+                            [dataframe_from_dict])
+packages[
+    f'{quantile_transformer_get_params.library_path}.{quantile_transformer_get_params.name}'] = quantile_transformer_get_params
+
+quantile_transformer_set_params = Call('set_params',
+                            'sklearn.preprocessing.QuantileTransformer',
+                            {'**params': None},
+                            False,
+                            CallType.FUNCTION,
+                            [quantile_transformer])
+packages[
+    f'{quantile_transformer_set_params.library_path}.{quantile_transformer_set_params.name}'] = quantile_transformer_set_params
+
+quantile_transformer_get_feature_names_out = Call('get_feature_names_out',
+                                        'sklearn.preprocessing.QuantileTransformer',
+                                        {'input_features': None},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [pd_dataframe])
+packages[f'{quantile_transformer_get_feature_names_out.library_path}.{quantile_transformer_get_feature_names_out.name}'] = quantile_transformer_get_feature_names_out
+
 # sklearn # preprocessing # RobustScaler
 robust_scaler = Call('RobustScaler',
                      'sklearn.preprocessing',
@@ -1414,6 +1691,109 @@ robust_scaler_fit = Call('fit',
                          CallType.FUNCTION,
                          [robust_scaler])
 packages[f'{robust_scaler_fit.library_path}.{robust_scaler_fit.name}'] = robust_scaler_fit
+
+robust_scaler_inverse_transform = Call('inverse_transform',
+                                     'sklearn.preprocessing.RobustScaler',
+                                     {'X': None},
+                                     False,
+                                     CallType.FUNCTION,
+                                     [pd_dataframe])
+packages[
+    f'{robust_scaler_inverse_transform.library_path}.{robust_scaler_inverse_transform.name}'] = robust_scaler_inverse_transform
+
+robust_scaler_get_params = Call('get_params',
+                            'sklearn.preprocessing.RobustScaler',
+                            {'deep': True},
+                            False,
+                            CallType.FUNCTION,
+                            [dataframe_from_dict])
+packages[
+    f'{robust_scaler_get_params.library_path}.{robust_scaler_get_params.name}'] = robust_scaler_get_params
+
+robust_scaler_set_params = Call('set_params',
+                            'sklearn.preprocessing.RobustScaler',
+                            {'**params': None},
+                            False,
+                            CallType.FUNCTION,
+                            [robust_scaler])
+packages[
+    f'{robust_scaler_set_params.library_path}.{robust_scaler_set_params.name}'] = robust_scaler_set_params
+
+robust_scaler_get_feature_names_out = Call('get_feature_names_out',
+                                        'sklearn.preprocessing.RobustScaler',
+                                        {'input_features': None},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [pd_dataframe])
+packages[f'{robust_scaler_get_feature_names_out.library_path}.{robust_scaler_get_feature_names_out.name}'] = robust_scaler_get_feature_names_out
+
+# sklearn # preprocessing # SplineTransformer
+spline_transformer = Call('SplineTransformer',
+                     'sklearn.preprocessing',
+                     {'n_knots': 5,
+                      'degree': 3,
+                      'knots': 'uniform',
+                      'extrapolation': 'constant',
+                      'include_bias': True,
+                      'order': 'C'},
+                     True,
+                     CallType.CLASS)
+packages[f'{spline_transformer.library_path}.{spline_transformer.name}'] = spline_transformer
+
+spline_transformer_fit_transform = Call('fit_transform',
+                                   'sklearn.preprocessing.SplineTransformer',
+                                   {'X': None,
+                                    'y': None,
+                                    '**fit_params': None},
+                                   False,
+                                   CallType.FUNCTION,
+                                   [pd_dataframe])
+packages[
+    f'{spline_transformer_fit_transform.library_path}.{spline_transformer_fit_transform.name}'] = spline_transformer_fit_transform
+
+spline_transformer_transform = Call('transform',
+                               'sklearn.preprocessing.SplineTransformer',
+                               {'X': None},
+                               False,
+                               CallType.FUNCTION,
+                               [pd_dataframe])
+packages[f'{spline_transformer_transform.library_path}.{spline_transformer_transform.name}'] = spline_transformer_transform
+
+spline_transformer_fit = Call('fit',
+                         'sklearn.preprocessing.SplineTransformer',
+                         {'X': None,
+                          'y': None,
+                          'sample_weight': None},
+                         False,
+                         CallType.FUNCTION,
+                         [spline_transformer])
+packages[f'{spline_transformer_fit.library_path}.{spline_transformer_fit.name}'] = spline_transformer_fit
+
+spline_transformer_get_params = Call('get_params',
+                            'sklearn.preprocessing.SplineTransformer',
+                            {'deep': True},
+                            False,
+                            CallType.FUNCTION,
+                            [dataframe_from_dict])
+packages[
+    f'{spline_transformer_get_params.library_path}.{spline_transformer_get_params.name}'] = spline_transformer_get_params
+
+spline_transformer_set_params = Call('set_params',
+                            'sklearn.preprocessing.SplineTransformer',
+                            {'**params': None},
+                            False,
+                            CallType.FUNCTION,
+                            [spline_transformer])
+packages[
+    f'{spline_transformer_set_params.library_path}.{spline_transformer_set_params.name}'] = spline_transformer_set_params
+
+spline_transformer_get_feature_names_out = Call('get_feature_names_out',
+                                        'sklearn.preprocessing.SplineTransformer',
+                                        {'input_features': None},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [pd_dataframe])
+packages[f'{spline_transformer_get_feature_names_out.library_path}.{spline_transformer_get_feature_names_out.name}'] = spline_transformer_get_feature_names_out
 
 # sklearn.preprocessing.MaxAbsScaler
 max_abs_scaler = Call('MaxAbsScaler',
