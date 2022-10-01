@@ -259,6 +259,21 @@ dataframe_fillna = Call('fillna',
                         [pd_dataframe])
 packages[f'{dataframe_fillna.library_path}.{dataframe_fillna.name}'] = dataframe_fillna
 
+# pandas # dataframe # interpolate
+dataframe_interpolate = Call('interpolate',
+                             'pandas.DataFrame',
+                             {'method': 'linear',
+                              'axis': 0,
+                              'limit': None,
+                              'inplace': False,
+                              'limit_direction': None,
+                              'limit_area': None,
+                              'downcast': None},
+                             False,
+                             CallType.FUNCTION,
+                             [pd_dataframe])
+packages[f'{dataframe_interpolate.library_path}.{dataframe_interpolate.name}'] = dataframe_interpolate
+
 dataframe_from_dict = Call('from_dict',
                            'pandas.DataFrame',
                            {'data': None,
