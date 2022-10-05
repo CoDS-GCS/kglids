@@ -2,6 +2,8 @@ import ast
 import astor
 from typing import cast
 
+import pandas as pd
+
 import src.Calls as Calls
 from src.util import format_node_text
 from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
@@ -62,9 +64,14 @@ class Name(AstPackage):
         if parameter_value in node_visitor.files.keys():
             call_components.file = node_visitor.files.get(parameter_value)
             components.file_args[pos] = parameter_value
+            node_visitor.graph_info.add_columns(
+                call_components.file.filename,
+                list(node_visitor.working_file.get(call_components.file.filename, pd.DataFrame(columns=[])).columns)
+            )
         if parameter_value in node_visitor.variables.keys():
             components.call_args[pos] = parameter_value
             variable = node_visitor.variables.get(parameter_value)
+
             if isinstance(variable, list):
                 for col_value in variable:
                     node_visitor._add_to_column(col_value, call_components.base_package)
@@ -214,7 +221,15 @@ class Call(AstPackage):
         psg = node_visitor.param_subgraph_init()
         psg.subgraph_node = node_visitor.subgraph_node
         psg.subgraph = node_visitor.subgraph
-        psg.visit(node.args[pos])
+        _, _, _, var = psg.visit(node.args[pos])
+
+        if var in node_visitor.files.keys():
+            call_components.file = node_visitor.files.get(var)
+            components.file_args[pos] = var
+            node_visitor.graph_info.add_columns(
+                call_components.file.filename,
+                list(node_visitor.working_file.get(call_components.file.filename, pd.DataFrame(columns=[])).columns)
+            )
 
         if psg.return_type is None:
             return None

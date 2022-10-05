@@ -1455,7 +1455,11 @@ class DataFlowTesting(Test):
         value = "train = pd.read_csv('train.csv')\n" \
                 "x = pd.DataFrame(train)"
 
-        parse_and_visit_node(value, self.graph)
+        node_visitor = NodeVisitor(self.graph)
+        node_visitor.alias['pd'] = 'pandas'
+        node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['a'])
+        node_visitor.visit(ast.parse(value))
+
         generate_id(self.graph.head)
 
         self.assertEqual(1, len(self.graph.head.data_flow))
@@ -1521,7 +1525,10 @@ class DataFlowTesting(Test):
                 "\ty = x.sum()\n" \
                 "p = a(train)"
 
-        parse_and_visit_node(value, self.graph)
+        node_visitor = NodeVisitor(self.graph)
+        node_visitor.alias['pd'] = 'pandas'
+        node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['a'])
+        node_visitor.visit(ast.parse(value))
         generate_id(self.graph.head)
 
         self.assertEqual(1, len(self.graph.head.data_flow))

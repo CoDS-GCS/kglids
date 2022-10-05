@@ -125,6 +125,71 @@ class KGFarmTest(Test):
             util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'b'),
             self.graph.tail.read[0].uri)
 
+    def test_when_interpolate_then_function_extracted_correctly(self):
+        value = "import pandas as pd\n" \
+                "df = pd.DataFrame()\n" \
+                "df.interpolate(method='linear', limit_direction='forward', axis=0)"
+
+        parse_and_visit_node(value, self.graph)
+
+        lib_uri = util.create_import_from_uri('pandas.DataFrame', 'interpolate')
+        self.assertEqual(lib_uri, self.graph.tail.calls[0].uri)
+
+    def test_when_label_encoder_fit_transform_then_save_it_as_call(self):
+        value = "from sklearn.preprocessing import LabelEncoder\n" \
+                "import pandas as pd\n" \
+                "label = LabelEncoder()\n" \
+                "df = pd.DataFrame(columns=['Gender'])\n" \
+                "df['Gender'] = label.fit_transform(df['Gender'])"
+
+        parse_and_visit_node(value, self.graph)
+
+        lib_uri = util.create_import_from_uri('sklearn.preprocessing.LabelEncoder', 'fit_transform')
+        self.assertEqual(lib_uri, self.graph.tail.calls[0].uri)
+
+    def test_when_dataframe_called_by_transformation_then_it_reads_the_dataframe_column(self):
+        value = "from sklearn.preprocessing import LabelEncoder\n" \
+                "import pandas as pd\n" \
+                "label = LabelEncoder()\n" \
+                "df = pd.read_csv('file.csv')\n" \
+                "label.fit_transform(df)"
+
+        node_visitor = parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['age'])
+        lib_uri = util.create_import_from_uri('sklearn.preprocessing.LabelEncoder', 'fit_transform')
+        column_uri = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'age')
+
+        self.assertEqual(0, len(node_visitor.columns))
+        self.assertEqual(lib_uri, self.graph.tail.calls[0].uri)
+        self.assertEqual(1, len(self.graph.tail.read))
+        self.assertEqual(column_uri, self.graph.tail.read[0].uri)
+
+    def test_when_column_is_drop_within_transformation_then_it_correctly_linked_to_read_column(self):
+        value = "from sklearn.preprocessing import StandardScaler\n" \
+                "import pandas as pd\n" \
+                "scaler = StandardScaler()\n" \
+                "df = pd.read_csv('file.csv')\n" \
+                "scaled_df = scaler.fit_transform(df.drop('Outcome', axis=1))"
+
+        parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['Gender', 'Outcome'], 'df')
+        lib_uri = util.create_import_from_uri('sklearn.preprocessing.StandardScaler', 'fit_transform')
+        column_uri = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'Gender')
+
+        self.assertEqual(lib_uri, self.graph.tail.calls[0].uri)
+        self.assertEqual(2, len(self.graph.tail.read))
+        self.assertEqual(column_uri, self.graph.tail.read[0].uri)
+
+    def test_when_transformation_apply_to_dataframe_then_it_correctly_link_the_call_and_parameter(self):
+        value = "encoder = LabelEncoder()\n" \
+                "encoded = df[categorical_columns].apply(encoder.fit_transform)"
+
+    def test_when_column_transformer_is_used_then_it_correctly_link_the_call_with_the_feature(self):
+        value = "transformers = [\n" \
+                "\t('binary', OrdinalEncoder(), binary_columns),\n" \
+                "\t('nominal', OneHotEncoder(), nominal_columns),\n" \
+                "\t('numerical', StandardScaler(), numerical_columns)\n" \
+                "]\n" \
+                "transformer_pipeline = ColumnTransformer(transformers, remainder='passthrough')"
+
 
 if __name__ == '__main__':
     unittest.main()
