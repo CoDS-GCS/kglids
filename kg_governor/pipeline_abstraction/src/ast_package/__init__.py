@@ -9,6 +9,12 @@ from src.util import format_node_text
 from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
     AttributeComponents
 
+DEFAULT_SLICE = {
+    'lower': 0,
+    'upper': -1,
+    'step': None
+}
+
 
 class AstPackage:
     def extract_func(self, node_visitor: ast.NodeVisitor, node: ast.Call, components: CallComponents):
@@ -50,6 +56,15 @@ class AstPackage:
         print("ATTRIBUTE VALUE:", node.__dict__)
         print(astor.to_source(node))
 
+    def extract_slice_value(self, node_visitor: ast.NodeVisitor, node: ast.Slice, position: str):
+        line = astor.to_source(node).strip()
+        if line == ':':
+            return DEFAULT_SLICE.get(position)
+
+        print("SLICE VALUE:", node.__dict__)
+        print(astor.to_source(node))
+        return None
+
 
 class Name(AstPackage):
     def extract_func(self, node_visitor: ast.NodeVisitor, node: ast.Call, components: CallComponents):
@@ -80,8 +95,7 @@ class Name(AstPackage):
                         call_components.file = node_visitor.files.get(col_value)
                         components.file_args[pos] = col_value
             node_visitor._add_to_column(variable, call_components.base_package)
-            return variable
-
+            # return variable
         return parameter_value
 
     def extract_assign_value(self, node_visitor: ast.NodeVisitor, node: ast.Assign, components: AssignComponents):
@@ -107,6 +121,8 @@ class Name(AstPackage):
 
             if components.file is not None:
                 node_visitor.files[name] = components.file
+
+        return name
 
     def extract_keyword_value(self, node_visitor: ast.NodeVisitor, node: ast):
         return node_visitor.visit_Name(node.value)
@@ -214,6 +230,9 @@ class Constant(AstPackage):
         node_visitor.visit_Constant(getattr(node, side))
         setattr(components, side, None)
 
+    def extract_slice_value(self, node_visitor: ast.NodeVisitor, node: ast.Slice, position: str):
+        return node_visitor.visit_Constant(getattr(node, position))
+
 
 class Call(AstPackage):
     def analyze_call_arguments(self, node_visitor: ast.NodeVisitor, node: ast.Call, components: CallArgumentsComponents,
@@ -238,7 +257,7 @@ class Call(AstPackage):
         return [psg.return_type[i].name for i in range(len(psg.return_type))]
 
     def extract_assign_value(self, node_visitor: ast.NodeVisitor, node: ast.Assign, components: AssignComponents):
-        components.value, components.file, _, _ = node_visitor.visit_Call(cast(ast.Call, node.value))
+        components.value, components.file, components.method, components.variable = node_visitor.visit_Call(cast(ast.Call, node.value))
 
     def extract_keyword_value(self, node_visitor: ast.NodeVisitor, node: ast):
         _, _, _, base = node_visitor.visit_Call(cast(ast.Call, node.value))
@@ -332,15 +351,20 @@ class Subscript(AstPackage):
         return arg_package
 
     def extract_assign_value(self, node_visitor: ast.NodeVisitor, node: ast.Assign, components: AssignComponents):
-        components.value, _ = node_visitor.visit_Subscript(cast(ast.Subscript, node.value))
+        components.value, components.variable = node_visitor.visit_Subscript(cast(ast.Subscript, node.value))
         node_visitor._extract_dataflow(components.value)
 
         if isinstance(components.value, list):
             return
 
-        components.variable = node_visitor.variables.get(components.value, None)
+
+        components.variable = node_visitor.variables.get(components.value, components.variable)
         if components.value in node_visitor.files.keys():
             components.file = node_visitor.files.get(components.value)
+            node_visitor._connect_node_to_column(components.file)
+
+        if components.variable in node_visitor.files.keys():
+            components.file = node_visitor.files.get(components.variable)
             node_visitor._connect_node_to_column(components.file)
 
     def analyze_assign_target(self, node_visitor: ast.NodeVisitor, node: ast, components: AssignComponents):
@@ -413,6 +437,8 @@ class Tuple(AstPackage):
                 node_visitor.variables[sub_target] = package
                 if components.file is not None:
                     node_visitor.files[sub_target] = components.file
+
+        return tuple_values
 
     def extract_keyword_value(self, node_visitor: ast.NodeVisitor, node: ast):
         return node_visitor.visit_Tuple(node.value)

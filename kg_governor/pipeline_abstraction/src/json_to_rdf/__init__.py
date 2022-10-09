@@ -96,6 +96,20 @@ def control_flow_to_rdf(control_flows: List[str]) -> str:
     return f'\tpipeline:inControlFlow {", ".join([f"<{flow}>" for flow in control_flows])};\n'
 
 
+def targets_to_rdf(targets: List[str]) -> str:
+    if len(targets) == 0:
+        return ""
+    return f'\tpipeline:hasTarget ' \
+           f'{", ".join([f"<{target}>" for target in targets])};\n'
+
+
+def features_to_rdf(features: List[str]) -> str:
+    if len(features) == 0:
+        return ""
+    return f'\tpipeline:hasFeature ' \
+           f'{", ".join([f"<{feature}>" for feature in features])};\n'
+
+
 def build_statement_rdf(statement: dict) -> str:
     return ''.join([
         ''.join([
@@ -106,6 +120,8 @@ def build_statement_rdf(statement: dict) -> str:
             control_flow_to_rdf(statement['control_flow']),
             has_parameter_to_rdf(statement['parameters']),
             has_dataflow_to_rdf(statement['dataFlow']),
+            features_to_rdf(statement['features']),
+            targets_to_rdf(statement['targets']),
             next_statement_to_rdf(statement['next'])
         ]).rsplit(';', 1)[0],
         ' .\n'

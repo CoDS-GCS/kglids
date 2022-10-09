@@ -142,7 +142,7 @@ class AstNameTest(Test):
 
         result = self.name.analyze_call_arguments(self.node_visitor, call, arg_components, call_components, 0)
 
-        self.assertEqual('here', result, 'argument does not match')
+        self.assertEqual('train', result, 'argument does not match')
         self.assertEqual('train.csv', call_components.file.filename, 'argument linked file is missing')
         self.assertEqual('train', arg_components.file_args[0], 'argument component missing linked file')
 

@@ -15,8 +15,9 @@ from collections import deque
 import pandas as pd
 
 import src.Calls as Calls
+import src.datatypes as datatypes
 from src.datatypes import GraphInformation
-from src.Calls import File, pd_dataframe, packages
+from src.Calls import File, pd_dataframe, packages, model_selection, dataframe_drop
 from src.util import is_file, ControlFlow, format_node_text, get_package
 from src.ast_package import AstPackage, get_ast_package
 from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
@@ -43,6 +44,7 @@ class NodeVisitor(ast.NodeVisitor):
         self.variables = {}
         self.alias = {}
         self.subgraph = {}
+        self.var_columns = {}
         self.subgraph_node = {}
         self.control_flow = deque()
         self.user_defined_class = []
@@ -93,13 +95,29 @@ class NodeVisitor(ast.NodeVisitor):
         value_package = get_ast_package(node.value)
         value_package.extract_assign_value(self, node, assign_components)
 
+        targets = []
         variable = None  # TODO: Choose better name
         for target in node.targets:
             target_package = get_ast_package(target)
             variable = target_package.analyze_assign_target(self, target, assign_components)
+            targets.append(variable)
 
         if variable is not None and not isinstance(variable, list):
             self._connect_node_to_column(self.files.get(variable))
+
+        for target in targets:
+            if isinstance(target, str):
+                if assign_components.method == dataframe_drop.full_path():
+                    column = self.var_columns.get(assign_components.variable, [])
+                    drop_col = set(x.uri.rsplit('/', 1)[1] for x in self.graph_info.tail.read)
+                    self.var_columns[target] = [x for x in column if x not in drop_col]
+                else:
+                    elements = self.graph_info.tail.read
+                    if len(elements) == 1 and isinstance(elements[0], datatypes.File):
+                        filename = elements[0].uri.rsplit('/', 1)[1]
+                        self.var_columns[target] = list(self.working_file.get(filename))
+                    else:
+                        self.var_columns[target] = [x.uri.rsplit('/', 1)[1] for x in self.graph_info.tail.read]
 
     def visit_AugAssign(self, node: AugAssign) -> Any:
         pass
@@ -202,9 +220,9 @@ class NodeVisitor(ast.NodeVisitor):
         pass
 
     def visit_Slice(self, node: Slice) -> Any:
-        lower = upper = step = None
-        if isinstance(node.lower, ast.Constant):
-            lower = self.visit_Constant(node.lower)
+        lower = get_ast_package(node.lower).extract_slice_value(self, node, 'lower')
+        upper = get_ast_package(node.upper).extract_slice_value(self, node, 'upper')
+        step = get_ast_package(node.step).extract_slice_value(self, node, 'step')
 
         return lower, upper, step
 
@@ -350,7 +368,6 @@ class NodeVisitor(ast.NodeVisitor):
             parameter_value = args_package.analyze_call_arguments(self, node, args_components, call_components, i)
 
             if package_class.is_relevant:
-
                 insert_parameter(parameters, args_components.is_block, args_components.label, parameter_value)
 
         for kw in node.keywords:
@@ -360,6 +377,17 @@ class NodeVisitor(ast.NodeVisitor):
                 self._add_to_column(value, call_components.base_package)
                 if package_class.is_relevant and edge is not None:
                     parameters[edge] = str(value)
+
+        if package_class.library_path == model_selection.full_path():
+            if '*arrays' in parameters.keys():
+                elements = parameters.get('*arrays')
+                self.add_feature(elements[0])
+                self.add_target(elements[1])
+
+            if 'X' in parameters.keys():
+                self.add_feature(parameters.get('X'))
+            if 'y' in parameters.keys():
+                self.add_target(parameters.get('y'))
 
         self.graph_info.add_parameters(parameters)
         self._create_package_call(package_class, call_components.package)
@@ -379,6 +407,16 @@ class NodeVisitor(ast.NodeVisitor):
                     call_components.package,
                     call_components.base_package)
         return [], call_components.file, call_components.package, call_components.base_package
+
+    def add_feature(self, variable: str):
+        file = self.files.get(variable)
+        if file is not None:
+            self.graph_info.add_features(self.var_columns.get(variable), file.filename)
+
+    def add_target(self, variable: str):
+        file = self.files.get(variable)
+        if file is not None:
+            self.graph_info.add_target(self.var_columns.get(variable), file.filename)
 
     def visit_FormattedValue(self, node: FormattedValue) -> Any:
         pass
@@ -424,7 +462,11 @@ class NodeVisitor(ast.NodeVisitor):
                             if value in column_list:
                                 self.columns.append(value)
                 elif isinstance(node.slice, ast.ExtSlice):
-                    self.visit_ExtSlice(node.slice)  # TODO: HOW TO EXPRESS THIS VALUE?
+                    slices = self.visit_ExtSlice(node.slice)  # TODO: HOW TO EXPRESS THIS VALUE?
+                    file = self.files.get(base, Calls.File(False))
+                    w_file = self.working_file.get(file.filename)
+                    if file.filename and len(slices) == 2:
+                        self.graph_info.add_columns(file.filename, list(w_file)[slices[1][0]:slices[1][1]])
                 elif isinstance(node.slice, ast.Slice):
                     lower, upper, step = self.visit_Slice(node.slice)
                     columns = list(working_file)
@@ -609,16 +651,18 @@ class NodeVisitor(ast.NodeVisitor):
         pass
 
     def visit_ExtSlice(self, node: ast.ExtSlice) -> Any:
+        slices = []
         for dim in node.dims:
-            sl = None
             if isinstance(dim, ast.Slice):
                 lower, upper, step = self.visit_Slice(dim)
+                slices.append((lower, upper, step))
             elif isinstance(dim, ast.Index):
-                sl = self.visit_Index(dim)
+                lower = self.visit_Index(dim)
+                slices.append((lower, lower + 1, None))
             else:
                 print("EXT_SLICE DIM:", node.__dict__)
                 print(astor.to_source(node))
-        pass
+        return slices
 
     def visit_Index(self, node: ast.Index) -> Any:
         if isinstance(node.value, ast.Constant):

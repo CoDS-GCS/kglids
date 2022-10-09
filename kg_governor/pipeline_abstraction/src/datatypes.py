@@ -9,7 +9,8 @@ from src.util import (parse_line_text, create_import_uri, create_file_uri, creat
 
 class Node:
     __slots__ = ('previous', 'next', 'text', 'uri', 'data_flow',
-                 'parameters', 'calls', 'read', 'control_flow')
+                 'parameters', 'calls', 'read', 'control_flow',
+                 'targets', 'features')
 
     def __init__(self, previous, text):
         self.previous = previous
@@ -21,6 +22,8 @@ class Node:
         self.calls = []
         self.read = []
         self.data_flow = []
+        self.targets = []
+        self.features = []
 
     def generate_uri(self, source, dataset, file, node_id):
         self.uri = util.create_statement_uri(source, dataset, file, node_id)
@@ -31,6 +34,8 @@ class Node:
         call_array = [value.repr() for value in self.calls]
         read_array = [value.repr() for value in self.read]
         data_flow = [value.uri for value in self.data_flow]
+        features = [value.uri for value in self.features]
+        targets = [value.uri for value in self.targets]
 
         return {"uri": self.uri,
                 "previous": self.previous.uri if self.previous is not None else None,
@@ -40,7 +45,9 @@ class Node:
                 "parameters": parameters,
                 "calls": call_array,
                 "read": read_array,
-                "dataFlow": data_flow
+                "dataFlow": data_flow,
+                "features": features,
+                "targets": targets
                 }
 
 
@@ -248,3 +255,16 @@ class GraphInformation:
             self.tail.previous.data_flow.append(self.tail)
         else:
             node.previous.data_flow.append(self.tail)
+
+    def add_target(self, columns, filename):
+        for column in columns:
+            column_uri = create_column_name(self.source, self.dataset_name, filename, column)
+            column = Column(column_uri)
+            self.tail.targets.append(column)
+
+    def add_features(self, columns, filename):
+        for column in columns:
+            column_uri = create_column_name(self.source, self.dataset_name, filename, column)
+            column = Column(column_uri)
+            self.tail.features.append(column)
+

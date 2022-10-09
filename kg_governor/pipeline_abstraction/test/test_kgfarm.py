@@ -22,9 +22,10 @@ def parse_and_visit_node_with_file(lines: str, graph: GraphInformation, filename
     node_visitor = NodeVisitor(graph_information=graph)
 
     node_visitor.working_file[filename] = pd.DataFrame(columns=columns)
-    graph.files[filename] = Datatypes.File(util.create_file_uri(SOURCE, DATASET_NAME, 'train.csv'))
+    graph.files[filename] = Datatypes.File(util.create_file_uri(SOURCE, DATASET_NAME, filename))
     node_visitor.files = {variable: File(filename)}
     node_visitor.variables = {variable: pd_dataframe}
+    node_visitor.var_columns[variable] = columns
 
     node_visitor.visit(parse_tree)
     return node_visitor
@@ -43,7 +44,7 @@ class KGFarmTest(Test):
         column_1 = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'b')
         column_2 = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'c')
 
-        self.assertListEqual([column_1, column_2], self.graph.tail.read)
+        self.assertListEqual([column_1, column_2], [x.uri for x in self.graph.tail.read])
 
     def test_when_parameter_are_passed_within_variable_then_the_parameter_are_associated_to_the_function(self):
         value = "import pandas as pd\n" \
@@ -62,7 +63,7 @@ class KGFarmTest(Test):
             util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'a'),
             self.graph.tail.previous.read[0].uri
         )
-        self.assertListEqual([column_1, column_2], self.graph.tail.read)
+        self.assertListEqual([column_1, column_2], [x.uri for x in self.graph.tail.read])
 
     def test_when_constant_passed_to_variable_then_constant_saved_as_variable(self):
         value = "x = 'a'"
@@ -178,6 +179,20 @@ class KGFarmTest(Test):
         self.assertEqual(2, len(self.graph.tail.read))
         self.assertEqual(column_uri, self.graph.tail.read[0].uri)
 
+    def test_when_transforming_a_single_column_then_read_only_one_column(self):
+        value = "from sklearn.preprocessing import LabelEncoder\n" \
+                "import pandas as pd\n" \
+                "label = LabelEncoder()\n" \
+                "df = pd.read_csv('file.csv')\n" \
+                "df['Gender'] = label.fit_transform(df['Gender'])"
+
+        parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['Gender', 'a', 'b'], 'df')
+
+        col_uri = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'Gender')
+        self.assertEqual(2, len(self.graph.tail.read))
+        self.assertEqual(col_uri, self.graph.tail.read[0].uri)
+        self.assertEqual(col_uri, self.graph.tail.read[1].uri)
+
     def test_when_transformation_apply_to_dataframe_then_it_correctly_link_the_call_and_parameter(self):
         value = "encoder = LabelEncoder()\n" \
                 "encoded = df[categorical_columns].apply(encoder.fit_transform)"
@@ -190,7 +205,110 @@ class KGFarmTest(Test):
                 "]\n" \
                 "transformer_pipeline = ColumnTransformer(transformers, remainder='passthrough')"
 
+    def test_when_separating_dataframe_then_correct_column_in_slice_are_saved_for_the_variable(self):
+        value = "import pandas as pd\n" \
+                "df = pd.read_csv('file.csv')\n" \
+                "X = df.iloc[:, 0:2]"
+
+        node_visitor = parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['a', 'b', 'c', 'd'], 'df')
+        col_uri_a = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'a')
+        col_uri_b = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'b')
+
+        self.assertEqual(2, len(self.graph.tail.read))
+        self.assertEqual(col_uri_a, self.graph.tail.read[0].uri)
+        self.assertEqual(col_uri_b, self.graph.tail.read[1].uri)
+        self.assertListEqual(['a', 'b'], node_visitor.var_columns.get('X'))
+        self.assertIn('X', node_visitor.files.keys())
+
+    def test_when_separating_dataframe_then_correct_column_index_is_saved_for_the_variable(self):
+        value = "import pandas as pd\n" \
+                "df = pd.read_csv('file.csv')\n" \
+                "X = df.iloc[:, 0]"
+
+        node_visitor = parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['a', 'b'], 'df')
+        col_uri_a = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'a')
+
+        self.assertEqual(1, len(self.graph.tail.read))
+        self.assertEqual(col_uri_a, self.graph.tail.read[0].uri)
+        self.assertListEqual(['a'], node_visitor.var_columns.get('X'))
+        self.assertIn('X', node_visitor.files.keys())
+
+    def test_when_cross_val_score_then_save_target_and_features(self):
+        value = "from sklearn.model_selection import cross_val_score\n" \
+                "import pandas as pd\n" \
+                "df = pd.read_csv('file.csv')\n" \
+                "X = df.iloc[:, 0:3]\n" \
+                "y = df.iloc[:, 3]\n" \
+                "cross_val_score(estimator=None, X=X, y=y, cv=10)"
+
+        parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['a', 'b', 'c', 'd'])
+        col_uri_a = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'a')
+        col_uri_b = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'b')
+        col_uri_c = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'c')
+        col_uri_d = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'd')
+
+        self.assertEqual(1, len(self.graph.tail.targets))
+        self.assertListEqual([col_uri_d], [x.uri for x in self.graph.tail.targets])
+        self.assertEqual(3, len(self.graph.tail.features))
+        self.assertListEqual([col_uri_a, col_uri_b, col_uri_c], [x.uri for x in self.graph.tail.features])
+
+    def test_when_cross_val_score_without_keywords_then_save_target_and_features(self):
+        value = "from sklearn.model_selection import cross_val_score\n" \
+                "import pandas as pd\n" \
+                "df = pd.read_csv('file.csv')\n" \
+                "X = df.iloc[:, 0:3]\n" \
+                "y = df.iloc[:, 3]\n" \
+                "cross_val_score(None, X, y, cv=10)"
+
+        parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['a', 'b', 'c', 'd'])
+        col_uri_a = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'a')
+        col_uri_b = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'b')
+        col_uri_c = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'c')
+        col_uri_d = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'd')
+
+        self.assertEqual(1, len(self.graph.tail.targets))
+        self.assertListEqual([col_uri_d], [x.uri for x in self.graph.tail.targets])
+        self.assertEqual(3, len(self.graph.tail.features))
+        self.assertListEqual([col_uri_a, col_uri_b, col_uri_c], [x.uri for x in self.graph.tail.features])
+
+    def test_when_train_test_split_then_save_target_and_features(self):
+        value = "from sklearn.model_selection import train_test_split\n" \
+                "import pandas as pd\n" \
+                "df = pd.read_csv('file.csv')\n" \
+                "X = df.iloc[:, 0:3]\n" \
+                "y = df.iloc[:, 3]\n" \
+                "X_train, X_test, y_train, y_test = train_test_split(X, y)"
+
+        parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['a', 'b', 'c', 'd'])
+        col_uri_a = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'a')
+        col_uri_b = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'b')
+        col_uri_c = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'c')
+        col_uri_d = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'd')
+
+        self.assertEqual(1, len(self.graph.tail.targets))
+        self.assertListEqual([col_uri_d], [x.uri for x in self.graph.tail.targets])
+        self.assertEqual(3, len(self.graph.tail.features))
+        self.assertListEqual([col_uri_a, col_uri_b, col_uri_c], [x.uri for x in self.graph.tail.features])
+
+    def test_when_dropping_column_then_save_all_columns_except_one_drop(self):
+        value = "import pandas as pd\n" \
+                "X = df.drop(['Price'], axis=1)\n" \
+                "y = df['Price']"
+
+        node_visitor = parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['Price', 'a', 'b'], 'df')
+
+        self.assertEqual(2, len(node_visitor.var_columns.get('X')))
+        self.assertListEqual(['a', 'b'], node_visitor.var_columns.get('X'))
+        self.assertEqual(1, len(node_visitor.var_columns.get('y')))
+        self.assertListEqual(['Price'], node_visitor.var_columns.get('y'))
+
+    def test_when_cross_val_score_then_save_target_and_features_from_class_object(self):
+        value = "cvs_scores = cross_val_score(knn_normal, x_pca_test, y_pca_test, cv=5)"
+        pass
+
+    def test_when_cross_val_score_then_save_target_and_features_from_saved_variable(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()
-
