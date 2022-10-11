@@ -16,14 +16,6 @@ def init_spark():
         .getOrCreate()
     return spark
 
-'''
-def get_columns_in_rdd(df: DataFrame) -> RDD:
-    return df.rdd.map(lambda row: row.asDict()) \
-        .flatMap(lambda d: [(c, d[c]) for c in d.keys()]) \
-        .map(lambda t: (t[0], '') if t[1] is None else t) \
-        .groupByKey().map(lambda x: (x[0], list(x[1])))
-'''
-
 
 def get_columns(df: DataFrame) -> list:
     cols = []

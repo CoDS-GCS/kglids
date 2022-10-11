@@ -1,5 +1,6 @@
 import re
 from camelsplit import camelsplit
+import pandas as pd
 
 
 class Label:
@@ -36,6 +37,8 @@ class RDFResource:
             return '_:{}'.format(self.content)
         if isinstance(self.content, str):
             return '"{}"'.format(self.content)
+        if pd.isnull(self.content):
+            return '"NaN"^^xsd:double'
         if isinstance(self.content, float):
             return round(self.content, 3)
         if isinstance(self.content, Label):
