@@ -158,7 +158,7 @@ def main():
     parser.parse_graphs()
     parser.print_stats()
     import re
-    print([i for i in parser.all_nodes if i.startswith('<') and (not re.search('\/s[0-9]', i)) and ('/pipeline/library' not in i) and ('http://kglids.org/kaggle/titanic/dataResource/' not in i) ])
+    print([i for i in parser.all_nodes if i.startswith('<') and (not re.search('\/s[0-9]', i)) and ('/pipeline/library' not in i) and ('http://kglids.org/kaggle/titanic/' not in i) ])
 
     print('*'*25, 'Parsing Graph4Code', '*'*25)
     parser = Graph4CodeParser(g4c_graphs_dir)
