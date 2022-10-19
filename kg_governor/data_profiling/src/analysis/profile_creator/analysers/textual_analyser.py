@@ -47,15 +47,6 @@ class TextualAnalyser(IAnalyser):
         if not columns:
             return columns
 
-        '''profiles_info = self.df.rdd \
-            .map(lambda row: row.asDict()) \
-            .flatMap(lambda d: [(c, d[c]) for c in columns]) \
-            .groupByKey() \
-            .map(lambda column: {column[0]:
-                                     {'minhash': compute_minhash(column[1]), 'count': len(column[1]),
-                                      'distinct_values_count': len(set(column[1]))}}) \
-            .reduce(lambda x, y: {**x, **y})
-        return profiles_info'''
         schema = StructType([StructField('minhash', ArrayType(IntegerType()), False),
                              StructField('count', IntegerType(), False),
                              StructField('distinct', IntegerType(), False)])

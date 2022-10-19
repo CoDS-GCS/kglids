@@ -26,3 +26,5 @@ __pycache__/
 wandb/
 
 
+
+kg_governor/data_profiling/src/analysis/fasttext_embeddings/cc.en.50.bin

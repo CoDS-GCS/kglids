@@ -37,3 +37,5 @@ charset-normalizer==2.0.7
 idna==3.3
 python-dateutil==2.8.2
 pytz==2021.3
+dateparser==1.1.1
+git+ssh://git@github.com/facebookresearch/fastText.git@v0.9.2
