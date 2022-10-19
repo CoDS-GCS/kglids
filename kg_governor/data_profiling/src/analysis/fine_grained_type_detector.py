@@ -1,9 +1,13 @@
+import warnings
+warnings.simplefilter('ignore')
+
 from enum import Enum
 
-from allennlp.predictors.predictor import Predictor
+import spacy
 import dateparser
 import fasttext
 import pandas as pd
+from nltk.tokenize import TweetTokenizer
 import numpy as np
 
 
@@ -19,48 +23,70 @@ class ColumnDataType(Enum):
 
 class FineGrainedColumnTypeDetector:
     
-    ner_model = Predictor.from_path("https://storage.googleapis.com/allennlp-public-models/ner-elmo.2021-02-12.tar.gz")
+    ner_model = spacy.load('en_core_web_sm')
     fasttext_model = fasttext.load_model('fasttext_embeddings/cc.en.50.bin')
+    tokenizer = TweetTokenizer()
 
     @staticmethod
     def detect_column_data_type(column: pd.Series):
-        # TODO: before doing this: do df.convert_dtypes(), df.to_numeric()
-        if column.dtype == np.bool_:
+        if column.dtype.type == np.bool_:
             return ColumnDataType.BOOLEAN
         
-        elif column.dtype == np.int64:
-            if column.isin([0, 1]):
+        elif column.dtype.type == np.int64:
+            if column.isin([0, 1]).all():
                 return ColumnDataType.BOOLEAN
             return ColumnDataType.INT
         
-        elif column.dtype == np.float64:
+        elif column.dtype.type == np.float64:
             return ColumnDataType.FLOAT
         
         else:
-            sample = column.sample(min(len(column), 1000))
+            SAMPLE_SIZE = 1000
+            sample = column.sample(min(len(column), SAMPLE_SIZE)).dropna()
             
-            if FineGrainedColumnTypeDetector.__is_natural_language(sample):
+            if FineGrainedColumnTypeDetector.__is_date(sample):
+                return ColumnDataType.DATE
+            
+            elif FineGrainedColumnTypeDetector.__is_natural_language(sample):
                 if FineGrainedColumnTypeDetector.__is_named_entity(sample):
                     return ColumnDataType.NATURAL_LANGUAGE_NAMED_ENTITY
                 
                 return ColumnDataType.NATURAL_LANGUAGE_TEXT
-            
-            elif FineGrainedColumnTypeDetector.__is_date(sample):
-                return ColumnDataType.DATE
             
             return ColumnDataType.STRING
     
     
     @staticmethod
     def __is_natural_language(column: pd.Series):
-        return column.apply(lambda x: all([FineGrainedColumnTypeDetector.fasttext_model.get_word_id(word) != -1 for word in x.split()])).sum() > 0.5 * len(column)
+        num_natural_language_values = 0
+        for value in column.values:
+            tokens = FineGrainedColumnTypeDetector.tokenizer.tokenize(value)
+            num_tokens_in_fasttext = sum([FineGrainedColumnTypeDetector.fasttext_model.get_word_id(token) != -1
+                                          for token in tokens])
+            if num_tokens_in_fasttext > 0.5 * len(tokens):
+                num_natural_language_values += 1
+                if num_natural_language_values > 0.5 * len(column):
+                    return True
+        return False
     
     @staticmethod
     def __is_named_entity(column: pd.Series):
-        return column.apply(lambda x: 'O' not in FineGrainedColumnTypeDetector.ner_model.predict(x)['tags']).sum() > 0.5 * len(column)
+        num_named_entity_values = 0
+        for value in column.values:
+            tokens = FineGrainedColumnTypeDetector.ner_model(value)
+            non_puncts = len([token for token in tokens if not token.is_punct and not token.is_space])
+            if len(tokens.ents) == non_puncts:
+                num_named_entity_values += 1
+                if num_named_entity_values > 0.5 * len(column):
+                    return True
+        return False
     
     @staticmethod
     def __is_date(column: pd.Series):
-        return column.apply(lambda x: dateparser.parse(x, locales=['en-CA'], languages=['en'])).sum() > 0.5 * len(column)
-    
-    
+        num_date_values = 0
+        for value in column.values:
+            if dateparser.parse(value, locales=['en-CA'], languages=['en']):
+                num_date_values += 1
+                if num_date_values > 0.5 * len(column):
+                    return True
+        return False

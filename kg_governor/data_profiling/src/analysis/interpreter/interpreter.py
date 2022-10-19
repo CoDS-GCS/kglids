@@ -17,6 +17,10 @@ class Interpreter:
         # TODO: [Implement] [Bug] some numerical columns are inferred as strings. (especially if there a NaN)
         self.spark = init_spark()
         self.table = table
+        #     df = pd.read_csv('/home/mossad/projects/kglids/storage/data_sources/dataset_storage/sources/kaggle/ayushggarg.all-trumps-twitter-insults-20152021/trump_insult_tweets_2014_to_2021.csv',
+        #                      na_values=[' ', '?'], engine='python', encoding='unicode_escape')
+        #     df = df.apply(pd.to_numeric, errors='ignore')
+        #     df = df.convert_dtypes()
         self.tableDF = self.spark.read.option("maxColumns", 100000).csv(table.get_table_path(), inferSchema=True,
                                                                         header=True, multiLine=True)
         regex = re.compile(r'^_c[0-9]*$')
