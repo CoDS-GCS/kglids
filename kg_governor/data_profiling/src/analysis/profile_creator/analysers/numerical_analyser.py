@@ -11,7 +11,7 @@ import math
 
 
 DEVICE = 'cpu'
-EMBEDDING_MODEL = load_embedding_model('deep_embeddings/embedding_model/20211123161253_numerical_embedding_model_epoch_4_3M_samples_gpu_cluster.pt')
+EMBEDDING_MODEL = load_embedding_model('deep_embeddings/embedding_models/numerical/20211123161253_numerical_embedding_model_epoch_4_3M_samples_gpu_cluster.pt')
 # print('Deep embedding model loaded successfully!')
 
 
