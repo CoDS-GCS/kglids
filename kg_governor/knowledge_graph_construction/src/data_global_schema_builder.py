@@ -17,7 +17,7 @@ from workers import column_metadata_worker, column_pair_similarity_worker
 from utils.word_embeddings import WordEmbeddings
 from utils.utils import generate_label, RDFResource, Triplet
 # TODO: [Refactor] project structure needs to be changed. This import won't work in terminal without the above sys call.
-from kg_governor.data_profiling.src.data.column_profile import ColumnProfile
+from kg_governor.data_profiling.src.model.column_profile import ColumnProfile
 
 # ************* SYSTEM PARAMETERS**********************
 # TODO: [Refactor] have these inside a global project config
@@ -135,7 +135,7 @@ class DataGlobalSchemaBuilder:
                 continue
             # dataset -> source membership and metadata
             datasets.add(column_profile.get_dataset_id())
-            source_node = RDFResource(column_profile.get_datasource(), self.ontology['kglidsResource'])
+            source_node = RDFResource(column_profile.get_data_source(), self.ontology['kglidsResource'])
             membership_triples.append(Triplet(dataset_node, RDFResource('isPartOf', self.ontology['kglids']),
                                               RDFResource(source_node)))
             dataset_label = generate_label(column_profile.get_dataset_name(), 'en')
@@ -146,13 +146,13 @@ class DataGlobalSchemaBuilder:
             membership_triples.append(Triplet(dataset_node, RDFResource('type', self.ontology['rdf']),
                                               RDFResource('Dataset', self.ontology['kglids'], False)))
 
-            if column_profile.get_datasource() in sources:
+            if column_profile.get_data_source() in sources:
                 continue
             # source metadata
-            sources.add(column_profile.get_datasource())
-            source_label = generate_label(column_profile.get_datasource(), 'en')
+            sources.add(column_profile.get_data_source())
+            source_label = generate_label(column_profile.get_data_source(), 'en')
             membership_triples.append(Triplet(source_node, RDFResource('name', self.ontology['schema']),
-                                              RDFResource(column_profile.get_datasource())))
+                                              RDFResource(column_profile.get_data_source())))
             membership_triples.append(Triplet(source_node, RDFResource('label', self.ontology['rdfs']),
                                               RDFResource(source_label)))
             membership_triples.append(Triplet(source_node, RDFResource('type', self.ontology['rdf']),
