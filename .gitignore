@@ -27,4 +27,4 @@ wandb/
 
 
 
-kg_governor/data_profiling/src/analysis/fasttext_embeddings/cc.en.50.bin
+kg_governor/data_profiling/src/fasttext_embeddings/cc.en.50.bin

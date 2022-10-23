@@ -1,6 +1,0 @@
-datasource: "d3l"
-datasets:
-- name: "smallerReal"
-  type: "csv"
-  path: "/home/mossad/projects/kglids/storage/sources/experiments/smallerReal/benchmark/"
-  origin: "d3l"
