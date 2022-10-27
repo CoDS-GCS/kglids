@@ -47,44 +47,28 @@ for a quick hands-on! </b>
 
 
 <b>Generating the LiDS graph:</b>
-1. Add your configurations to [config.yml](data_items/profiler/config/config.yml):
+1. Add the data sources to [config.py](kg_governor/data_profiling/src/config.py):
 ```python
-# sample configurations
-datasource: "kaggle" 
-datasets:
-- name:     "Titanic"
-  type:     "csv"
-  path:     "/data/titanic"
-  origin:   "https://www.kaggle.com/"
-- name:     "Montreal Crime Data"
-  type:     "csv"
-  path:     "/data/mtl_crime"
-  origin:   "https://www.kaggle.com/"
+# sample configuration
+# list of data sources to process
+data_sources = [DataSource(name='benchmark',
+                           path='/home/projects/sources/kaggle',
+                           file_type='csv')]
+
 ```
-</t>Note: The config.yml file expects the following structure:
-```
-datasource/
-├── datasets
-│   └── name
-│   └── type
-│   └── path
-│   └── origin
-├ ...
-...
-```
-2. Run the [Data profiler](data_items/profiler/src/main.py)
+2. Run the [Data profiler](kg_governor/data_profiling/src/main.py)
 ```commandline
-cd kglids/data_items/profiler/src/
+cd kg_governor/data_profiling/src/
 python main.py
 ```
-3. Run the [Knowledge graph builder](data_items/knowledge_graph/src/knowledge_graph_builder.py) to generate the data_items graph 
+3. Run the [Knowledge graph builder](kg_governor/knowledge_graph_construction/src/data_global_schema_builder.py) to generate the data_items graph 
 ```commandline/
-cd kglids/data_items/knowledge_graph/src/
-python knowledge_graph_builder.py
+cd kg_governor/knowledge_graph_construction/src/
+python data_global_schema_builder.py
 ```
-4. Run the [Pipeline abstractor](pipelines/abstraction) to generate the pipeline named graph(s)
+4. Run the [Pipeline abstractor](kg_governor/pipeline_abstraction/pipelines_analysis.py) to generate the pipeline named graph(s)
 ```
-cd kglids/pipelines/abstraction/
+cd kg_governor/pipeline_abstraction/
 python pipelines_analysis.py
 ```
 <hr>
@@ -97,7 +81,7 @@ stardog-admin db create -o edge.properties=true -n Database_name
 ```
 2. Add the dataset-graph to the database
 ```commandline
-stardog data add --format turtle Database_name dataset_graph.nq
+stardog data add --format turtle Database_name dataset_graph.ttl
 ```
 3. Add the pipeline default graph and named-graphs to the database
 ```commandline
@@ -146,10 +130,20 @@ The following benchmark datasets were used to evaluate KGLiDS:
 See the full list of supported APIs [here](docs/KGLiDS_apis.md).
 
 ## Citing Our Work
-If you find our work useful, please cite it in your research:
+If you find our work useful, please cite it in your research.
 
 ## Publicity
-This repository is part of our submission to SIGMOD23. We will make it available to the public research community upon acceptance. 
+This repository is part of our submission. We will make it available to the public research community upon acceptance. 
 
 ## Questions
-For any questions please contact us at:<br/>essam.mansour@concordia.ca, mossad.helali@concordia.ca, shubham.vashisth@concordia.ca, philippe.carrier@concordia.ca, khose@cs.aau.dk
+For any questions please contact us:
+
+mossad.helali@concordia.ca
+
+shubham.vashisth@concordia.ca
+
+philippe.carrier@concordia.ca
+
+khose@cs.aau.dk
+
+essam.mansour@concordia.ca
