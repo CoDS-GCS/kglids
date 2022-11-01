@@ -71,7 +71,8 @@ class DataGlobalSchemaBuilder:
         print('Total:', len(column_profile_paths))
         print('Reading column profiles ...')
         pool = mp.Pool(os.cpu_count() - 1)
-        self.column_profiles = list(tqdm(pool.imap_unordered(ColumnProfile.load_profile, column_profile_paths), total=len(column_profile_paths)))
+        self.column_profiles = list(tqdm(pool.imap_unordered(ColumnProfile.load_profile, column_profile_paths),
+                                         total=len(column_profile_paths)))
         
 
         # TODO: [Refactor] Read this from project config
