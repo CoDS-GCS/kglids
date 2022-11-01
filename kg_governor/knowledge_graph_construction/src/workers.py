@@ -61,8 +61,7 @@ def column_metadata_worker(column_profiles,  ontology, triples_output_tmp_dir):
         
 def column_pair_similarity_worker(column_idx, column_profiles, ontology, triples_output_tmp_dir, 
                                   semantic_similarity_threshold, numerical_content_threshold,
-                                  deep_embedding_content_threshold, inclusion_dependency_threshold,
-                                  minhash_content_threshold, pkfk_threshold, word_embedding):
+                                  deep_embedding_content_threshold, minhash_content_threshold, word_embedding):
 
     # load the column profiles
     column1_profile = column_profiles[column_idx]

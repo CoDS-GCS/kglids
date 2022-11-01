@@ -24,9 +24,7 @@ from kg_governor.data_profiling.src.model.column_profile import ColumnProfile
 SEMANTIC_THRESHOLD = 0.75
 CONTENT_THRESHOLD = 0.95
 MINHASH_THRESHOLD = 0.70
-INCLUSION_THRESHOLD = 0.90
 DEEP_EMBEDDING_THRESHOLD = 0.95
-PKFK_THRESHOLD = 0.60
 
 
 # *****************************************************
@@ -180,9 +178,7 @@ class DataGlobalSchemaBuilder:
                                                     semantic_similarity_threshold=SEMANTIC_THRESHOLD,
                                                     numerical_content_threshold=CONTENT_THRESHOLD,
                                                     deep_embedding_content_threshold=DEEP_EMBEDDING_THRESHOLD,
-                                                    inclusion_dependency_threshold=INCLUSION_THRESHOLD,
                                                     minhash_content_threshold=MINHASH_THRESHOLD,
-                                                    pkfk_threshold=PKFK_THRESHOLD,
                                                     word_embedding=word_embedding)) \
                                 .collect()
 
