@@ -49,7 +49,7 @@ class DataGlobalSchemaBuilder:
             shutil.rmtree(self.tmp_graph_base_dir)
         os.makedirs(self.tmp_graph_base_dir)
 
-        self.memory_size = (os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') // 1024**3) - 1
+        self.memory_size = (os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') // 1024**3) - 1 # total RAM - 1 GB
         self.is_cluster_mode = spark_mode == 'cluster'
 
         self.ontology = {'kglids': 'http://kglids.org/ontology/',

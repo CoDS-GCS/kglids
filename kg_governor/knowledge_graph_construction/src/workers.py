@@ -57,7 +57,7 @@ def column_metadata_worker(column_profiles,  ontology, triples_output_tmp_dir):
             f.write(f"{triple}\n")
     
     return []
-    
+
         
 def column_pair_similarity_worker(column_idx, column_profiles, ontology, triples_output_tmp_dir, 
                                   semantic_similarity_threshold, numerical_content_threshold,
@@ -83,15 +83,8 @@ def column_pair_similarity_worker(column_idx, column_profiles, ontology, triples
                                                       minhash_content_threshold=minhash_content_threshold)
         deep_content_triples = _compute_numerical_deep_content_similarity(column1_profile, column2_profile, ontology,
                                                                           deep_embedding_content_threshold)
-        inclusion_triples = _compute_numerical_inclusion_dependency(column1_profile, column2_profile, ontology,
-                                                                    inclusion_dependency_threshold)
-        pkfk_triples = _compute_primary_key_foreign_key_similarity(column1_profile, column2_profile, ontology,
-                                                                   pkfk_threshold,
-                                                                   content_similarity_triples=content_triples,
-                                                                   deep_content_similarity_triples=deep_content_triples,
-                                                                   inclusion_dependency_triples=inclusion_triples)
 
-        similarity_triples.extend(semantic_triples + content_triples + deep_content_triples + inclusion_triples + pkfk_triples)
+        similarity_triples.extend(semantic_triples + content_triples + deep_content_triples)
     filename = ''.join(random.choices(string.ascii_letters + string.digits, k=15)) + '.nt'
     with open(os.path.join(triples_output_tmp_dir, filename), 'w', encoding='utf-8') as f:
         for triple in similarity_triples:
@@ -190,98 +183,6 @@ def _compute_numerical_deep_content_similarity(col1_profile, col2_profile, ontol
     return deep_content_similarity_triples
 
 
-def _compute_numerical_inclusion_dependency(col1_profile, col2_profile, ontology, 
-                                            inclusion_dependency_threshold):
-    
-    if not col1_profile.is_numeric():
-        # inclusion dependency applies only for numerical columns
-        return []
-    if col1_profile.get_iqr() == 0 or col2_profile.get_iqr() == 0:
-        return []
-    if any([np.isinf(float(i)) for i in [col1_profile.get_min_value(), col1_profile.get_max_value(),
-                                         col2_profile.get_min_value(), col2_profile.get_max_value()]]):
-        return []
-
-    # inclusion relation
-    # TODO: [Implement] This original implementation generates duplicated similarity triples between columns with 
-    #       different scores.
-    """ 
-    For example: 
-    <<col1 hasInclusionDependency col2>> withCertainty 0.97
-    <<col2 hasInclusionDependency col1>> withCertainty 0.97
-    <<col1 hasInclusionDependency col2>> withCertainty 0.96
-    <<col2 hasInclusionDependency col1>> withCertainty 0.96
-    
-    Proposed solution: make the scores asymmetric, i.e. have:
-    <<col1 hasInclusionDependency col2>> withCertainty 0.97
-    <<col2 hasInclusionDependency col1>> withCertainty 0.96
-    """
-    inclusion_dependency_triples = []
-    if col2_profile.get_min_value() >= col1_profile.get_min_value() \
-            and col2_profile.get_max_value() <= col1_profile.get_max_value():
-        overlap = _compute_inclusion_overlap(col1_profile, col2_profile)
-        if overlap >= inclusion_dependency_threshold:
-            inclusion_dependency_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                                  'hasInclusionDependency', overlap,
-                                                                                  ontology))
-    if col1_profile.get_min_value() >= col2_profile.get_min_value() \
-            and col1_profile.get_max_value() <= col2_profile.get_max_value():
-        overlap = _compute_inclusion_overlap(col2_profile, col1_profile)
-        if overlap >= inclusion_dependency_threshold:
-            inclusion_dependency_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                                  'hasInclusionDependency', overlap,
-                                                                                  ontology))
-    return inclusion_dependency_triples
-
-
-# TODO: [Refactor] this method needs to be moved somewhere else.
-def _compute_inclusion_overlap(column1_profile, column2_profile):
-    col1_left = column1_profile.get_median() - column1_profile.get_iqr()
-    col1_right = column1_profile.get_median() + column1_profile.get_iqr()
-    col2_left = column2_profile.get_median() - column2_profile.get_iqr()
-    col2_right = column2_profile.get_median() + column2_profile.get_iqr()
-    overlap = 0
-    if col2_left >= col1_left and col2_right <= col1_right:
-        overlap = float((col2_right - col2_left) / (col1_right - col1_left))
-    elif col1_left <= col2_left <= col1_right:
-        domain_ov = col1_right - col2_left
-        overlap = float(domain_ov / (col1_right - col1_left))
-    elif col1_left <= col2_right <= col1_right:
-        domain_ov = col2_right - col1_left
-        overlap = float(domain_ov / (col1_right - col1_left))
-    return float(overlap)
-
-
-def _compute_primary_key_foreign_key_similarity(col1_profile, col2_profile, ontology, 
-                                                pkfk_threshold, content_similarity_triples, 
-                                                deep_content_similarity_triples, inclusion_dependency_triples):
-    # no pkfk if the columns are booleans of floats
-    if col1_profile.is_boolean() or col1_profile.is_float():
-        return []
-    
-    # we have pkfk if the two columns have content similarity and their cardinalities are above the provided threshold
-    if col1_profile.get_total_values_count() == 0 or col2_profile.get_total_values_count() == 0:
-        return []
-    col1_cardinality = float(col1_profile.get_distinct_values_count()) / float(col1_profile.get_total_values_count())
-    col2_cardinality = float(col2_profile.get_distinct_values_count()) / float(col2_profile.get_total_values_count())
-    if min(col1_cardinality, col2_cardinality) < pkfk_threshold:
-        return []
-    
-    highest_cardinality = max(col1_cardinality, col2_cardinality)
-    pkfk_similarity_triples = []
-
-    if col1_profile.is_numeric() and deep_content_similarity_triples:
-        pkfk_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                         'hasPrimaryKeyForeignKeySimilarity',
-                                                                         highest_cardinality, ontology))
-    
-    elif col1_profile.is_textual() and content_similarity_triples:
-        pkfk_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile, 
-                                                                         'hasPrimaryKeyForeignKeySimilarity', 
-                                                                         highest_cardinality, ontology))
-
-
-    return pkfk_similarity_triples
 
 
 # TODO: [Refactor] this method needs to be moved somewhere else.
