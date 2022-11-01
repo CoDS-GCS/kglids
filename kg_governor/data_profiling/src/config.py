@@ -23,6 +23,8 @@ class ProfilerConfig:
     
     # number of workers (processes) to use when profiling columns. Defaults to the number of threads.
     n_workers = os.cpu_count()
+    # maximum memory in GB to be used by Spark
+    max_memory = 25
     
 
 
