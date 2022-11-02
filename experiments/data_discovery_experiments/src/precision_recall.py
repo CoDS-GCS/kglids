@@ -11,18 +11,18 @@ from helper.cache import *
 # *************EXPERIMENT PARAMETERS**************
 THRESHOLD = 0.75
 NO_RANDOM_QUERY_TABLES = 100
-PORT = 7777
 DATASET = 'smallerReal'
-NAMESPACE = 'kglids_smallerReal'
+DATABASE = 'smaller_real'
 # ************************************************
 EXPERIMENT_NAME = 'precision_recall'
 SAVE_RESULT_AS = EXPERIMENT_NAME + '_' + DATASET
-SPARQL = connect_to_blazegraph(PORT, NAMESPACE)
+SPARQL = connect_to_stardog(db=DATABASE)
 # ************************************************
 
 
 def load_cache(load_as='cache'):
-    with open('cache/' + load_as, 'rb') as handle:
+    print(os.getcwd())
+    with open('../cache/' + load_as, 'rb') as handle:
         return pickle.load(handle)
 
 
@@ -152,13 +152,13 @@ def visualize(exp_res: dict):
 
 def main():
 
-    # df = load_groundtruth()
-    # test_mapping = get_table_mapping(df)
-    # t1 = time.time()
-    # run_experiment(df, test_mapping)
-    # print('Total time taken: ', time.time()-t1)
+    df = load_groundtruth()
+    test_mapping = get_table_mapping(df)
+    t1 = time.time()
+    run_experiment(df, test_mapping)
+    print('Total time taken: ', time.time()-t1)
 
-    exp_res = load_cache('precision_recall_smallerReal.pkl')
+    exp_res = load_cache('precision_recall_smallerReal_k-185.pkl')
     visualize(exp_res)
 
 

@@ -1,3 +1,8 @@
+import io
+
+import stardog
+import pandas as pd
+
 from SPARQLWrapper import JSON
 
 
@@ -44,7 +49,7 @@ def get_similar_relation_tables_query(query_table: str, thresh: float):
       				schema:name		?table_name1	.
       	?column_id	kglids:isPartOf ?table_id		.
 
-      	<<?column_id data:hasSemanticSimilarity	?column_id2>>	data:withCertainty	?certainty	. 
+      	<<?column_id data:hasLabelSimilarity	?column_id2>>	data:withCertainty	?certainty	. 
 
       	FILTER (?certainty >= %s)					.
       	?column_id2 kglids:isPartOf	?table_id2		.
@@ -152,10 +157,22 @@ def attribute_precision_j_query(query_table, table, thresh: float):
 
 # --------------------QUERY EXEC-------------------------
 
-def execute_query(sparql, query: str):
-    sparql.setQuery(query)
-    sparql.setReturnFormat(JSON)
-    return sparql.query().convert()
+def execute_query(conn: stardog.Connection, query: str, return_type: str = 'json', timeout: int = 0):
+    if return_type == 'csv':
+        result = conn.select(query, content_type='text/csv', timeout=timeout)
+        return pd.read_csv(io.BytesIO(bytes(result)))
+    elif return_type == 'json':
+        result = conn.select(query)
+        return result['results']['bindings']
+    elif return_type == 'ask':
+        result = conn.select(query)
+        return result['boolean']
+    elif return_type == 'update':
+        result = conn.update(query)
+        return result
+    else:
+        error = return_type + ' not supported!'
+        raise ValueError(error)
 
 
 attr_pairs = {}
@@ -210,7 +227,7 @@ def get_top_k_related_tables(sparql, query_table, k, thresh):
     else:
         result = []
         res = execute_query(sparql, get_similar_relation_tables_query(query_table, thresh))
-        for r in res["results"]["bindings"]:
+        for r in res:
             table1 = r["table_name1"]["value"]
             table2 = r["table_name2"]["value"]
             certainty = float(r["certainty"]["value"])
