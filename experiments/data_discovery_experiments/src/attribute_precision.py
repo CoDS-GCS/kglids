@@ -11,14 +11,11 @@ from helper.comparsion_plot import plot_comparison
 # **************************CONFIGURATIONS*****************************
 THRESHOLD = 0.75
 DATASET = 'smallerReal'
-PORT = 7777
 EXPERIMENT_NAME = 'attribute_precision'
-NAMESPACE = 'kglids_smallerReal'
+DATABASE = 'smaller_real'
 # *********************************************************************
 SAVE_RESULT_AS = EXPERIMENT_NAME + '_' + DATASET + '_' + str(THRESHOLD)
-
-
-# SPARQL = connect_to_blazegraph(PORT, NAMESPACE)
+SPARQL = connect_to_stardog(db=DATABASE)
 # *********************************************************************
 
 
@@ -163,10 +160,10 @@ def run_experiment(df):
 
 
 def main():
-    # df = load_ground_truth()
-    # t1 = time.time()
-    # run_experiment(df)
-    # print('\nTotal time taken: ', time.time() - t1)
+    df = load_ground_truth()
+    t1 = time.time()
+    run_experiment(df)
+    print('\nTotal time taken: ', time.time() - t1)
 
     exp_res = load_cache('cache/attribute_precision_smallerReal_k-260.pkl')
     plt.figure(figsize=(12, 5))

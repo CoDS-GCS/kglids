@@ -1,9 +1,6 @@
 import io
-
 import stardog
 import pandas as pd
-
-from SPARQLWrapper import JSON
 
 
 def get_prefixes():
@@ -85,7 +82,7 @@ def attribute_precision_j_query(query_table, table, thresh: float):
                     {
                         ?table_id1	schema:name		"%s"			. #si
                         ?column1	kglids:isPartOf	?table_id1				.
-                        ?column1 	data:hasDeepPrimaryKeyForeignKeySimilarity		?column2				.	
+                        ?column1 	data:hasContentSimilarity		?column2				.	
                         ?column2	kglids:isPartOf	?table_id2				.
                         ?table_id2	rdf:type			kglids:Table			.
                         ?table_id2	schema:name		?joinable_tables_name	.
@@ -95,7 +92,7 @@ def attribute_precision_j_query(query_table, table, thresh: float):
                     {
                         ?table_id3	schema:name		?joinable_tables_name	.
                         ?column3	kglids:isPartOf	?table_id3				.
-                        ?column3	data:hasDeepPrimaryKeyForeignKeySimilarity		?column4				.
+                        ?column3	data:hasContentSimilarity		?column4				.
                         ?column4	kglids:isPartOf	?table_id4				.
                         ?table_id4	rdf:type			kglids:Table			.
                         ?table_id4	schema:name		?joinable_tables_name	.
@@ -105,7 +102,7 @@ def attribute_precision_j_query(query_table, table, thresh: float):
                     {
                         ?table_id5	schema:name		?joinable_tables_name	.
                         ?column5	kglids:isPartOf	?table_id5				.
-                        ?column5	data:hasDeepPrimaryKeyForeignKeySimilarity		?column6				.
+                        ?column5	data:hasContentSimilarity		?column6				.
                         ?column6	kglids:isPartOf	?table_id6				.
                         ?table_id6	rdf:type			kglids:Table			.
                         ?table_id6	schema:name		?joinable_tables_name	.
@@ -115,7 +112,7 @@ def attribute_precision_j_query(query_table, table, thresh: float):
                     {
                         ?table_id7	schema:name		?joinable_tables_name	.
                         ?column7	kglids:isPartOf	?table_id7				.
-                        ?column7	data:hasDeepPrimaryKeyForeignKeySimilarity		?column8				.
+                        ?column7	data:hasContentSimilarity		?column8				.
                         ?column8	kglids:isPartOf	?table_id8				.
                         ?table_id8	rdf:type			kglids:Table			.
                         ?table_id8	schema:name		?joinable_tables_name	.
@@ -125,7 +122,7 @@ def attribute_precision_j_query(query_table, table, thresh: float):
                     {
                         ?table_id9	schema:name		?joinable_tables_name	.
                         ?column9	kglids:isPartOf	?table_id9				.
-                        ?column9	data:hasDeepPrimaryKeyForeignKeySimilarity		?column10				.
+                        ?column9	data:hasContentSimilarity		?column10				.
                         ?column10	kglids:isPartOf	?table_id10				.
                         ?table_id10	rdf:type			kglids:Table			.
                         ?table_id10	schema:name		?joinable_tables_name	.
@@ -135,7 +132,7 @@ def attribute_precision_j_query(query_table, table, thresh: float):
                     {
                         ?table_id11	schema:name		?joinable_tables_name	.
                         ?column11	kglids:isPartOf	?table_id11				.
-                        ?column11	data:hasDeepPrimaryKeyForeignKeySimilarity		?column12				.
+                        ?column11	data:hasContentSimilarity		?column12				.
                         ?column12	kglids:isPartOf	?table_id12				.
                         ?table_id12	rdf:type			kglids:Table			.
                         ?table_id12	schema:name		?joinable_tables_name	.
@@ -149,7 +146,7 @@ def attribute_precision_j_query(query_table, table, thresh: float):
     ?column_t		kglids:isPartOf	?table_id_t				.
     ?column_t       schema:name     ?target_attribute       .
     ?column_x		schema:name		?candidate_attribute	.
-    <<?column_t		data:hasSemanticSimilarity		?column_x>>	data:withCertainty	?certainty.		
+    <<?column_t		data:hasLabelSimilarity		?column_x>>	data:withCertainty	?certainty.		
     FILTER(?certainty >= %s)  .                                                            
 
     }""" % (table, query_table, thresh)
@@ -185,8 +182,8 @@ def get_related_columns_between_2_tables_attribute_precision(sparql, table1, tab
     else:
         result = []
         res = execute_query(sparql,
-                            get_related_columns_between_2_tables_query(table1, table2, 'hasSemanticSimilarity', thresh))
-        for r in res["results"]["bindings"]:
+                            get_related_columns_between_2_tables_query(table1, table2, 'hasLabelSimilarity', thresh))
+        for r in res:
             c1 = r["column_name1"]["value"]
             c2 = r["column_name2"]["value"]
             result.append((table1, c1, table2, c2))
@@ -205,7 +202,7 @@ def get_related_columns_between_2_tables_j_attribute_precision(SPARQL, query_tab
         result = []
         res = execute_query(SPARQL, attribute_precision_j_query(query_table, table, thresh))
 
-        for r in res["results"]["bindings"]:
+        for r in res:
             target_t = r["target_table"]["value"]
             target_attr = r["target_attribute"]["value"]
             candidate_t = r["joinable_tables_name"]["value"]
