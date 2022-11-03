@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 
 
 def load_cache(load_as='cache'):
-    with open('cache/' + load_as + '.pkl', 'rb') as handle:
+    with open('../cache/' + load_as + '.pkl', 'rb') as handle:
         return pickle.load(handle)
 
 
@@ -90,7 +90,7 @@ def visualize(r1, r2):
     # print(ap1, "\n", ap2, "\n", ap3, "\n", d3l, "\n", d3l_j)
 
     # plt.figure(figsize=(7.5, 5.75))
-    return plot_scores(k, ap_j1, 'Attribute precision', ap2, ap_j2) #, d3l, d3l_j)  # , ap3, ap_j3)  # , ap4, ap_j4, ap5, ap_j5)
+    return plot_scores(k, ap_j1, 'Attribute precision', ap2, ap_j2)  # d3l, d3l_j)  # , ap3, ap_j3)  # , ap4, ap_j4, ap5, ap_j5)
     # plt.savefig('../plots/improvements_with_deep_embeddings.pdf')
     # plt.show()
 
@@ -99,5 +99,4 @@ def plot_comparison():
     res1 = load_cache('attribute_precision_smallerReal_k-260_without_de')
     res2 = load_cache('attribute_precision_smallerReal_k-260')
     return visualize(res1, res2)
-
 

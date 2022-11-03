@@ -160,12 +160,12 @@ def run_experiment(df):
 
 
 def main():
-    df = load_ground_truth()
-    t1 = time.time()
-    run_experiment(df)
-    print('\nTotal time taken: ', time.time() - t1)
+    # df = load_ground_truth()
+    # t1 = time.time()
+    # run_experiment(df)
+    # print('\nTotal time taken: ', time.time() - t1)
 
-    exp_res = load_cache('cache/attribute_precision_smallerReal_k-260.pkl')
+    exp_res = load_cache('../cache/attribute_precision_smallerReal_k-260.pkl')
     plt.figure(figsize=(12, 5))
     plt.subplot(1, 2, 1)
     attribute_precision_plot = visualize(exp_res, EXPERIMENT_NAME.replace('_', ' ').capitalize(), DATASET)
