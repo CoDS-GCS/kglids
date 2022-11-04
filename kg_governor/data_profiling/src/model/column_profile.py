@@ -7,7 +7,7 @@ from .column_data_type import ColumnDataType
 
 class ColumnProfile:
     def __init__(self, column_id: str, dataset_name: str, dataset_id: str, path: str, table_name: str,
-                 table_id: str, column_name: str, data_source: str, data_type: ColumnDataType,
+                 table_id: str, column_name: str, data_source: str, data_type: str,
                  total_values: float, distinct_values_count: float, missing_values_count: float,
                  true_ratio: float = None, min_value: float = None, max_value: float = None,
                  mean: float = None, median: float = None, iqr: float = None,
@@ -20,7 +20,7 @@ class ColumnProfile:
         self.table_id = table_id
         self.data_source = data_source
         self.column_name = column_name
-        self.data_type = data_type.value
+        self.data_type = data_type
         self.total_values = total_values
         self.distinct_values_count = distinct_values_count
         self.missing_values_count = missing_values_count
@@ -194,8 +194,8 @@ class ColumnProfile:
     def set_column_name(self, column_name: str):
         self.column_name = column_name
 
-    def set_data_type(self, data_type: ColumnDataType):
-        self.data_type = data_type.value
+    def set_data_type(self, data_type: str):
+        self.data_type = data_type
 
     def set_total_values(self, total_values: float):
         self.total_values = total_values

@@ -7,19 +7,14 @@ import sys
 sys.path.append('../../../')
 
 import numpy as np
-from numpy.linalg import norm
-from datasketch import MinHash
-from sklearn.cluster import DBSCAN
 
 from utils.utils import generate_label, RDFResource, Triplet
 
 
 def column_metadata_worker(column_profiles,  ontology, triples_output_tmp_dir):
-    
-
     # TODO: [Refactor] have the names of predicates read from global project ontology object
     triples = []
-
+    
     for column_profile in column_profiles:
 
         column_node = RDFResource(column_profile.get_column_id(), ontology['kglidsResource'])
@@ -50,6 +45,10 @@ def column_metadata_worker(column_profiles,  ontology, triples_output_tmp_dir):
                                    RDFResource(column_profile.get_max_value())))
             triples.append(Triplet(column_node, RDFResource('hasMinValue', ontology['kglidsData']),
                                    RDFResource(column_profile.get_min_value())))
+        
+        if column_profile.is_boolean():
+            triples.append(Triplet(column_node, RDFResource('hasTrueRatio', ontology['kglidsData']),
+                                   RDFResource(column_profile.get_true_ratio())))
 
     filename = ''.join(random.choices(string.ascii_letters + string.digits, k=15)) + '.nt'
     with open(os.path.join(triples_output_tmp_dir, filename), 'w', encoding='utf-8') as f:
@@ -57,11 +56,11 @@ def column_metadata_worker(column_profiles,  ontology, triples_output_tmp_dir):
             f.write(f"{triple}\n")
     
     return []
-
+    
         
-def column_pair_similarity_worker(column_idx, column_profiles, ontology, triples_output_tmp_dir, 
-                                  semantic_similarity_threshold, numerical_content_threshold,
-                                  deep_embedding_content_threshold, minhash_content_threshold, word_embedding):
+def column_pair_similarity_worker(column_idx, column_profiles, ontology, triples_output_tmp_dir,
+                                  label_sim_threshold, embedding_sim_threshold, boolean_sim_threshold,
+                                  word_embedding):
 
     # load the column profiles
     column1_profile = column_profiles[column_idx]
@@ -69,119 +68,60 @@ def column_pair_similarity_worker(column_idx, column_profiles, ontology, triples
     for j in range(column_idx+1, len(column_profiles)):
         column2_profile = column_profiles[j]
         
+        # don't compare if the data type is different or the columns are in the same table.
         if column1_profile.get_data_type() != column2_profile.get_data_type():
             continue
         if column1_profile.get_table_id() == column2_profile.get_table_id():
             continue
 
-        semantic_triples = _compute_semantic_similarity(column1_profile, column2_profile, ontology,
-                                                        semantic_similarity_threshold,
-                                                        word_embedding_model=word_embedding)
-        content_triples = _compute_content_similarity(column1_profile, column2_profile, ontology,
-                                                      numerical_content_threshold=numerical_content_threshold,
-                                                      minhash_content_threshold=minhash_content_threshold)
-        deep_content_triples = _compute_numerical_deep_content_similarity(column1_profile, column2_profile, ontology,
-                                                                          deep_embedding_content_threshold)
+        label_sim_triples = _compute_label_similarity(column1_profile, column2_profile, ontology,
+                                                      label_sim_threshold, word_embedding)
+        content_sim_triples = _compute_content_similarity(column1_profile, column2_profile, ontology,
+                                                          embedding_sim_threshold, boolean_sim_threshold)
 
-        similarity_triples.extend(semantic_triples + content_triples + deep_content_triples)
+        similarity_triples.extend(label_sim_triples + content_sim_triples)
+        
     filename = ''.join(random.choices(string.ascii_letters + string.digits, k=15)) + '.nt'
     with open(os.path.join(triples_output_tmp_dir, filename), 'w', encoding='utf-8') as f:
         for triple in similarity_triples:
             f.write(f"{triple}\n")
-    
+            
     return []
-    
+        
 
-def _compute_semantic_similarity(column1_profile, column2_profile, ontology,
-                                 semantic_similarity_threshold: float, word_embedding_model) -> list:
+def _compute_label_similarity(column1_profile, column2_profile, ontology,
+                              label_similarity_threshold: float, word_embedding_model) -> list:
     # TODO: [Refactor] have the names of predicates read from global project ontology object
 
     column1_label = generate_label(column1_profile.get_column_name(), 'en').get_text()
     column2_label = generate_label(column2_profile.get_column_name(), 'en').get_text()
     
     score = word_embedding_model.get_distance_between_column_labels(column1_label, column2_label)
-    semantic_similarity_triples = []
-    if score >= semantic_similarity_threshold:
-        semantic_similarity_triples.extend(_create_column_similarity_triples(column1_profile, column2_profile, 
-                                                                             'hasSemanticSimilarity', score, ontology))
-    return semantic_similarity_triples
+    label_similarity_triples = []
+    if score >= label_similarity_threshold:
+        label_similarity_triples.extend(_create_column_similarity_triples(column1_profile, column2_profile, 
+                                                                          'hasLabelSimilarity', score, ontology))
+    return label_similarity_triples
 
 
-def _compute_content_similarity(col1_profile, col2_profile, ontology,
-                                numerical_content_threshold, minhash_content_threshold):
-    # TODO: [Refactor] have the names of predicates read from global project ontology object
-    content_similarity_triples = []
-    if col1_profile.is_numeric():
-        # TODO: [Implement] Remove non-deep similarities
-        return []
-        
-        # Content similarity without deep embedding
-        # TODO: [Implement] This original implementation generates duplicated similarity triples between columns with 
-        #       different scores.
-        """ 
-         For example: 
-        <<col1 hasContentSimilarity col2>> withCertainty 0.97
-        <<col2 hasContentSimilarity col1>> withCertainty 0.97
-        <<col1 hasContentSimilarity col2>> withCertainty 0.96
-        <<col2 hasContentSimilarity col1>> withCertainty 0.96
-
-        Proposed solution: make the scores asymmetric, i.e. have:
-        <<col1 hasContentSimilarity col2>> withCertainty 0.97
-        <<col2 hasContentSimilarity col1>> withCertainty 0.96
-        """
-        if col1_profile.get_iqr() != 0 and col2_profile.get_iqr() != 0:
-            # columns with multiple unique values
-            overlap1 = _compute_inclusion_overlap(col1_profile, col2_profile)
-            overlap2 = _compute_inclusion_overlap(col2_profile, col1_profile)
-            if overlap1 > numerical_content_threshold:
-                content_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                                    'hasContentSimilarity', overlap1,
-                                                                                    ontology))
-            if overlap1 != overlap2 and overlap2 > numerical_content_threshold:
-                content_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                                    'hasContentSimilarity', overlap2,
-                                                                                    ontology))
-            
-        elif col1_profile.get_iqr() == 0 and col2_profile.get_iqr() == 0:
-            # columns with single unique value
-            # TODO: [Implement] I don't think DBSCAN is needed anymore
-            medians = np.array([col1_profile.get_median() / 2, col2_profile.get_median() / 2]).reshape(-1, 1)
-            predicted_clusters = DBSCAN(eps=0.1, min_samples=2).fit_predict(medians)
-            if predicted_clusters[0] != -1:
-                # i.e. the two medians are determined to be of the same cluster
-                content_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                                    'hasContentSimilarity',
-                                                                                    numerical_content_threshold, 
-                                                                                    ontology))
-                
-    elif col1_profile.is_textual():
-        column1_minhash = MinHash(num_perm=512, hashvalues=col1_profile.get_minhash())
-        column2_minhash = MinHash(num_perm=512, hashvalues=col2_profile.get_minhash())
-        similarity = column1_minhash.jaccard(column2_minhash)
-        if similarity >= minhash_content_threshold:
-            content_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                                'hasContentSimilarity', similarity,
-                                                                                ontology))
-
-    return content_similarity_triples
-
-
-# TODO: [Refactor] combine this with content similarity method
-def _compute_numerical_deep_content_similarity(col1_profile, col2_profile, ontology,
-                                               deep_embedding_content_threshold):
-    deep_content_similarity_triples = []
-    if col1_profile.is_numeric():
-        # Numerical column: calculate similarity with and without deep embeddings
-        embedding_cos_sim = np.dot(col1_profile.get_deep_embedding(), col2_profile.get_deep_embedding()) / \
-                            (norm(col1_profile.get_deep_embedding()) * norm(col2_profile.get_deep_embedding()))
-        if embedding_cos_sim >= deep_embedding_content_threshold:
-            deep_content_similarity_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                                     'hasContentSimilarity',
-                                                                                     embedding_cos_sim,
-                                                                                     ontology))
-    return deep_content_similarity_triples
-
-
+def _compute_content_similarity(col1_profile, col2_profile, ontology, embedding_sim_threshold, boolean_sim_threshold):
+    content_sim_triples = []
+    if col1_profile.is_boolean():
+        boolean_sim = 1 - np.abs(col1_profile.get_true_ratio() - col2_profile.get_true_ratio()) 
+        if boolean_sim >= boolean_sim_threshold:
+            content_sim_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
+                                                                         'hasContentSimilarity', boolean_sim,
+                                                                         ontology))
+    else:
+        # Calculate similarity using CoLR embedding and scaling factor
+        embedding_dist = np.linalg.norm(np.array(col1_profile.get_embedding()) - np.array(col2_profile.get_embedding()))
+        colr_similarity = embedding_dist + col1_profile.get_embedding_scaling_factor() \
+                          + col2_profile.get_embedding_scaling_factor()
+        if colr_similarity <= embedding_sim_threshold:
+            content_sim_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
+                                                                         'hasContentSimilarity', colr_similarity,
+                                                                         ontology))
+    return content_sim_triples
 
 
 # TODO: [Refactor] this method needs to be moved somewhere else.
