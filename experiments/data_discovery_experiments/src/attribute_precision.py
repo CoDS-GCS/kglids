@@ -10,8 +10,8 @@ from helper.comparsion_plot import plot_comparison
 
 # **************************CONFIGURATIONS*****************************
 THRESHOLD = 0.75
-DATASET = 'smallerReal'
 EXPERIMENT_NAME = 'attribute_precision'
+DATASET = 'smallerReal'
 DATABASE = 'smaller_real'
 # *********************************************************************
 SAVE_RESULT_AS = EXPERIMENT_NAME + '_' + DATASET + '_' + str(THRESHOLD)
@@ -160,10 +160,10 @@ def run_experiment(df):
 
 
 def main():
-    # df = load_ground_truth()
-    # t1 = time.time()
-    # run_experiment(df)
-    # print('\nTotal time taken: ', time.time() - t1)
+    df = load_ground_truth()
+    t1 = time.time()
+    run_experiment(df)
+    print('\nTotal time taken: ', time.time() - t1)
 
     exp_res = load_cache('../cache/attribute_precision_smallerReal_k-260.pkl')
     plt.figure(figsize=(12, 5))
@@ -173,7 +173,7 @@ def main():
     comparison_plot = plot_comparison()
     plt.tight_layout()
     plt.savefig('../plots/{}.pdf'.format(EXPERIMENT_NAME), dpi=300)
-    # plt.show()
+    print('done.')
 
 
 main()

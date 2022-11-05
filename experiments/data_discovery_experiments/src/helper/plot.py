@@ -6,7 +6,7 @@ import pandas as pd
 # TODO: generalize it for all experiments
 def visualize(exp_res: dict, exp_name: str, dataset: str):
     def plot_scores(exp_name, k: list, metric: list, j: list, d3l, aurum, d3l_j, aurum_j):
-        label_size = 15
+        label_size = 17
         default_ticks = range(len(k))
         plt.plot(default_ticks, j, '', color='g', label='KGLiDS+Join', marker="x")
         plt.plot(default_ticks, metric, '--', color='g', label='KGLiDS', marker="x")
