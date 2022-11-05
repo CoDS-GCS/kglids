@@ -21,12 +21,9 @@ from kg_governor.data_profiling.src.model.column_profile import ColumnProfile
 
 # ************* SYSTEM PARAMETERS**********************
 # TODO: [Refactor] have these inside a global project config
-SEMANTIC_THRESHOLD = 0.75
-CONTENT_THRESHOLD = 0.95
-MINHASH_THRESHOLD = 0.70
-DEEP_EMBEDDING_THRESHOLD = 0.95
-
-
+LABEL_SIM_THRESHOLD = 0.75
+BOOLEAN_SIM_THRESHOLD = 0.75
+EMBEDDING_SIM_THRESHOLD = 1.0   # TODO: distance threshold and not normalized
 # *****************************************************
 
 
@@ -175,10 +172,9 @@ class DataGlobalSchemaBuilder:
                                                     column_profiles=column_profiles,
                                                     ontology=ontology,
                                                     triples_output_tmp_dir=tmp_graph_dir,
-                                                    semantic_similarity_threshold=SEMANTIC_THRESHOLD,
-                                                    numerical_content_threshold=CONTENT_THRESHOLD,
-                                                    deep_embedding_content_threshold=DEEP_EMBEDDING_THRESHOLD,
-                                                    minhash_content_threshold=MINHASH_THRESHOLD,
+                                                    label_sim_threshold=LABEL_SIM_THRESHOLD,
+                                                    embedding_sim_threshold=EMBEDDING_SIM_THRESHOLD,
+                                                    boolean_sim_threshold=BOOLEAN_SIM_THRESHOLD,
                                                     word_embedding=word_embedding)) \
                                 .collect()
 
@@ -227,7 +223,7 @@ def main():
     print(datetime.now(), '• 3. Combining intermediate subgraphs from workers\n')
     knowledge_graph_builder.build_graph()
 
-    print(datetime.now(), '\n• Done. Graph Saved to: out/kglids_data_items_graph.ttl\n')
+    print(datetime.now(), f'\n• Done. Graph Saved to: {args.out_graph_path}\n')
 
     end_all = datetime.now()
     print(datetime.now(), "Total time to build graph: " + str(end_all - start_all))
