@@ -1,8 +1,7 @@
-import time
 import tqdm
+import time
 import random
 import numpy as np
-import pandas as pd
 from matplotlib import pyplot as plt
 from helper.queries import *
 from helper.config import *
@@ -11,8 +10,8 @@ from helper.cache import *
 # *************EXPERIMENT PARAMETERS**************
 THRESHOLD = 0.75
 NO_RANDOM_QUERY_TABLES = 100
-DATASET = 'smallerReal'
-DATABASE = 'smaller_real'
+DATASET = 'synthetic'
+DATABASE = 'synthetic'
 # ************************************************
 EXPERIMENT_NAME = 'precision_recall'
 SAVE_RESULT_AS = EXPERIMENT_NAME + '_' + DATASET
@@ -21,13 +20,12 @@ SPARQL = connect_to_stardog(db=DATABASE)
 
 
 def load_cache(load_as='cache'):
-    print(os.getcwd())
     with open('../cache/' + load_as, 'rb') as handle:
         return pickle.load(handle)
 
 
 def load_groundtruth():
-    file = df = 'null'
+    df = 'null'
     if DATASET == 'smallerReal':
         file = 'ds_gt.csv'
         print('loading {}'.format(file))
@@ -58,8 +56,8 @@ def get_n_random_tables(df: pd.DataFrame, n: int):
     return random.sample(query_tables, n)
 
 
-def calculate_scores(pred: list, test: list, query_tables: list):
-    tp = fp = fn = 0
+def calculate_scores(pred: list, test: list):
+    tp = fp = 0
 
     for pair in pred:
         if pair in test:
@@ -93,7 +91,7 @@ def run_experiment(df, test_mapping: list):
 
         for table in tqdm.tqdm(query_tables):
             predicted_mapping = get_top_k_related_tables(SPARQL, table, k, THRESHOLD)
-            precision, recall = calculate_scores(predicted_mapping, test_mapping, query_tables)
+            precision, recall = calculate_scores(predicted_mapping, test_mapping)
             precision_per_table.append(precision)
             recall_per_table.append(recall)
         print("Avg. precision for k = {} : {}".format(k, np.mean(precision_per_table)))
@@ -103,19 +101,18 @@ def run_experiment(df, test_mapping: list):
 
 
 def visualize(exp_res: dict):
-    def plot_scores(k: list, metric: list, metric_name: str, title, d3l, aurum, tus):
-        label_size = 15
-        default_ticks = range(len(k))
+    def plot_scores(top_k: list, metric: list, metric_name: str, title, d3l, aurum):
+        label_size = 17
+        default_ticks = range(len(top_k))
         plt.plot(default_ticks, metric, 'g', label='KGLiDS', marker="x")
         plt.plot(default_ticks, d3l, 'cornflowerblue', label='D3L', marker="s")
         plt.plot(default_ticks, aurum, 'darkorange', label='Aurum', marker="d")
-        # plt.plot(default_ticks, tus, 'gray', label='TUS', marker="^")
-        plt.xticks(default_ticks, k)
+        plt.xticks(default_ticks, top_k)
         plt.ylim(ymin=0)
         plt.yticks(np.arange(0.0, 1.1, 0.1))
         plt.xlabel('K', fontsize=label_size)
         plt.ylabel(metric_name, fontsize=label_size)
-        plt.title(title, y=-0.20, fontsize = label_size)
+        plt.title(title, y=-0.20, fontsize=label_size)
         plt.legend(loc='lower right')
         plt.grid()
         return plt
@@ -126,8 +123,6 @@ def visualize(exp_res: dict):
     d3l_recall = scores_recall['D3L']
     aurum_precision = scores_precision['Aurum']
     aurum_recall = scores_recall['Aurum']
-    tus_precision = scores_precision['TUS']
-    tus_recall = scores_recall['TUS']
 
     k = []
     precision = []
@@ -142,12 +137,11 @@ def visualize(exp_res: dict):
 
     plt.figure(figsize=(12, 5))
     plt.subplot(1, 2, 1)
-    fig1 = plot_scores(k, precision, 'Precision', '(a)', d3l_precision, aurum_precision, tus_precision)
+    _ = plot_scores(k, precision, 'Precision', '(a)', d3l_precision, aurum_precision)
     plt.subplot(1, 2, 2)
-    fig2 = plot_scores(k, recall, 'Recall', '(b)', d3l_recall, aurum_recall, tus_recall)
+    _ = plot_scores(k, recall, 'Recall', '(b)', d3l_recall, aurum_recall)
     plt.tight_layout()
     plt.savefig('../plots/{}.pdf'.format(SAVE_RESULT_AS), dpi=300)
-    # plt.show()
 
 
 def main():
@@ -158,8 +152,9 @@ def main():
     run_experiment(df, test_mapping)
     print('Total time taken: ', time.time()-t1)
 
-    exp_res = load_cache('precision_recall_smallerReal_k-185.pkl')
+    exp_res = load_cache(f'precision_recall_{DATASET}_k-{350}.pkl')
     visualize(exp_res)
+    print('done.')
 
 
 main()
