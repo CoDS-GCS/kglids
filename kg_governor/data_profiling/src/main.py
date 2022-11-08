@@ -60,6 +60,8 @@ def column_worker(column_name_and_table: Tuple[str, Table]):
     # read the column from the table file
     column = pd.read_csv(table.get_table_path(), usecols=[column_name], squeeze=True,
                          na_values=[' ', '?', '-'], engine='python', encoding_errors='replace')
+    column = pd.to_numeric(column, errors='ignore')
+    column = column.convert_dtypes()    
     
     # infer the column data type
     column_type = FineGrainedColumnTypeDetector.detect_column_data_type(column)

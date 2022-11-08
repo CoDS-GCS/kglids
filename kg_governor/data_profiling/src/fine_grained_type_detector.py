@@ -18,8 +18,13 @@ from model.column_data_type import ColumnDataType
 
 
 class FineGrainedColumnTypeDetector:
+    try:
+        ner_model = spacy.load('en_core_web_sm')
+    except:
+        import subprocess
+        subprocess.call('python -m spacy download en_core_web_sm'.split(), shell=False)
+        ner_model = spacy.load('en_core_web_sm')
     
-    ner_model = spacy.load('en_core_web_sm')
     fasttext_model = fasttext.load_model(str(Path(__file__).parent) + '/fasttext_embeddings/cc.en.50.bin')
     tokenizer = TweetTokenizer()
 

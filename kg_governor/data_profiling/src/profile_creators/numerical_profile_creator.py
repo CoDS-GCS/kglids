@@ -22,13 +22,13 @@ class NumericalProfileCreator(ProfileCreator):
         return column_profile
 
     def _calculate_stats(self):
-        summary = self.column.describe()
-        self.mean = summary['mean'].item() if self.column.count() and 'mean' in summary.index else None
-        self.std = summary['std'].item() if self.column.count() and 'std' in summary.index else None
-        self.min = summary['min'].item() if self.column.count() and 'min' in summary.index else None
-        self.max = summary['max'].item() if self.column.count() and 'max' in summary.index else None
-        self.median = summary['50%'].item() if self.column.count() and '50%' in summary.index else None
-        self.iqr = (summary['75%'] - summary['25%']).item() if self.column.count() and '75%' in summary.index else None
+        summary = self.column.describe().dropna()
+        self.mean = summary['mean'].item() if 'mean' in summary.index else None
+        self.std = summary['std'].item() if 'std' in summary.index else None
+        self.min = summary['min'].item() if 'min' in summary.index else None
+        self.max = summary['max'].item() if 'max' in summary.index else None
+        self.median = summary['50%'].item() if '50%' in summary.index else None
+        self.iqr = (summary['75%'] - summary['25%']).item() if '75%' in summary.index else None
 
     
     def _preprocess_column_for_embedding_model(self, device='cpu') -> torch.tensor:
