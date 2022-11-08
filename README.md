@@ -1,4 +1,4 @@
-# KGLiDS - Linked Data Science powered by Knowledge Graphs
+# KGLiDS - Linked Data Science Powered by Knowledge Graphs
 
 ![KGLiDS_architecture](docs/graphics/kglids_architecture.jpg)
 
@@ -45,7 +45,7 @@ for a quick hands-on! </b>
 
 
 <b>Generating the LiDS graph:</b>
-1. Add the data sources to [config.py](kg_governor/data_profiling/src/config.py):
+* Add the data sources to [config.py](kg_governor/data_profiling/src/config.py):
 ```python
 # sample configuration
 # list of data sources to process
@@ -54,17 +54,17 @@ data_sources = [DataSource(name='benchmark',
                            file_type='csv')]
 
 ```
-2. Run the [Data profiler](kg_governor/data_profiling/src/main.py)
+* Run the [Data profiler](kg_governor/data_profiling/src/main.py)
 ```commandline
 cd kg_governor/data_profiling/src/
 python main.py
 ```
-3. Run the [Knowledge graph builder](kg_governor/knowledge_graph_construction/src/data_global_schema_builder.py) to generate the data_items graph 
+* Run the [Knowledge graph builder](kg_governor/knowledge_graph_construction/src/data_global_schema_builder.py) to generate the data_items graph 
 ```commandline/
 cd kg_governor/knowledge_graph_construction/src/
 python data_global_schema_builder.py
 ```
-4. Run the [Pipeline abstractor](kg_governor/pipeline_abstraction/pipelines_analysis.py) to generate the pipeline named graph(s)
+* Run the [Pipeline abstractor](kg_governor/pipeline_abstraction/pipelines_analysis.py) to generate the pipeline named graph(s)
 ```
 cd kg_governor/pipeline_abstraction/
 python pipelines_analysis.py
@@ -72,16 +72,16 @@ python pipelines_analysis.py
 <hr>
 
 <b>Uploading LiDS graph to the graph-engine (we recommend using [Stardog](https://www.stardog.com/)):</b>
-1. Create a database 
+* Create a database 
 Note: enable support for <i>RDF *</i> (example given below) more info [here](https://docs.stardog.com/query-stardog/edge-properties)
 ```commandline
 stardog-admin db create -o edge.properties=true -n Database_name
 ```
-2. Add the dataset-graph to the database
+* Add the dataset-graph to the database
 ```commandline
 stardog data add --format turtle Database_name dataset_graph.ttl
 ```
-3. Add the pipeline default graph and named-graphs to the database
+* Add the pipeline default graph and named-graphs to the database
 ```commandline
 stardog data add --format turtle Database_name default.ttl library.ttl
 ```
