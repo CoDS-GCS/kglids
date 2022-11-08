@@ -28,8 +28,6 @@ discovery benchmarks and the Kaggle portal, and show that KGLiDS
 significantly outperforms state-of-the-art systems on related tasks,
 such as datasets and pipeline recommendation.</div>
 
-## Technical Report
-Our technical report is available [here](techincal_report.pdf)
 
 ## Installation
 * Clone the `kglids` repo 
