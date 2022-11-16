@@ -37,7 +37,7 @@ def main():
     columns_and_tables = []
     for data_source in profiler_config.data_sources:
         for filename in glob.glob(os.path.join(data_source.path, '**/*' + data_source.file_type), recursive=True):
-            if os.path.getsize(filename) > 0:   # if file is not empty
+            if os.path.isfile(filename) and os.path.getsize(filename) > 0:   # if not an empty file
                 table = Table(data_source=data_source.name,
                                     table_path=filename,
                                     dataset_name=Path(filename).resolve().parent.name)
