@@ -36,7 +36,7 @@ def main():
     print(datetime.now(), ': Creating tables, Getting columns')
     columns_and_tables = []
     for data_source in profiler_config.data_sources:
-        for filename in glob.glob(os.path.join(data_source.path, '**/*' + data_source.file_type), recursive=True):
+        for filename in glob.glob(os.path.join(data_source.path, '**/*.' + data_source.file_type), recursive=True):
             if os.path.isfile(filename) and os.path.getsize(filename) > 0:   # if not an empty file
                 table = Table(data_source=data_source.name,
                                     table_path=filename,
@@ -57,11 +57,19 @@ def main():
 
 def column_worker(column_name_and_table: Tuple[str, Table]):
     column_name, table = column_name_and_table
-    # read the column from the table file
-    column = pd.read_csv(table.get_table_path(), usecols=[column_name], squeeze=True,
-                         na_values=[' ', '?', '-'], engine='python', encoding_errors='replace')
+    # read the column from the table file. Use the Python engine if there are issues reading the file
+    try:
+        try:
+            column = pd.read_csv(table, usecols=[column_name], squeeze=True, na_values=[' ', '?', '-'])
+        except:
+            column = pd.read_csv(table, usecols=[column_name], squeeze=True, na_values=[' ', '?', '-'],
+                                 engine='python', encoding_errors='replace')
+    except:
+        print(f'Warning: Skipping non-parse-able column: {column_name} in table: {table}')
+        return
     column = pd.to_numeric(column, errors='ignore')
-    column = column.convert_dtypes()    
+    column = column.convert_dtypes()
+    column = column.astype(str) if column.dtype == object else column
     
     # infer the column data type
     column_type = FineGrainedColumnTypeDetector.detect_column_data_type(column)
