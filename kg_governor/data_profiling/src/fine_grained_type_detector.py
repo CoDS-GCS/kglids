@@ -87,7 +87,8 @@ class FineGrainedColumnTypeDetector:
         num_date_values = 0
         for value in column.values:
             # the value is a date if it is short enough and is parsed by the dateparser
-            if len(value) < 50 and dateparser.parse(value, locales=['en-CA'], languages=['en']):
+            if len(value) < 50 and dateparser.parse(value, locales=['en-CA'], languages=['en'],
+                                                    settings={'STRICT_PARSING': True}):
                 num_date_values += 1
                 if num_date_values > 0.5 * len(column):
                     return True
