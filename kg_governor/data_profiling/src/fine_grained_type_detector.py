@@ -33,7 +33,7 @@ class FineGrainedColumnTypeDetector:
         if column.dtype.type == np.bool_:
             return ColumnDataType.BOOLEAN
         
-        elif column.dtype.type == np.int64:
+        elif column.dtype.type in [np.int64, np.uint64]:
             if column.isin([0, 1]).all():
                 return ColumnDataType.BOOLEAN
             return ColumnDataType.INT
