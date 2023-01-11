@@ -510,20 +510,21 @@ packages[f'{pandas_concat.library_path}.{pandas_concat.name}'] = pandas_concat
 # ##### SKLEARN #######
 packages['sklearn'] = Call(name='sklearn', call_type=CallType.LIBRARY)
 # sklearn # impute
+packages['sklearn.impute'] = Call(name='impute', library_path='sklearn', call_type=CallType.PACKAGE)
 
 # sklearn # impute # SimpleImputer
 simple_imputer = Call('SimpleImputer',
-                      'sklearn.impute',
-                      {'X': None,
-                       'missing_values': np.nan,
-                       'strategy': 'mean',
-                       'fill_value': None,
-                       'verbose': 0,
-                       'copy': True,
-                       'add_indicator': False,
-                       'keep_empty_features': False},
-                      True,
-                      CallType.CLASS)
+                     'sklearn.impute',
+                     {'X': None,
+                      'missing_values': np.nan,
+                      'strategy': 'mean',
+                      'fill_value': None,
+                      'verbose': 0,
+                      'copy': True,
+                      'add_indicator': False,
+                      'keep_empty_features': False},
+                     True,
+                     CallType.CLASS)
 packages[f'{simple_imputer.library_path}.{simple_imputer.name}'] = simple_imputer
 
 simple_imputer_fit = Call('fit',
@@ -599,25 +600,25 @@ packages[f'{simple_imputer_transform.library_path}.{simple_imputer_transform.nam
 
 # sklearn # impute # IterativeImputer
 iterative_imputer = Call('IterativeImputer',
-                         'sklearn.impute',
-                         {'X': None,
-                          'estimator': 'BayesianRidge()',  # This is suppose to be a call to a function
-                          'missing_values': np.nan,
-                          'sample_posterior': False,
-                          'max_iter': 0,
-                          'tol': 0.001,
-                          'n_nearest_features': None,
-                          'initial_strategy': 'mean',
-                          'imputation_order': 'ascending',
-                          'skip_complete': False,
-                          'min_value': -np.inf,
-                          'max_value': np.inf,
-                          'verbose': 0,
-                          'random_state': None,
-                          'add_indicator': False,
-                          'keep_empty_features': False},
-                         True,
-                         CallType.CLASS)
+                     'sklearn.impute',
+                     {'X': None,
+                      'estimator': 'BayesianRidge()',
+                      'missing_values': np.nan,
+                      'sample_posterior': False,
+                      'max_iter': 0,
+                      'tol': 0.001,
+                      'n_nearest_features': None,
+                      'initial_strategy': 'mean',
+                      'imputation_order': 'ascending',
+                      'skip_complete': False,
+                      'min_value': -np.inf,
+                      'max_value': np.inf,
+                      'verbose': 0,
+                      'random_state': None,
+                      'add_indicator': False,
+                      'keep_empty_features': False},
+                     True,
+                     CallType.CLASS)
 packages[f'{iterative_imputer.library_path}.{iterative_imputer.name}'] = iterative_imputer
 
 iterative_imputer_fit = Call('fit',
