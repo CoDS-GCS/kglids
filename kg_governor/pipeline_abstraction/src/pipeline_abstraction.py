@@ -108,6 +108,7 @@ class NodeVisitor(ast.NodeVisitor):
         for target in targets:
             if isinstance(target, str):
                 if assign_components.method == dataframe_drop.full_path():
+
                     column = self.var_columns.get(assign_components.variable, [])
                     drop_col = set(x.uri.rsplit('/', 1)[1] for x in self.graph_info.tail.read)
                     self.var_columns[target] = [x for x in column if x not in drop_col]
@@ -374,6 +375,16 @@ class NodeVisitor(ast.NodeVisitor):
             if package_class.is_relevant:
                 insert_parameter(parameters, args_components.is_block, args_components.label, parameter_value)
 
+            if package_class == dataframe_drop and args_components.label == 'labels':
+                columns_to_drop = parameter_value
+                print(self.variables)
+                if not isinstance(columns_to_drop, list):
+                    columns_to_drop = [columns_to_drop]
+
+                columns_to_drop = [self.variables.get(col, col) for col in columns_to_drop]
+                columns = self.var_columns.get(call_components.base_package, [])
+                self.var_columns[call_components.base_package] = [col for col in columns if col not in columns_to_drop]
+
         for kw in node.keywords:
             if isinstance(kw, ast.keyword):
                 edge, value = self.visit_keyword(kw)
@@ -416,6 +427,7 @@ class NodeVisitor(ast.NodeVisitor):
     def add_feature(self, variable: str):
         if isinstance(variable, str):  # TODO: Improve this
             file = self.files.get(variable)
+            print(variable)
             if file is not None:
                 self.graph_info.add_features(self.var_columns.get(variable), file.filename)
 

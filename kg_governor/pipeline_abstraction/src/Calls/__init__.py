@@ -516,7 +516,7 @@ simple_imputer = Call('SimpleImputer',
                       'sklearn.impute',
                       {'X': None,
                        'missing_values': np.nan,
-                       'strtegy': 'mean',
+                       'strategy': 'mean',
                        'fill_value': None,
                        'verbose': 0,
                        'copy': True,
@@ -566,7 +566,7 @@ packages[
 
 simple_imputer_inverse_transform = Call('inverse_transform',
                                         'sklearn.impute.SimpleImputer',
-                                        {'X'},
+                                        {'X': None},
                                         False,
                                         CallType.FUNCTION,
                                         [pd_dataframe])
@@ -583,7 +583,7 @@ packages[f'{simple_imputer_set_output.library_path}.{simple_imputer_set_output.n
 
 simple_imputer_set_params = Call('set_params',
                                  'sklearn.impute.SimpleImputer',
-                                 {'**params'},
+                                 {'**params': None},
                                  False,
                                  CallType.FUNCTION,
                                  [simple_imputer])
@@ -591,7 +591,7 @@ packages[f'{simple_imputer_set_params.library_path}.{simple_imputer_set_params.n
 
 simple_imputer_transform = Call('transform',
                                 'sklearn.impute.SimpleImputer',
-                                {'X'},
+                                {'X': None},
                                 False,
                                 CallType.FUNCTION,
                                 [pd_dataframe])
@@ -601,7 +601,7 @@ packages[f'{simple_imputer_transform.library_path}.{simple_imputer_transform.nam
 iterative_imputer = Call('IterativeImputer',
                          'sklearn.impute',
                          {'X': None,
-                          'estimator': BayesianRidge(),
+                          'estimator': 'BayesianRidge()',  # This is suppose to be a call to a function
                           'missing_values': np.nan,
                           'sample_posterior': False,
                           'max_iter': 0,
@@ -668,7 +668,7 @@ packages[
 
 iterative_imputer_set_params = Call('set_params',
                                     'sklearn.impute.IterativeImputer',
-                                    {'**params'},
+                                    {'**params': None},
                                     False,
                                     CallType.FUNCTION,
                                     [iterative_imputer])
@@ -677,7 +677,7 @@ packages[
 
 iterative_imputer_transform = Call('transform',
                                    'sklearn.impute.IterativeImputer',
-                                   {'X'},
+                                   {'X': None},
                                    False,
                                    CallType.FUNCTION,
                                    [pd_dataframe])
@@ -743,7 +743,7 @@ packages[
 
 missing_indicator_set_params = Call('set_params',
                                     'sklearn.impute.MissingIndicator',
-                                    {'**params'},
+                                    {'**params': None},
                                     False,
                                     CallType.FUNCTION,
                                     [missing_indicator])
@@ -752,7 +752,7 @@ packages[
 
 missing_indicator_transform = Call('transform',
                                    'sklearn.impute.MissingIndicator',
-                                   {'X'},
+                                   {'X': None},
                                    False,
                                    CallType.FUNCTION,
                                    [pd_dataframe])
@@ -820,7 +820,7 @@ packages[f'{knn_imputer_set_output.library_path}.{knn_imputer_set_output.name}']
 
 knn_imputer_set_params = Call('set_params',
                               'sklearn.impute.KNNImputer',
-                              {'**params'},
+                              {'**params': None},
                               False,
                               CallType.FUNCTION,
                               [knn_imputer])
@@ -828,7 +828,7 @@ packages[f'{knn_imputer_set_params.library_path}.{knn_imputer_set_params.name}']
 
 knn_imputer_transform = Call('transform',
                              'sklearn.impute.KNNImputer',
-                             {'X'},
+                             {'X': None},
                              False,
                              CallType.FUNCTION,
                              [pd_dataframe])
@@ -2254,121 +2254,121 @@ packages[f'{preprocessing_scale.library_path}.{preprocessing_scale.name}'] = pre
 impute = Call(name='impute', library_path='sklearn', call_type=CallType.PACKAGE)
 packages['sklearn.impute'] = impute
 
-# sklearn # impute # SimpleImputer
-impute_simple_imputer = Call('SimpleImputer',
-                             'sklearn.impute',
-                             {'missing_values': float('nan'),
-                              'strategy': 'mean',
-                              'fill_value': None,
-                              'verbose': 'deprecated',
-                              'copy': True,
-                              'add_indicator': False},
-                             True,
-                             CallType.CLASS)
-packages[f'{impute_simple_imputer.library_path}.{impute_simple_imputer.name}'] = impute_simple_imputer
-
-impute_simple_imputer_fit = Call('fit',
-                                 'sklearn.impute.SimpleImputer',
-                                 {'X': None,
-                                  'y': None},
-                                 False,
-                                 CallType.FUNCTION,
-                                 [impute_simple_imputer])
-packages[
-    f'{impute_simple_imputer_fit.library_path}.{impute_simple_imputer_fit.name}'] = impute_simple_imputer_fit
-
-# sklearn # impute # IterativeImputer
-impute_iterative_imputer = Call('IterativeImputer',
-                                'sklearn.impute',
-                                {'estimator': None,
-                                 'missing_values': float('nan'),
-                                 'sample_posterior': False,
-                                 'max_iter': 10,
-                                 'tol': 0.001,
-                                 'n_nearest_features': None,
-                                 'initial_strategy': 'mean',
-                                 'imputation_order': 'ascending',
-                                 'skip_complete': False,
-                                 'min_value': float('-inf'),
-                                 'max_value': float('inf'),
-                                 'verbose': 0,
-                                 'random_state': None,
-                                 'add_indicator': False},
-                                True,
-                                CallType.CLASS)
-packages[f'{impute_iterative_imputer.library_path}.{impute_iterative_imputer.name}'] = impute_iterative_imputer
-
-impute_iterative_imputer_fit = Call('fit',
-                                    'sklearn.impute.IterativeImputer',
-                                    {'X': None,
-                                     'y': None},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [impute_iterative_imputer])
-packages[
-    f'{impute_iterative_imputer_fit.library_path}.{impute_iterative_imputer_fit.name}'] = impute_iterative_imputer_fit
-
-# sklearn # impute # KNNImputer
-impute_knn_imputer = Call('KNNImputer',
-                          'sklearn.impute',
-                          {'missing_values': float('nan'),
-                           'n_neighbors': 5,
-                           'weights': 'uniform',
-                           'metric': 'nan_euclidean',
-                           'copy': True,
-                           'add_indicator': False},
-                          True,
-                          CallType.CLASS)
-packages[f'{impute_knn_imputer.library_path}.{impute_knn_imputer.name}'] = impute_knn_imputer
-
-impute_knn_imputer_fit = Call('fit',
-                              'sklearn.impute.KNNImputer',
-                              {'X': None,
-                               'y': None},
-                              False,
-                              CallType.FUNCTION,
-                              [impute_knn_imputer])
-packages[
-    f'{impute_knn_imputer_fit.library_path}.{impute_knn_imputer_fit.name}'] = impute_knn_imputer_fit
-
-# fit_transform(X[, y])
-impute_knn_imputer_fit_transform = Call('fit_transform',
-                                        'sklearn.impute.KNNImputer',
-                                        {'X': None,
-                                         'y': None},
-                                        False,
-                                        CallType.FUNCTION,
-                                        [pd_dataframe])
-packages[
-    f'{impute_knn_imputer_fit_transform.library_path}.{impute_knn_imputer_fit_transform.name}'] = impute_knn_imputer_fit_transform
-# get_feature_names_out([input_features])
-impute_knn_imputer_get_feature_names_out = Call('get_feature_names_out',
-                                                'sklearn.impute.KNNImputer',
-                                                {'input_features': None},
-                                                False,
-                                                CallType.FUNCTION,
-                                                [pd_dataframe])
-packages[
-    f'{impute_knn_imputer_get_feature_names_out.library_path}.{impute_knn_imputer_get_feature_names_out.name}'] = impute_knn_imputer_get_feature_names_out
-# get_params([deep])
-impute_knn_imputer_get_params = Call('get_params',
-                                     'sklearn.impute.KNNImputer',
-                                     {'deep': True},
-                                     False,
-                                     CallType.FUNCTION,
-                                     [pd_dataframe])
-packages[
-    f'{impute_knn_imputer_get_params.library_path}.{impute_knn_imputer_get_params.name}'] = impute_knn_imputer_get_params
-# set_params(**params)
-# transform(X)
-impute_knn_imputer_transform = Call('transform',
-                                    'sklearn.impute.KNNImputer',
-                                    {'X': None},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
-packages[
-    f'{impute_knn_imputer_transform.library_path}.{impute_knn_imputer_transform.name}'] = impute_knn_imputer_transform
+# # sklearn # impute # SimpleImputer
+# impute_simple_imputer = Call('SimpleImputer',
+#                              'sklearn.impute',
+#                              {'missing_values': float('nan'),
+#                               'strategy': 'mean',
+#                               'fill_value': None,
+#                               'verbose': 'deprecated',
+#                               'copy': True,
+#                               'add_indicator': False},
+#                              True,
+#                              CallType.CLASS)
+# packages[f'{impute_simple_imputer.library_path}.{impute_simple_imputer.name}'] = impute_simple_imputer
+#
+# impute_simple_imputer_fit = Call('fit',
+#                                  'sklearn.impute.SimpleImputer',
+#                                  {'X': None,
+#                                   'y': None},
+#                                  False,
+#                                  CallType.FUNCTION,
+#                                  [impute_simple_imputer])
+# packages[
+#     f'{impute_simple_imputer_fit.library_path}.{impute_simple_imputer_fit.name}'] = impute_simple_imputer_fit
+#
+# # sklearn # impute # IterativeImputer
+# impute_iterative_imputer = Call('IterativeImputer',
+#                                 'sklearn.impute',
+#                                 {'estimator': None,
+#                                  'missing_values': float('nan'),
+#                                  'sample_posterior': False,
+#                                  'max_iter': 10,
+#                                  'tol': 0.001,
+#                                  'n_nearest_features': None,
+#                                  'initial_strategy': 'mean',
+#                                  'imputation_order': 'ascending',
+#                                  'skip_complete': False,
+#                                  'min_value': float('-inf'),
+#                                  'max_value': float('inf'),
+#                                  'verbose': 0,
+#                                  'random_state': None,
+#                                  'add_indicator': False},
+#                                 True,
+#                                 CallType.CLASS)
+# packages[f'{impute_iterative_imputer.library_path}.{impute_iterative_imputer.name}'] = impute_iterative_imputer
+#
+# impute_iterative_imputer_fit = Call('fit',
+#                                     'sklearn.impute.IterativeImputer',
+#                                     {'X': None,
+#                                      'y': None},
+#                                     False,
+#                                     CallType.FUNCTION,
+#                                     [impute_iterative_imputer])
+# packages[
+#     f'{impute_iterative_imputer_fit.library_path}.{impute_iterative_imputer_fit.name}'] = impute_iterative_imputer_fit
+#
+# # sklearn # impute # KNNImputer
+# impute_knn_imputer = Call('KNNImputer',
+#                           'sklearn.impute',
+#                           {'missing_values': float('nan'),
+#                            'n_neighbors': 5,
+#                            'weights': 'uniform',
+#                            'metric': 'nan_euclidean',
+#                            'copy': True,
+#                            'add_indicator': False},
+#                           True,
+#                           CallType.CLASS)
+# packages[f'{impute_knn_imputer.library_path}.{impute_knn_imputer.name}'] = impute_knn_imputer
+#
+# impute_knn_imputer_fit = Call('fit',
+#                               'sklearn.impute.KNNImputer',
+#                               {'X': None,
+#                                'y': None},
+#                               False,
+#                               CallType.FUNCTION,
+#                               [impute_knn_imputer])
+# packages[
+#     f'{impute_knn_imputer_fit.library_path}.{impute_knn_imputer_fit.name}'] = impute_knn_imputer_fit
+#
+# # fit_transform(X[, y])
+# impute_knn_imputer_fit_transform = Call('fit_transform',
+#                                         'sklearn.impute.KNNImputer',
+#                                         {'X': None,
+#                                          'y': None},
+#                                         False,
+#                                         CallType.FUNCTION,
+#                                         [pd_dataframe])
+# packages[
+#     f'{impute_knn_imputer_fit_transform.library_path}.{impute_knn_imputer_fit_transform.name}'] = impute_knn_imputer_fit_transform
+# # get_feature_names_out([input_features])
+# impute_knn_imputer_get_feature_names_out = Call('get_feature_names_out',
+#                                                 'sklearn.impute.KNNImputer',
+#                                                 {'input_features': None},
+#                                                 False,
+#                                                 CallType.FUNCTION,
+#                                                 [pd_dataframe])
+# packages[
+#     f'{impute_knn_imputer_get_feature_names_out.library_path}.{impute_knn_imputer_get_feature_names_out.name}'] = impute_knn_imputer_get_feature_names_out
+# # get_params([deep])
+# impute_knn_imputer_get_params = Call('get_params',
+#                                      'sklearn.impute.KNNImputer',
+#                                      {'deep': True},
+#                                      False,
+#                                      CallType.FUNCTION,
+#                                      [pd_dataframe])
+# packages[
+#     f'{impute_knn_imputer_get_params.library_path}.{impute_knn_imputer_get_params.name}'] = impute_knn_imputer_get_params
+# # set_params(**params)
+# # transform(X)
+# impute_knn_imputer_transform = Call('transform',
+#                                     'sklearn.impute.KNNImputer',
+#                                     {'X': None},
+#                                     False,
+#                                     CallType.FUNCTION,
+#                                     [pd_dataframe])
+# packages[
+#     f'{impute_knn_imputer_transform.library_path}.{impute_knn_imputer_transform.name}'] = impute_knn_imputer_transform
 
 # sklearn # model_selection
 model_selection = Call(name='model_selection', library_path='sklearn', call_type=CallType.PACKAGE)

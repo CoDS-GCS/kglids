@@ -59,6 +59,7 @@ class KGFarmTest(Test):
         column_1 = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'b')
         column_2 = util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'c')
 
+        print('-->', node_visitor.var_columns)
         self.assertEqual(
             util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'a'),
             self.graph.tail.previous.read[0].uri
