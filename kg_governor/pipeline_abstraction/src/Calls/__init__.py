@@ -510,13 +510,14 @@ packages[f'{pandas_concat.library_path}.{pandas_concat.name}'] = pandas_concat
 # ##### SKLEARN #######
 packages['sklearn'] = Call(name='sklearn', call_type=CallType.LIBRARY)
 # sklearn # impute
+packages['sklearn.impute'] = Call(name='impute', library_path='sklearn', call_type=CallType.PACKAGE)
 
 # sklearn # impute # SimpleImputer
 simple_imputer = Call('SimpleImputer',
                      'sklearn.impute',
                      {'X': None,
                       'missing_values': np.nan,
-                      'strtegy': 'mean',
+                      'strategy': 'mean',
                       'fill_value': None,
                       'verbose': 0,
                       'copy': True,
@@ -598,7 +599,7 @@ packages[f'{simple_imputer_transform.library_path}.{simple_imputer_transform.nam
 iterative_imputer = Call('IterativeImputer',
                      'sklearn.impute',
                      {'X': None,
-                      'estimator': BayesianRidge(),
+                      'estimator': 'BayesianRidge()',
                       'missing_values': np.nan,
                       'sample_posterior': False,
                       'max_iter': 0,
