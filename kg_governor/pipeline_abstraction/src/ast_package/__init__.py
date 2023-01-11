@@ -357,13 +357,13 @@ class Subscript(AstPackage):
         if isinstance(components.value, list):
             return
 
-
         components.variable = node_visitor.variables.get(components.value, components.variable)
         if components.value in node_visitor.files.keys():
             components.file = node_visitor.files.get(components.value)
             node_visitor._connect_node_to_column(components.file)
 
-        if components.variable in node_visitor.files.keys():
+        # TODO: Improve this
+        if not isinstance(components.variable, list) and components.variable in node_visitor.files.keys():
             components.file = node_visitor.files.get(components.variable)
             node_visitor._connect_node_to_column(components.file)
 

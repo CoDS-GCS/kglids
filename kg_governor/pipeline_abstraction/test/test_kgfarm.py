@@ -309,6 +309,9 @@ class KGFarmTest(Test):
     def test_when_cross_val_score_then_save_target_and_features_from_saved_variable(self):
         pass
 
+    def test_when_separating_columns_by_column_names_then_columns_are_correctly_saved(self):
+        value = "df.iloc[:, 'a':'c']"
+        pass
 
 if __name__ == '__main__':
     unittest.main()

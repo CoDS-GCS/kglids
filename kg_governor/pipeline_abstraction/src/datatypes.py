@@ -257,14 +257,16 @@ class GraphInformation:
             node.previous.data_flow.append(self.tail)
 
     def add_target(self, columns, filename):
-        for column in columns:
-            column_uri = create_column_name(self.source, self.dataset_name, filename, column)
-            column = Column(column_uri)
-            self.tail.targets.append(column)
+        if columns is not None:
+            for column in columns:
+                column_uri = create_column_name(self.source, self.dataset_name, filename, column)
+                column = Column(column_uri)
+                self.tail.targets.append(column)
 
     def add_features(self, columns, filename):
-        for column in columns:
-            column_uri = create_column_name(self.source, self.dataset_name, filename, column)
-            column = Column(column_uri)
-            self.tail.features.append(column)
+        if columns is not None:
+            for column in columns:
+                column_uri = create_column_name(self.source, self.dataset_name, filename, column)
+                column = Column(column_uri)
+                self.tail.features.append(column)
 
