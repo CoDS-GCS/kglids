@@ -22,6 +22,19 @@ def parse_and_visit_node(lines: str, graph: GraphInformation) -> NodeVisitor:
     node_visitor.visit(parse_tree)
     return node_visitor
 
+def parse_and_visit_node_with_file(lines: str, graph: GraphInformation, filename: str,
+                                   columns: list, variable: str = 'df') -> NodeVisitor:
+    parse_tree = ast.parse(lines)
+    node_visitor = NodeVisitor(graph_information=graph)
+
+    node_visitor.working_file[filename] = pd.DataFrame(columns=columns)
+    graph.files[filename] = DataTypes.File(util.create_file_uri(SOURCE, DATASET_NAME, 'train.csv'))
+    node_visitor.files = {variable: File(filename)}
+    node_visitor.variables = {variable: pd_dataframe}
+
+    node_visitor.visit(parse_tree)
+    return node_visitor
+
 
 def generate_id(node: DataTypes.Node):
     i = 1
@@ -195,7 +208,7 @@ class VisitImportFromNode(Test):
 class VisitAssignNode(Test):
     def test_ast_assign_create_node(self):
         value = "train_path = '/kaggle/input/titanic/train.csv'"
-        parse_and_visit_node(value, self.graph)
+        parse_and_visit_node_with_file(value, self.graph, 'train.csv', ['A'], 'train_path')
 
         generate_id(self.graph.head)
 
@@ -218,8 +231,9 @@ class VisitAssignNode(Test):
         # self.assertIsNotNone(result.get('1-train.csv'))
 
     def test_ast_assign_if_file_associate_file_to_variable(self):
-        value = "train_path = '/kaggle/input/titanic/train.csv'"
-        node_visitor = parse_and_visit_node(value, self.graph)
+        value = "import pandas as pd\n" \
+                "train_path = pd.read_csv('/kaggle/input/titanic/train.csv')"
+        node_visitor = parse_and_visit_node_with_file(value, self.graph, 'train.csv', ['a'], 'train_path')
 
         self.assertIn('train_path', node_visitor.files.keys())
         self.assertIsNotNone(node_visitor.files.get('train_path'))
@@ -422,7 +436,7 @@ class VisitExprNode(Test):
 
     def test_expr_when_call_method_give_it_to_visit_call(self):
         value = 'from sklearn.model_selection import cross_val_score\n' \
-                'print("Lasso Cross Validation: ", cross_val_score(lasso, X, y, cv=5))'
+                'print("Lasso Cross Validation: ", cross_val_score(lasso,))'
         parse_and_visit_node(value, self.graph)
 
         fct = util.create_import_uri('sklearn.model_selection.cross_val_score')
@@ -835,6 +849,7 @@ class VisitSubscriptNode(Test):
         tree = ast.parse(value)
         node_visitor = NodeVisitor(self.graph)
         node_visitor.alias['pd'] = 'pandas'
+        node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['A'])
         node_visitor.visit(tree)
 
         generate_id(self.graph.head)
@@ -1444,7 +1459,7 @@ class DataFlowTesting(Test):
         value = "train = pd.read_csv('train.csv')\n" \
                 "x = train.sum()"
 
-        parse_and_visit_node(value, self.graph)
+        parse_and_visit_node_with_file(value, self.graph, 'train.csv', ['I'])
         generate_id(self.graph.head)
 
         self.assertEqual(1, len(self.graph.head.data_flow))
@@ -1455,7 +1470,11 @@ class DataFlowTesting(Test):
         value = "train = pd.read_csv('train.csv')\n" \
                 "x = pd.DataFrame(train)"
 
-        parse_and_visit_node(value, self.graph)
+        node_visitor = NodeVisitor(self.graph)
+        node_visitor.alias['pd'] = 'pandas'
+        node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['a'])
+        node_visitor.visit(ast.parse(value))
+
         generate_id(self.graph.head)
 
         self.assertEqual(1, len(self.graph.head.data_flow))
@@ -1466,7 +1485,7 @@ class DataFlowTesting(Test):
         value = "train = pd.read_csv('train.csv')\n" \
                 "x = pd.DataFrame(data=train)"
 
-        parse_and_visit_node(value, self.graph)
+        parse_and_visit_node_with_file(value, self.graph, 'train.csv', ['G'])
         generate_id(self.graph.head)
 
         self.assertEqual(1, len(self.graph.head.data_flow))
@@ -1477,7 +1496,7 @@ class DataFlowTesting(Test):
         value = "train = pd.read_csv('train.csv')\n" \
                 "x = train.isnull().sum()"
 
-        parse_and_visit_node(value, self.graph)
+        parse_and_visit_node_with_file(value, self.graph, 'train.csv', ['D'])
         generate_id(self.graph.head)
 
         self.assertEqual(1, len(self.graph.head.data_flow))
@@ -1491,7 +1510,7 @@ class DataFlowTesting(Test):
         value = "train = pd.read_csv('train.csv')\n" \
                 "x = train.isnull().sum().sort_values(ascending=False)"
 
-        parse_and_visit_node(value, self.graph)
+        parse_and_visit_node_with_file(value, self.graph, 'train.csv', ['A'])
         generate_id(self.graph.head)
 
         self.assertEqual(1, len(self.graph.head.data_flow))
@@ -1508,7 +1527,7 @@ class DataFlowTesting(Test):
         value = "train = pd.read_csv('train.csv')\n" \
                 "x = train['row']"
 
-        parse_and_visit_node(value, self.graph)
+        parse_and_visit_node_with_file(value, self.graph, 'train.csv', ['A'])
         generate_id(self.graph.head)
 
         self.assertEqual(1, len(self.graph.head.data_flow))
@@ -1521,7 +1540,10 @@ class DataFlowTesting(Test):
                 "\ty = x.sum()\n" \
                 "p = a(train)"
 
-        parse_and_visit_node(value, self.graph)
+        node_visitor = NodeVisitor(self.graph)
+        node_visitor.alias['pd'] = 'pandas'
+        node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['a'])
+        node_visitor.visit(ast.parse(value))
         generate_id(self.graph.head)
 
         self.assertEqual(1, len(self.graph.head.data_flow))
@@ -1547,7 +1569,7 @@ class DataFlowTesting(Test):
         value = "train = pd.read_csv('train.csv')\n" \
                 "x = train.Age.sum()"
 
-        parse_and_visit_node(value, self.graph)
+        parse_and_visit_node_with_file(value, self.graph, 'train.csv', ['C'])
         generate_id(self.graph.head)
 
         self.assertEqual(1, len(self.graph.head.data_flow))
@@ -1559,7 +1581,7 @@ class DataFlowTesting(Test):
                 "train['Age'] = 1\n" \
                 "x = train.sum()"
 
-        parse_and_visit_node(value, self.graph)
+        parse_and_visit_node_with_file(value, self.graph, 'train.csv', ['B'])
         generate_id(self.graph.head)
 
         self.assertEqual(1, len(self.graph.head.data_flow))
@@ -1575,7 +1597,17 @@ class DataFlowTesting(Test):
                 "model3 = pd.read_csv('3.csv')\n" \
                 "models = [model1, model2, model3]"
 
-        node_visitor = parse_and_visit_node(value, self.graph)
+        parse_tree = ast.parse(value)
+        node_visitor = NodeVisitor(self.graph)
+
+        node_visitor.working_file['1.csv'] = pd.DataFrame(columns=['A'])
+        node_visitor.working_file['2.csv'] = pd.DataFrame(columns=['A'])
+        node_visitor.working_file['3.csv'] = pd.DataFrame(columns=['A'])
+        self.graph.files['1.csv'] = DataTypes.File(util.create_file_uri(SOURCE, DATASET_NAME, '1.csv'))
+        self.graph.files['2.csv'] = DataTypes.File(util.create_file_uri(SOURCE, DATASET_NAME, '2.csv'))
+        self.graph.files['3.csv'] = DataTypes.File(util.create_file_uri(SOURCE, DATASET_NAME, '3.csv'))
+
+        node_visitor.visit(parse_tree)
         generate_id(self.graph.head)
         self.assertEqual(1, len(self.graph.head.data_flow))
         self.assertEqual(self.graph.tail.uri,
@@ -1696,7 +1728,7 @@ class TestFileContainingElement(Test):
                 "x = x[1:]"
         tree = ast.parse(value).body[0].value
         print(tree.__dict__)
-        parse_and_visit_node(value, self.graph)
+        parse_and_visit_node_with_file(value, self.graph, 'train.csv', ['A'], 'x')
 
     def test_random_thing(self):
         value = "print(pandas.DataFrame(columns=['a']))"
@@ -1711,6 +1743,7 @@ class TestFileContainingElement(Test):
         parse_and_visit_node(value, self.graph)
         for edge in self.graph.tail.parameters:
             print(edge.str())
+
 
 if __name__ == '__main__':
     unittest.main()

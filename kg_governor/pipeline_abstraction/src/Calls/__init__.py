@@ -513,26 +513,26 @@ packages['sklearn'] = Call(name='sklearn', call_type=CallType.LIBRARY)
 
 # sklearn # impute # SimpleImputer
 simple_imputer = Call('SimpleImputer',
-                     'sklearn.impute',
-                     {'X': None,
-                      'missing_values': np.nan,
-                      'strtegy': 'mean',
-                      'fill_value': None,
-                      'verbose': 0,
-                      'copy': True,
-                      'add_indicator': False,
-                      'keep_empty_features': False},
-                     True,
-                     CallType.CLASS)
+                      'sklearn.impute',
+                      {'X': None,
+                       'missing_values': np.nan,
+                       'strtegy': 'mean',
+                       'fill_value': None,
+                       'verbose': 0,
+                       'copy': True,
+                       'add_indicator': False,
+                       'keep_empty_features': False},
+                      True,
+                      CallType.CLASS)
 packages[f'{simple_imputer.library_path}.{simple_imputer.name}'] = simple_imputer
 
 simple_imputer_fit = Call('fit',
-                         'sklearn.impute.SimpleImputer',
-                         {'X': None,
-                          'y': None},
-                         False,
-                         CallType.FUNCTION,
-                         [simple_imputer])
+                          'sklearn.impute.SimpleImputer',
+                          {'X': None,
+                           'y': None},
+                          False,
+                          CallType.FUNCTION,
+                          [simple_imputer])
 packages[f'{simple_imputer_fit.library_path}.{simple_imputer_fit.name}'] = simple_imputer_fit
 
 simple_imputer_fit_transform = Call('fit_transform',
@@ -543,7 +543,8 @@ simple_imputer_fit_transform = Call('fit_transform',
                                     False,
                                     CallType.FUNCTION,
                                     [pd_dataframe])
-packages[f'{simple_imputer_fit_transform.library_path}.{simple_imputer_fit_transform.name}'] = simple_imputer_fit_transform
+packages[
+    f'{simple_imputer_fit_transform.library_path}.{simple_imputer_fit_transform.name}'] = simple_imputer_fit_transform
 
 simple_imputer_get_feature_names_out = Call('get_feature_names_out',
                                             'sklearn.impute.SimpleImputer',
@@ -551,104 +552,108 @@ simple_imputer_get_feature_names_out = Call('get_feature_names_out',
                                             False,
                                             CallType.FUNCTION,
                                             [pd_dataframe])
-packages[f'{simple_imputer_get_feature_names_out.library_path}.{simple_imputer_get_feature_names_out.name}'] = simple_imputer_get_feature_names_out
+packages[
+    f'{simple_imputer_get_feature_names_out.library_path}.{simple_imputer_get_feature_names_out.name}'] = simple_imputer_get_feature_names_out
 
 simple_imputer_get_params = Call('get_params',
-                           'sklearn.impute.SimpleImputer',
-                           {'deep': True},
-                           False,
-                           CallType.FUNCTION,
-                           [dataframe_from_dict])
+                                 'sklearn.impute.SimpleImputer',
+                                 {'deep': True},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [dataframe_from_dict])
 packages[
     f'{simple_imputer_get_params.library_path}.{simple_imputer_get_params.name}'] = simple_imputer_get_params
 
 simple_imputer_inverse_transform = Call('inverse_transform',
-                                    'sklearn.impute.SimpleImputer',
-                                    {'X'},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
-packages[f'{simple_imputer_inverse_transform.library_path}.{simple_imputer_inverse_transform.name}'] = simple_imputer_inverse_transform
+                                        'sklearn.impute.SimpleImputer',
+                                        {'X'},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [pd_dataframe])
+packages[
+    f'{simple_imputer_inverse_transform.library_path}.{simple_imputer_inverse_transform.name}'] = simple_imputer_inverse_transform
 
 simple_imputer_set_output = Call('set_output',
-                                    'sklearn.impute.SimpleImputer',
-                                    {'transform': None},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [simple_imputer])
+                                 'sklearn.impute.SimpleImputer',
+                                 {'transform': None},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [simple_imputer])
 packages[f'{simple_imputer_set_output.library_path}.{simple_imputer_set_output.name}'] = simple_imputer_set_output
 
 simple_imputer_set_params = Call('set_params',
-                                    'sklearn.impute.SimpleImputer',
-                                    {'**params'},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [simple_imputer])
+                                 'sklearn.impute.SimpleImputer',
+                                 {'**params'},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [simple_imputer])
 packages[f'{simple_imputer_set_params.library_path}.{simple_imputer_set_params.name}'] = simple_imputer_set_params
 
 simple_imputer_transform = Call('transform',
-                                    'sklearn.impute.SimpleImputer',
-                                    {'X'},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
+                                'sklearn.impute.SimpleImputer',
+                                {'X'},
+                                False,
+                                CallType.FUNCTION,
+                                [pd_dataframe])
 packages[f'{simple_imputer_transform.library_path}.{simple_imputer_transform.name}'] = simple_imputer_transform
 
 # sklearn # impute # IterativeImputer
 iterative_imputer = Call('IterativeImputer',
-                     'sklearn.impute',
-                     {'X': None,
-                      'estimator': BayesianRidge(),
-                      'missing_values': np.nan,
-                      'sample_posterior': False,
-                      'max_iter': 0,
-                      'tol': 0.001,
-                      'n_nearest_features': None,
-                      'initial_strategy': 'mean',
-                      'imputation_order': 'ascending',
-                      'skip_complete': False,
-                      'min_value': -np.inf,
-                      'max_value': np.inf,
-                      'verbose': 0,
-                      'random_state': None,
-                      'add_indicator': False,
-                      'keep_empty_features': False},
-                     True,
-                     CallType.CLASS)
+                         'sklearn.impute',
+                         {'X': None,
+                          'estimator': BayesianRidge(),
+                          'missing_values': np.nan,
+                          'sample_posterior': False,
+                          'max_iter': 0,
+                          'tol': 0.001,
+                          'n_nearest_features': None,
+                          'initial_strategy': 'mean',
+                          'imputation_order': 'ascending',
+                          'skip_complete': False,
+                          'min_value': -np.inf,
+                          'max_value': np.inf,
+                          'verbose': 0,
+                          'random_state': None,
+                          'add_indicator': False,
+                          'keep_empty_features': False},
+                         True,
+                         CallType.CLASS)
 packages[f'{iterative_imputer.library_path}.{iterative_imputer.name}'] = iterative_imputer
 
 iterative_imputer_fit = Call('fit',
-                         'sklearn.impute.IterativeImputer',
-                         {'X': None,
-                          'y': None},
-                         False,
-                         CallType.FUNCTION,
-                         [iterative_imputer])
+                             'sklearn.impute.IterativeImputer',
+                             {'X': None,
+                              'y': None},
+                             False,
+                             CallType.FUNCTION,
+                             [iterative_imputer])
 packages[f'{iterative_imputer_fit.library_path}.{iterative_imputer_fit.name}'] = iterative_imputer_fit
 
 iterative_imputer_fit_transform = Call('fit_transform',
-                                    'sklearn.impute.IterativeImputer',
-                                    {'X': None,
-                                     'y': None},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
-packages[f'{iterative_imputer_fit_transform.library_path}.{iterative_imputer_fit_transform.name}'] = iterative_imputer_fit_transform
+                                       'sklearn.impute.IterativeImputer',
+                                       {'X': None,
+                                        'y': None},
+                                       False,
+                                       CallType.FUNCTION,
+                                       [pd_dataframe])
+packages[
+    f'{iterative_imputer_fit_transform.library_path}.{iterative_imputer_fit_transform.name}'] = iterative_imputer_fit_transform
 
 iterative_imputer_get_feature_names_out = Call('get_feature_names_out',
-                                            'sklearn.impute.IterativeImputer',
-                                            {'input_features': None},
-                                            False,
-                                            CallType.FUNCTION,
-                                            [pd_dataframe])
-packages[f'{iterative_imputer_get_feature_names_out.library_path}.{iterative_imputer_get_feature_names_out.name}'] = iterative_imputer_get_feature_names_out
+                                               'sklearn.impute.IterativeImputer',
+                                               {'input_features': None},
+                                               False,
+                                               CallType.FUNCTION,
+                                               [pd_dataframe])
+packages[
+    f'{iterative_imputer_get_feature_names_out.library_path}.{iterative_imputer_get_feature_names_out.name}'] = iterative_imputer_get_feature_names_out
 
 iterative_imputer_get_params = Call('get_params',
-                           'sklearn.impute.IterativeImputer',
-                           {'deep': True},
-                           False,
-                           CallType.FUNCTION,
-                           [dataframe_from_dict])
+                                    'sklearn.impute.IterativeImputer',
+                                    {'deep': True},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [dataframe_from_dict])
 packages[
     f'{iterative_imputer_get_params.library_path}.{iterative_imputer_get_params.name}'] = iterative_imputer_get_params
 
@@ -658,7 +663,8 @@ iterative_imputer_set_output = Call('set_output',
                                     False,
                                     CallType.FUNCTION,
                                     [iterative_imputer])
-packages[f'{iterative_imputer_set_output.library_path}.{iterative_imputer_set_output.name}'] = iterative_imputer_set_output
+packages[
+    f'{iterative_imputer_set_output.library_path}.{iterative_imputer_set_output.name}'] = iterative_imputer_set_output
 
 iterative_imputer_set_params = Call('set_params',
                                     'sklearn.impute.IterativeImputer',
@@ -666,60 +672,63 @@ iterative_imputer_set_params = Call('set_params',
                                     False,
                                     CallType.FUNCTION,
                                     [iterative_imputer])
-packages[f'{iterative_imputer_set_params.library_path}.{iterative_imputer_set_params.name}'] = iterative_imputer_set_params
+packages[
+    f'{iterative_imputer_set_params.library_path}.{iterative_imputer_set_params.name}'] = iterative_imputer_set_params
 
 iterative_imputer_transform = Call('transform',
-                                    'sklearn.impute.IterativeImputer',
-                                    {'X'},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
+                                   'sklearn.impute.IterativeImputer',
+                                   {'X'},
+                                   False,
+                                   CallType.FUNCTION,
+                                   [pd_dataframe])
 packages[f'{iterative_imputer_transform.library_path}.{iterative_imputer_transform.name}'] = iterative_imputer_transform
 
 # sklearn # impute # MissingIndicator
 missing_indicator = Call('MissingIndicator',
-                     'sklearn.impute',
-                     {'X': None,
-                      'missing_values': np.nan,
-                      'features': 'missing_only',
-                      'sparse': 'auto',
-                      'error_on_new': True},
-                     True,
-                     CallType.CLASS)
+                         'sklearn.impute',
+                         {'X': None,
+                          'missing_values': np.nan,
+                          'features': 'missing_only',
+                          'sparse': 'auto',
+                          'error_on_new': True},
+                         True,
+                         CallType.CLASS)
 packages[f'{missing_indicator.library_path}.{missing_indicator.name}'] = missing_indicator
 
 missing_indicator_fit = Call('fit',
-                         'sklearn.impute.MissingIndicator',
-                         {'X': None,
-                          'y': None},
-                         False,
-                         CallType.FUNCTION,
-                         [missing_indicator])
+                             'sklearn.impute.MissingIndicator',
+                             {'X': None,
+                              'y': None},
+                             False,
+                             CallType.FUNCTION,
+                             [missing_indicator])
 packages[f'{missing_indicator_fit.library_path}.{missing_indicator_fit.name}'] = missing_indicator_fit
 
 missing_indicator_fit_transform = Call('fit_transform',
-                                    'sklearn.impute.MissingIndicator',
-                                    {'X': None,
-                                     'y': None},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
-packages[f'{missing_indicator_fit_transform.library_path}.{missing_indicator_fit_transform.name}'] = missing_indicator_fit_transform
+                                       'sklearn.impute.MissingIndicator',
+                                       {'X': None,
+                                        'y': None},
+                                       False,
+                                       CallType.FUNCTION,
+                                       [pd_dataframe])
+packages[
+    f'{missing_indicator_fit_transform.library_path}.{missing_indicator_fit_transform.name}'] = missing_indicator_fit_transform
 
 missing_indicator_get_feature_names_out = Call('get_feature_names_out',
-                                            'sklearn.impute.MissingIndicator',
-                                            {'input_features': None},
-                                            False,
-                                            CallType.FUNCTION,
-                                            [pd_dataframe])
-packages[f'{missing_indicator_get_feature_names_out.library_path}.{missing_indicator_get_feature_names_out.name}'] = missing_indicator_get_feature_names_out
+                                               'sklearn.impute.MissingIndicator',
+                                               {'input_features': None},
+                                               False,
+                                               CallType.FUNCTION,
+                                               [pd_dataframe])
+packages[
+    f'{missing_indicator_get_feature_names_out.library_path}.{missing_indicator_get_feature_names_out.name}'] = missing_indicator_get_feature_names_out
 
 missing_indicator_get_params = Call('get_params',
-                           'sklearn.impute.MissingIndicator',
-                           {'deep': True},
-                           False,
-                           CallType.FUNCTION,
-                           [dataframe_from_dict])
+                                    'sklearn.impute.MissingIndicator',
+                                    {'deep': True},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [dataframe_from_dict])
 packages[
     f'{missing_indicator_get_params.library_path}.{missing_indicator_get_params.name}'] = missing_indicator_get_params
 
@@ -729,7 +738,8 @@ missing_indicator_set_output = Call('set_output',
                                     False,
                                     CallType.FUNCTION,
                                     [missing_indicator])
-packages[f'{missing_indicator_set_output.library_path}.{missing_indicator_set_output.name}'] = missing_indicator_set_output
+packages[
+    f'{missing_indicator_set_output.library_path}.{missing_indicator_set_output.name}'] = missing_indicator_set_output
 
 missing_indicator_set_params = Call('set_params',
                                     'sklearn.impute.MissingIndicator',
@@ -737,90 +747,91 @@ missing_indicator_set_params = Call('set_params',
                                     False,
                                     CallType.FUNCTION,
                                     [missing_indicator])
-packages[f'{missing_indicator_set_params.library_path}.{missing_indicator_set_params.name}'] = missing_indicator_set_params
+packages[
+    f'{missing_indicator_set_params.library_path}.{missing_indicator_set_params.name}'] = missing_indicator_set_params
 
 missing_indicator_transform = Call('transform',
-                                    'sklearn.impute.MissingIndicator',
-                                    {'X'},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
+                                   'sklearn.impute.MissingIndicator',
+                                   {'X'},
+                                   False,
+                                   CallType.FUNCTION,
+                                   [pd_dataframe])
 packages[f'{missing_indicator_transform.library_path}.{missing_indicator_transform.name}'] = missing_indicator_transform
-
 
 # sklearn # impute # KNNImputer
 knn_imputer = Call('KNNImputer',
-                     'sklearn.impute',
-                     {'X': None,
-                      'missing_values': np.nan,
-                      'n_neighbors': 5,
-                      'weights': 'uniform',
-                      'metric': 'nan_euclidean',
-                      'copy': True,
-                      'add_indicator': False,
-                      'keep_empty_features': False},
-                     True,
-                     CallType.CLASS)
+                   'sklearn.impute',
+                   {'X': None,
+                    'missing_values': np.nan,
+                    'n_neighbors': 5,
+                    'weights': 'uniform',
+                    'metric': 'nan_euclidean',
+                    'copy': True,
+                    'add_indicator': False,
+                    'keep_empty_features': False},
+                   True,
+                   CallType.CLASS)
 packages[f'{knn_imputer.library_path}.{knn_imputer.name}'] = knn_imputer
 
 knn_imputer_fit = Call('fit',
-                         'sklearn.impute.KNNImputer',
-                         {'X': None,
-                          'y': None},
-                         False,
-                         CallType.FUNCTION,
-                         [knn_imputer])
+                       'sklearn.impute.KNNImputer',
+                       {'X': None,
+                        'y': None},
+                       False,
+                       CallType.FUNCTION,
+                       [knn_imputer])
 packages[f'{knn_imputer_fit.library_path}.{knn_imputer_fit.name}'] = knn_imputer_fit
 
 knn_imputer_fit_transform = Call('fit_transform',
-                                    'sklearn.impute.KNNImputer',
-                                    {'X': None,
-                                     'y': None,
-                                     '**fit_params': None},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
+                                 'sklearn.impute.KNNImputer',
+                                 {'X': None,
+                                  'y': None,
+                                  '**fit_params': None},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [pd_dataframe])
 packages[f'{knn_imputer_fit_transform.library_path}.{knn_imputer_fit_transform.name}'] = knn_imputer_fit_transform
 
 knn_imputer_get_feature_names_out = Call('get_feature_names_out',
-                                            'sklearn.impute.KNNImputer',
-                                            {'input_features': None},
-                                            False,
-                                            CallType.FUNCTION,
-                                            [pd_dataframe])
-packages[f'{knn_imputer_get_feature_names_out.library_path}.{knn_imputer_get_feature_names_out.name}'] = knn_imputer_get_feature_names_out
+                                         'sklearn.impute.KNNImputer',
+                                         {'input_features': None},
+                                         False,
+                                         CallType.FUNCTION,
+                                         [pd_dataframe])
+packages[
+    f'{knn_imputer_get_feature_names_out.library_path}.{knn_imputer_get_feature_names_out.name}'] = knn_imputer_get_feature_names_out
 
 knn_imputer_get_params = Call('get_params',
-                           'sklearn.impute.KNNImputer',
-                           {'deep': True},
-                           False,
-                           CallType.FUNCTION,
-                           [dataframe_from_dict])
+                              'sklearn.impute.KNNImputer',
+                              {'deep': True},
+                              False,
+                              CallType.FUNCTION,
+                              [dataframe_from_dict])
 packages[
     f'{knn_imputer_get_params.library_path}.{knn_imputer_get_params.name}'] = knn_imputer_get_params
 
 knn_imputer_set_output = Call('set_output',
-                                    'sklearn.impute.KNNImputer',
-                                    {'transform': None},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [knn_imputer])
+                              'sklearn.impute.KNNImputer',
+                              {'transform': None},
+                              False,
+                              CallType.FUNCTION,
+                              [knn_imputer])
 packages[f'{knn_imputer_set_output.library_path}.{knn_imputer_set_output.name}'] = knn_imputer_set_output
 
 knn_imputer_set_params = Call('set_params',
-                                    'sklearn.impute.KNNImputer',
-                                    {'**params'},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [knn_imputer])
+                              'sklearn.impute.KNNImputer',
+                              {'**params'},
+                              False,
+                              CallType.FUNCTION,
+                              [knn_imputer])
 packages[f'{knn_imputer_set_params.library_path}.{knn_imputer_set_params.name}'] = knn_imputer_set_params
 
 knn_imputer_transform = Call('transform',
-                                    'sklearn.impute.KNNImputer',
-                                    {'X'},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
+                             'sklearn.impute.KNNImputer',
+                             {'X'},
+                             False,
+                             CallType.FUNCTION,
+                             [pd_dataframe])
 packages[f'{knn_imputer_transform.library_path}.{knn_imputer_transform.name}'] = knn_imputer_transform
 
 # sklearn # preprocessing
@@ -835,20 +846,20 @@ label_encoder = Call('LabelEncoder',
 packages[f'{label_encoder.library_path}.{label_encoder.name}'] = label_encoder
 
 label_encoder_get_params = Call('get_params',
-                           'sklearn.preprocessing.LabelEncoder',
-                           {'deep': True},
-                           False,
-                           CallType.FUNCTION,
-                           [dataframe_from_dict])
+                                'sklearn.preprocessing.LabelEncoder',
+                                {'deep': True},
+                                False,
+                                CallType.FUNCTION,
+                                [dataframe_from_dict])
 packages[
     f'{label_encoder_get_params.library_path}.{label_encoder_get_params.name}'] = label_encoder_get_params
 
 label_encoder_set_params = Call('set_params',
-                           'sklearn.preprocessing.LabelEncoder',
-                           {'**params': None},
-                           False,
-                           CallType.FUNCTION,
-                           [label_encoder])
+                                'sklearn.preprocessing.LabelEncoder',
+                                {'**params': None},
+                                False,
+                                CallType.FUNCTION,
+                                [label_encoder])
 packages[
     f'{label_encoder_set_params.library_path}.{label_encoder_set_params.name}'] = label_encoder_set_params
 
@@ -877,73 +888,74 @@ label_encoder_transform = Call('transform',
 packages[f'{label_encoder_transform.library_path}.{label_encoder_transform.name}'] = label_encoder_transform
 
 label_encoder_inverse_transform = Call('inverse_transform',
-                                 'sklearn.preprocessing.LabelEncoder',
-                                 {'y': None},
-                                 False,
-                                 CallType.FUNCTION,
-                                 [pd_dataframe])
-packages[f'{label_encoder_inverse_transform.library_path}.{label_encoder_inverse_transform.name}'] = label_encoder_inverse_transform
+                                       'sklearn.preprocessing.LabelEncoder',
+                                       {'y': None},
+                                       False,
+                                       CallType.FUNCTION,
+                                       [pd_dataframe])
+packages[
+    f'{label_encoder_inverse_transform.library_path}.{label_encoder_inverse_transform.name}'] = label_encoder_inverse_transform
 
 # sklearn # preprocessing # Binarizer
 binarizer = Call('Binarizer',
                  'sklearn.preprocessing',
                  {'threshold': 0.0,
                   'copy': True},
-                  True,
-                  CallType.CLASS)
+                 True,
+                 CallType.CLASS)
 packages[f'{binarizer.library_path}.{binarizer.name}'] = binarizer
 
 binarizer_get_params = Call('get_params',
-                           'sklearn.preprocessing.Binarizer',
-                           {'deep': True},
-                           False,
-                           CallType.FUNCTION,
-                           [dataframe_from_dict])
+                            'sklearn.preprocessing.Binarizer',
+                            {'deep': True},
+                            False,
+                            CallType.FUNCTION,
+                            [dataframe_from_dict])
 packages[
     f'{binarizer_get_params.library_path}.{binarizer_get_params.name}'] = binarizer_get_params
 
 binarizer_set_params = Call('set_params',
-                           'sklearn.preprocessing.Binarizer',
-                           {'**params': None},
-                           False,
-                           CallType.FUNCTION,
-                           [binarizer])
+                            'sklearn.preprocessing.Binarizer',
+                            {'**params': None},
+                            False,
+                            CallType.FUNCTION,
+                            [binarizer])
 packages[
     f'{binarizer_set_params.library_path}.{binarizer_set_params.name}'] = binarizer_set_params
 
 binarizer_get_feature_names_out = Call('get_feature_names_out',
-                                    'sklearn.preprocessing.Binarizer',
-                                    {'input_features':None},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
+                                       'sklearn.preprocessing.Binarizer',
+                                       {'input_features': None},
+                                       False,
+                                       CallType.FUNCTION,
+                                       [pd_dataframe])
 packages[
     f'{binarizer_get_feature_names_out.library_path}.{binarizer_get_feature_names_out.name}'] = binarizer_get_feature_names_out
 
 binarizer_fit_transform = Call('fit_transform',
-                                'sklearn.preprocessing.Binarizer',
-                                {'X': None,
+                               'sklearn.preprocessing.Binarizer',
+                               {'X': None,
                                 'y': None,
-                                 '**fit_params': None},
-                                False,
-                                CallType.FUNCTION,
-                                [pd_dataframe])
+                                '**fit_params': None},
+                               False,
+                               CallType.FUNCTION,
+                               [pd_dataframe])
 packages[
     f'{binarizer_fit_transform.library_path}.{binarizer_fit_transform.name}'] = binarizer_fit_transform
 
 binarizer_transform = Call('transform',
-                            'sklearn.preprocessing.Binarizer',
-                            {'X': None,
-                             'copy': None},
-                            False,
-                            CallType.FUNCTION,
-                            [pd_dataframe])
+                           'sklearn.preprocessing.Binarizer',
+                           {'X': None,
+                            'copy': None},
+                           False,
+                           CallType.FUNCTION,
+                           [pd_dataframe])
 packages[f'{binarizer_transform.library_path}.{binarizer_transform.name}'] = binarizer_transform
 
 binarizer_fit = Call('fit',
                      'sklearn.preprocessing.Binarizer',
                      {'X': None,
-                      'y': None,},
+                      'y': None, },
                      False,
                      CallType.FUNCTION,
                      [binarizer])
@@ -951,144 +963,146 @@ packages[f'{binarizer_fit.library_path}.{binarizer_fit.name}'] = binarizer_fit
 
 # sklearn # preprocessing # FunctionTransformer
 function_transformer = Call('FunctionTransformer',
-                 'sklearn.preprocessing',
-                 {'func': None,
-                  'inverse_func': None,
-                  'validate': False,
-                  'accept_sparse': False,
-                  'check_inverse': True,
-                  'feature_names_out': None,
-                  'kw_args': None,
-                  'inv_kw_args': None},
-                  True,
-                  CallType.CLASS)
+                            'sklearn.preprocessing',
+                            {'func': None,
+                             'inverse_func': None,
+                             'validate': False,
+                             'accept_sparse': False,
+                             'check_inverse': True,
+                             'feature_names_out': None,
+                             'kw_args': None,
+                             'inv_kw_args': None},
+                            True,
+                            CallType.CLASS)
 packages[f'{function_transformer.library_path}.{function_transformer.name}'] = function_transformer
 
 function_transformer_get_params = Call('get_params',
-                                    'sklearn.preprocessing.FunctionTransformer',
-                                    {'deep': True},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [dataframe_from_dict])
+                                       'sklearn.preprocessing.FunctionTransformer',
+                                       {'deep': True},
+                                       False,
+                                       CallType.FUNCTION,
+                                       [dataframe_from_dict])
 packages[
     f'{function_transformer_get_params.library_path}.{function_transformer_get_params.name}'] = function_transformer_get_params
 
 function_transformer_set_params = Call('set_params',
-                           'sklearn.preprocessing.FunctionTransformer',
-                           {'**params': None},
-                           False,
-                           CallType.FUNCTION,
-                           [function_transformer])
+                                       'sklearn.preprocessing.FunctionTransformer',
+                                       {'**params': None},
+                                       False,
+                                       CallType.FUNCTION,
+                                       [function_transformer])
 packages[
     f'{binarizer_set_params.library_path}.{binarizer_set_params.name}'] = binarizer_set_params
 
 function_transformer_get_feature_names_out = Call('get_feature_names_out',
-                                    'sklearn.preprocessing.FunctionTransformer',
-                                    {'input_features':None},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
+                                                  'sklearn.preprocessing.FunctionTransformer',
+                                                  {'input_features': None},
+                                                  False,
+                                                  CallType.FUNCTION,
+                                                  [pd_dataframe])
 packages[
     f'{function_transformer_get_feature_names_out.library_path}.{function_transformer_get_feature_names_out.name}'] = function_transformer_get_feature_names_out
 
 function_transformer_fit_transform = Call('fit_transform',
-                                           'sklearn.preprocessing.FunctionTransformer',
-                                           {'X': None,
+                                          'sklearn.preprocessing.FunctionTransformer',
+                                          {'X': None,
                                            'y': None,
-                                            '**fit_params': None},
-                                           False,
-                                           CallType.FUNCTION,
-                                           [pd_dataframe])
+                                           '**fit_params': None},
+                                          False,
+                                          CallType.FUNCTION,
+                                          [pd_dataframe])
 packages[
     f'{function_transformer_fit_transform.library_path}.{function_transformer_fit_transform.name}'] = function_transformer_fit_transform
 
 function_transformer_transform = Call('transform',
-                            'sklearn.preprocessing.FunctionTransformer',
-                            {'X': None},
-                            False,
-                            CallType.FUNCTION,
-                            [pd_dataframe])
-packages[f'{function_transformer_transform.library_path}.{function_transformer_transform.name}'] = function_transformer_transform
+                                      'sklearn.preprocessing.FunctionTransformer',
+                                      {'X': None},
+                                      False,
+                                      CallType.FUNCTION,
+                                      [pd_dataframe])
+packages[
+    f'{function_transformer_transform.library_path}.{function_transformer_transform.name}'] = function_transformer_transform
 
 function_transformer_fit = Call('fit',
                                 'sklearn.preprocessing.FunctionTransformer',
                                 {'X': None,
-                                 'y': None,},
+                                 'y': None, },
                                 False,
                                 CallType.FUNCTION,
                                 [function_transformer])
 packages[f'{function_transformer_fit.library_path}.{function_transformer_fit.name}'] = function_transformer_fit
 
 function_transformer_inverse_transform = Call('inverse_transform',
-                                 'sklearn.preprocessing.FunctionTransformer',
-                                 {'X': None},
-                                 False,
-                                 CallType.FUNCTION,
-                                 [pd_dataframe])
-packages[f'{function_transformer_inverse_transform.library_path}.{function_transformer_inverse_transform.name}'] = function_transformer_inverse_transform
+                                              'sklearn.preprocessing.FunctionTransformer',
+                                              {'X': None},
+                                              False,
+                                              CallType.FUNCTION,
+                                              [pd_dataframe])
+packages[
+    f'{function_transformer_inverse_transform.library_path}.{function_transformer_inverse_transform.name}'] = function_transformer_inverse_transform
 
 # sklearn # preprocessing # KernelCenterer
 kernel_centerer = Call('KernelCenterer',
-                 'sklearn.preprocessing',
-                 {'K_fit_rows_': None,
-                  'K_fit_all_': None,
-                  'n_features_in_': None,
-                  'feature_names_in_': None},
-                  True,
-                  CallType.CLASS)
+                       'sklearn.preprocessing',
+                       {'K_fit_rows_': None,
+                        'K_fit_all_': None,
+                        'n_features_in_': None,
+                        'feature_names_in_': None},
+                       True,
+                       CallType.CLASS)
 packages[f'{kernel_centerer.library_path}.{kernel_centerer.name}'] = kernel_centerer
 
 kernel_centerer_get_params = Call('get_params',
-                                    'sklearn.preprocessing.KernelCenterer',
-                                    {'deep': True},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [dataframe_from_dict])
+                                  'sklearn.preprocessing.KernelCenterer',
+                                  {'deep': True},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [dataframe_from_dict])
 packages[
     f'{kernel_centerer_get_params.library_path}.{kernel_centerer_get_params.name}'] = kernel_centerer_get_params
 
 kernel_centerer_set_params = Call('set_params',
-                           'sklearn.preprocessing.KernelCenterer',
-                           {'**params': None},
-                           False,
-                           CallType.FUNCTION,
-                           [kernel_centerer])
+                                  'sklearn.preprocessing.KernelCenterer',
+                                  {'**params': None},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [kernel_centerer])
 packages[
     f'{kernel_centerer_set_params.library_path}.{kernel_centerer_set_params.name}'] = kernel_centerer_set_params
 
 kernel_centerer_get_feature_names_out = Call('get_feature_names_out',
-                                    'sklearn.preprocessing.KernelCenterer',
-                                    {'input_features':None},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
+                                             'sklearn.preprocessing.KernelCenterer',
+                                             {'input_features': None},
+                                             False,
+                                             CallType.FUNCTION,
+                                             [pd_dataframe])
 packages[
     f'{kernel_centerer_get_feature_names_out.library_path}.{kernel_centerer_get_feature_names_out.name}'] = kernel_centerer_get_feature_names_out
 
 kernel_centerer_fit_transform = Call('fit_transform',
-                                           'sklearn.preprocessing.KernelCenterer',
-                                           {'X': None,
-                                           'y': None,
-                                            '**fit_params': None},
-                                           False,
-                                           CallType.FUNCTION,
-                                           [pd_dataframe])
+                                     'sklearn.preprocessing.KernelCenterer',
+                                     {'X': None,
+                                      'y': None,
+                                      '**fit_params': None},
+                                     False,
+                                     CallType.FUNCTION,
+                                     [pd_dataframe])
 packages[
     f'{kernel_centerer_fit_transform.library_path}.{kernel_centerer_fit_transform.name}'] = kernel_centerer_fit_transform
 
 kernel_centerer_transform = Call('transform',
-                            'sklearn.preprocessing.KernelCenterer',
-                            {'K': None,
-                             'copy': True},
-                            False,
-                            CallType.FUNCTION,
-                            [kernel_centerer])
+                                 'sklearn.preprocessing.KernelCenterer',
+                                 {'K': None,
+                                  'copy': True},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [kernel_centerer])
 packages[f'{kernel_centerer_transform.library_path}.{kernel_centerer_transform.name}'] = kernel_centerer_transform
 
 kernel_centerer_fit = Call('fit',
                            'sklearn.preprocessing.KernelCenterer',
                            {'K': None,
-                            'y': None,},
+                            'y': None, },
                            False,
                            CallType.FUNCTION,
                            [kernel_centerer])
@@ -1096,28 +1110,28 @@ packages[f'{kernel_centerer_fit.library_path}.{kernel_centerer_fit.name}'] = ker
 
 # sklearn # preprocessing # MultiLabelBinarizer
 multi_label_binarizer = Call('MultiLabelBinarizer',
-                 'sklearn.preprocessing',
-                 {'classses': None,
-                  'sparse_output': False},
-                  True,
-                  CallType.CLASS)
+                             'sklearn.preprocessing',
+                             {'classes': None,
+                              'sparse_output': False},
+                             True,
+                             CallType.CLASS)
 packages[f'{multi_label_binarizer.library_path}.{multi_label_binarizer.name}'] = multi_label_binarizer
 
 multi_label_binarizer_get_params = Call('get_params',
-                                    'sklearn.preprocessing.MultiLabelBinarizer',
-                                    {'deep': True},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [dataframe_from_dict])
+                                        'sklearn.preprocessing.MultiLabelBinarizer',
+                                        {'deep': True},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [dataframe_from_dict])
 packages[
     f'{multi_label_binarizer_get_params.library_path}.{multi_label_binarizer_get_params.name}'] = multi_label_binarizer_get_params
 
 multi_label_binarizer_set_params = Call('set_params',
-                           'sklearn.preprocessing.MultiLabelBinarizer',
-                           {'**params': None},
-                           False,
-                           CallType.FUNCTION,
-                           [multi_label_binarizer])
+                                        'sklearn.preprocessing.MultiLabelBinarizer',
+                                        {'**params': None},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [multi_label_binarizer])
 packages[
     f'{multi_label_binarizer_set_params.library_path}.{multi_label_binarizer_set_params.name}'] = multi_label_binarizer_set_params
 
@@ -1131,28 +1145,30 @@ packages[
     f'{multi_label_binarizer_fit_transform.library_path}.{multi_label_binarizer_fit_transform.name}'] = multi_label_binarizer_fit_transform
 
 multi_label_binarizer_transform = Call('transform',
-                            'sklearn.preprocessing.MultiLabelBinarizer',
-                            {'y': None},
-                            False,
-                            CallType.FUNCTION,
-                            [pd_dataframe])
-packages[f'{multi_label_binarizer_transform.library_path}.{multi_label_binarizer_transform.name}'] = multi_label_binarizer_transform
+                                       'sklearn.preprocessing.MultiLabelBinarizer',
+                                       {'y': None},
+                                       False,
+                                       CallType.FUNCTION,
+                                       [pd_dataframe])
+packages[
+    f'{multi_label_binarizer_transform.library_path}.{multi_label_binarizer_transform.name}'] = multi_label_binarizer_transform
 
 multi_label_binarizer_fit = Call('fit',
-                                'sklearn.preprocessing.MultiLabelBinarizer',
-                                {'y': None},
-                                False,
-                                CallType.FUNCTION,
-                                [multi_label_binarizer])
+                                 'sklearn.preprocessing.MultiLabelBinarizer',
+                                 {'y': None},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [multi_label_binarizer])
 packages[f'{multi_label_binarizer_fit.library_path}.{multi_label_binarizer_fit.name}'] = multi_label_binarizer_fit
 
 multi_label_binarizer_inverse_transform = Call('inverse_transform',
-                                 'sklearn.preprocessing.MultiLabelBinarizer',
-                                 {'yt': None},
-                                 False,
-                                 CallType.FUNCTION,
-                                 [pd_dataframe])
-packages[f'{multi_label_binarizer_inverse_transform.library_path}.{multi_label_binarizer_inverse_transform.name}'] = multi_label_binarizer_inverse_transform
+                                               'sklearn.preprocessing.MultiLabelBinarizer',
+                                               {'yt': None},
+                                               False,
+                                               CallType.FUNCTION,
+                                               [pd_dataframe])
+packages[
+    f'{multi_label_binarizer_inverse_transform.library_path}.{multi_label_binarizer_inverse_transform.name}'] = multi_label_binarizer_inverse_transform
 
 # sklearn # preprocessing # StandardScaler
 standard_scaler = Call('StandardScaler',
@@ -1165,79 +1181,81 @@ standard_scaler = Call('StandardScaler',
 packages[f'{standard_scaler.library_path}.{standard_scaler.name}'] = standard_scaler
 
 standard_scaler_fit_transform = Call('fit_transform',
-                                    'sklearn.preprocessing.StandardScaler',
-                                    {'X': None,
-                                     'y': None,
-                                     '**fit_params': None},
-                                    False,
-                                    CallType.FUNCTION,
-                                    [pd_dataframe])
+                                     'sklearn.preprocessing.StandardScaler',
+                                     {'X': None,
+                                      'y': None,
+                                      '**fit_params': None},
+                                     False,
+                                     CallType.FUNCTION,
+                                     [pd_dataframe])
 packages[
     f'{standard_scaler_fit_transform.library_path}.{standard_scaler_fit_transform.name}'] = standard_scaler_fit_transform
 
 standard_scaler_transform = Call('transform',
-                                'sklearn.preprocessing.StandardScaler',
-                                {'X': None,
-                                 'copy': None},
-                                False,
-                                CallType.FUNCTION,
-                                [pd_dataframe])
-packages[f'{standard_scaler_transform.library_path}.{standard_scaler_transform.name}'] = standard_scaler_transform
-
-standard_scaler_fit = Call('fit',
-                          'sklearn.preprocessing.StandardScaler',
-                          {'X': None,
-                           'y': None,
-                           'sample_weight': None},
-                          False,
-                          CallType.FUNCTION,
-                          [standard_scaler])
-packages[f'{standard_scaler_fit.library_path}.{standard_scaler_fit.name}'] = standard_scaler_fit
-
-standard_scaler_get_params = Call('get_params',
-                           'sklearn.preprocessing.StandardScaler',
-                           {'deep': True},
-                           False,
-                           CallType.FUNCTION,
-                           [dataframe_from_dict])
-packages[
-    f'{standard_scaler_get_params.library_path}.{standard_scaler_get_params.name}'] = standard_scaler_get_params
-
-standard_scaler_set_params = Call('set_params',
-                           'sklearn.preprocessing.StandardScaler',
-                           {'**params': None},
-                           False,
-                           CallType.FUNCTION,
-                           [standard_scaler])
-packages[
-    f'{standard_scaler_set_params.library_path}.{standard_scaler_set_params.name}'] = standard_scaler_set_params
-
-standard_scaler_inverse_transform = Call('inverse_transform',
                                  'sklearn.preprocessing.StandardScaler',
                                  {'X': None,
                                   'copy': None},
                                  False,
                                  CallType.FUNCTION,
                                  [pd_dataframe])
-packages[f'{standard_scaler_inverse_transform.library_path}.{standard_scaler_inverse_transform.name}'] = standard_scaler_inverse_transform
+packages[f'{standard_scaler_transform.library_path}.{standard_scaler_transform.name}'] = standard_scaler_transform
+
+standard_scaler_fit = Call('fit',
+                           'sklearn.preprocessing.StandardScaler',
+                           {'X': None,
+                            'y': None,
+                            'sample_weight': None},
+                           False,
+                           CallType.FUNCTION,
+                           [standard_scaler])
+packages[f'{standard_scaler_fit.library_path}.{standard_scaler_fit.name}'] = standard_scaler_fit
+
+standard_scaler_get_params = Call('get_params',
+                                  'sklearn.preprocessing.StandardScaler',
+                                  {'deep': True},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [dataframe_from_dict])
+packages[
+    f'{standard_scaler_get_params.library_path}.{standard_scaler_get_params.name}'] = standard_scaler_get_params
+
+standard_scaler_set_params = Call('set_params',
+                                  'sklearn.preprocessing.StandardScaler',
+                                  {'**params': None},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [standard_scaler])
+packages[
+    f'{standard_scaler_set_params.library_path}.{standard_scaler_set_params.name}'] = standard_scaler_set_params
+
+standard_scaler_inverse_transform = Call('inverse_transform',
+                                         'sklearn.preprocessing.StandardScaler',
+                                         {'X': None,
+                                          'copy': None},
+                                         False,
+                                         CallType.FUNCTION,
+                                         [pd_dataframe])
+packages[
+    f'{standard_scaler_inverse_transform.library_path}.{standard_scaler_inverse_transform.name}'] = standard_scaler_inverse_transform
 
 standard_scaler_partial_fit = Call('partial_fit',
-                          'sklearn.preprocessing.StandardScaler',
-                          {'X': None,
-                           'y': None,
-                           'sample_weight': None},
-                          False,
-                          CallType.FUNCTION,
-                          [standard_scaler])
+                                   'sklearn.preprocessing.StandardScaler',
+                                   {'X': None,
+                                    'y': None,
+                                    'sample_weight': None},
+                                   False,
+                                   CallType.FUNCTION,
+                                   [standard_scaler])
 packages[f'{standard_scaler_partial_fit.library_path}.{standard_scaler_partial_fit.name}'] = standard_scaler_partial_fit
 
 standard_scaler_get_feature_names_out = Call('get_feature_names_out',
-                          'sklearn.preprocessing.StandardScaler',
-                          {'input_features': None},
-                          False,
-                          CallType.FUNCTION,
-                          [pd_dataframe])
-packages[f'{standard_scaler_get_feature_names_out.library_path}.{standard_scaler_get_feature_names_out.name}'] = standard_scaler_get_feature_names_out
+                                             'sklearn.preprocessing.StandardScaler',
+                                             {'input_features': None},
+                                             False,
+                                             CallType.FUNCTION,
+                                             [pd_dataframe])
+packages[
+    f'{standard_scaler_get_feature_names_out.library_path}.{standard_scaler_get_feature_names_out.name}'] = standard_scaler_get_feature_names_out
 
 # sklearn # preprocessing # LabelBinarizer
 label_binarizer = Call('LabelBinarizer',
@@ -1250,23 +1268,22 @@ label_binarizer = Call('LabelBinarizer',
 packages[f'{label_binarizer.library_path}.{label_binarizer.name}'] = label_binarizer
 
 label_binarizer_get_params = Call('get_params',
-                           'sklearn.preprocessing.LabelBinarizer',
-                           {'deep': True},
-                           False,
-                           CallType.FUNCTION,
-                           [dataframe_from_dict])
+                                  'sklearn.preprocessing.LabelBinarizer',
+                                  {'deep': True},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [dataframe_from_dict])
 packages[
     f'{label_binarizer_get_params.library_path}.{label_binarizer_get_params.name}'] = label_binarizer_get_params
 
 label_binarizer_set_params = Call('set_params',
-                           'sklearn.preprocessing.LabelBinarizer',
-                           {'**params'},
-                           False,
-                           CallType.FUNCTION,
-                           [label_binarizer])
+                                  'sklearn.preprocessing.LabelBinarizer',
+                                  {'**params'},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [label_binarizer])
 packages[
     f'{label_binarizer_set_params.library_path}.{label_binarizer_set_params.name}'] = label_binarizer_set_params
-
 
 label_binarizer_fit_transform = Call('fit_transform',
                                      'sklearn.preprocessing.LabelBinarizer',
@@ -1286,17 +1303,18 @@ label_binarizer_transform = Call('transform',
 packages[f'{label_binarizer_transform.library_path}.{label_binarizer_transform.name}'] = label_binarizer_transform
 
 label_binarizer_inverse_transform = Call('inverse_transform',
-                                 'sklearn.preprocessing.LabelBinarizer',
-                                 {'y': None,
-                                  'threshold': None},
-                                 False,
-                                 CallType.FUNCTION,
-                                 [pd_dataframe])
-packages[f'{label_binarizer_inverse_transform.library_path}.{label_binarizer_inverse_transform.name}'] = label_binarizer_inverse_transform
+                                         'sklearn.preprocessing.LabelBinarizer',
+                                         {'y': None,
+                                          'threshold': None},
+                                         False,
+                                         CallType.FUNCTION,
+                                         [pd_dataframe])
+packages[
+    f'{label_binarizer_inverse_transform.library_path}.{label_binarizer_inverse_transform.name}'] = label_binarizer_inverse_transform
 
 label_binarizer_fit = Call('fit',
                            'sklearn.preprocessing.LabelBinarizer',
-                           {'y': None,},
+                           {'y': None, },
                            False,
                            CallType.FUNCTION,
                            [label_binarizer])
@@ -1343,9 +1361,9 @@ packages[f'{standard_scaler_fit.library_path}.{standard_scaler_fit.name}'] = sta
 
 # sklearn # preprocessing # add_dummy_feature
 add_dummy_feature = Call('add_dummy_feature',
-                       'sklearn.preprocessing',
-                       {'X': None,
-                        'value': None},
+                         'sklearn.preprocessing',
+                         {'X': None,
+                          'value': None},
                          False,
                          CallType.FUNCTION,
                          [pd_dataframe])
@@ -1364,51 +1382,51 @@ packages[f'{binarize.library_path}.{binarize.name}'] = binarize
 
 # sklearn # preprocessing # label_binarize
 label_binarize = Call('label_binarize',
-                'sklearn.preprocessing',
-                {'y': None,
-                 'classes': None,
-                 'neg_label': 0,
-                 'pos_label': 1,
-                 'sparse_output': False},
-                False,
-                CallType.FUNCTION,
-                [pd_dataframe])
+                      'sklearn.preprocessing',
+                      {'y': None,
+                       'classes': None,
+                       'neg_label': 0,
+                       'pos_label': 1,
+                       'sparse_output': False},
+                      False,
+                      CallType.FUNCTION,
+                      [pd_dataframe])
 packages[f'{label_binarize.library_path}.{label_binarize.name}'] = label_binarize
 
 # sklearn # preprocessing # maxabs_scale
 maxabs_scale = Call('maxabs_scale',
-                'sklearn.preprocessing',
-                {'X': None,
-                 'axis': 0,
-                 'copy': True},
-                False,
-                CallType.FUNCTION,
-                [pd_dataframe])
+                    'sklearn.preprocessing',
+                    {'X': None,
+                     'axis': 0,
+                     'copy': True},
+                    False,
+                    CallType.FUNCTION,
+                    [pd_dataframe])
 packages[f'{maxabs_scale.library_path}.{maxabs_scale.name}'] = maxabs_scale
 
 # sklearn # preprocessing # maxabs_scale
 minmax_scale = Call('minmax_scale',
-                'sklearn.preprocessing',
-                {'X': None,
-                 'feature_range': (0,1),
-                 'axis': 0,
-                 'copy': True},
-                False,
-                CallType.FUNCTION,
-                [pd_dataframe])
+                    'sklearn.preprocessing',
+                    {'X': None,
+                     'feature_range': (0, 1),
+                     'axis': 0,
+                     'copy': True},
+                    False,
+                    CallType.FUNCTION,
+                    [pd_dataframe])
 packages[f'{minmax_scale.library_path}.{minmax_scale.name}'] = minmax_scale
 
 # sklearn # preprocessing # normalize
 normalize = Call('normalize',
-                'sklearn.preprocessing',
-                {'X': None,
-                 'norm': 'l2',
-                 'axis': 1,
-                 'copy': True,
-                 'return_norm': False},
-                False,
-                CallType.FUNCTION,
-                [pd_dataframe])
+                 'sklearn.preprocessing',
+                 {'X': None,
+                  'norm': 'l2',
+                  'axis': 1,
+                  'copy': True,
+                  'return_norm': False},
+                 False,
+                 CallType.FUNCTION,
+                 [pd_dataframe])
 packages[f'{normalize.library_path}.{normalize.name}'] = normalize
 
 # sklearn # preprocessing # quantile_transform
@@ -1505,47 +1523,49 @@ min_max_scaler_fit = Call('fit',
 packages[f'{min_max_scaler_fit.library_path}.{min_max_scaler_fit.name}'] = min_max_scaler_fit
 
 min_max_scaler_get_params = Call('get_params',
-                           'sklearn.preprocessing.MinMaxScaler',
-                           {'deep': True},
-                           False,
-                           CallType.FUNCTION,
-                           [dataframe_from_dict])
+                                 'sklearn.preprocessing.MinMaxScaler',
+                                 {'deep': True},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [dataframe_from_dict])
 packages[
     f'{min_max_scaler_get_params.library_path}.{min_max_scaler_get_params.name}'] = min_max_scaler_get_params
 
 min_max_scaler_set_params = Call('set_params',
-                           'sklearn.preprocessing.MinMaxScaler',
-                           {'**params': None},
-                           False,
-                           CallType.FUNCTION,
-                           [min_max_scaler])
+                                 'sklearn.preprocessing.MinMaxScaler',
+                                 {'**params': None},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [min_max_scaler])
 packages[
     f'{min_max_scaler_set_params.library_path}.{min_max_scaler_set_params.name}'] = min_max_scaler_set_params
 
 min_max_scaler_inverse_transform = Call('inverse_transform',
-                                 'sklearn.preprocessing.MinMaxScaler',
-                                 {'X': None},
-                                 False,
-                                 CallType.FUNCTION,
-                                 [pd_dataframe])
-packages[f'{min_max_scaler_inverse_transform.library_path}.{min_max_scaler_inverse_transform.name}'] = min_max_scaler_inverse_transform
+                                        'sklearn.preprocessing.MinMaxScaler',
+                                        {'X': None},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [pd_dataframe])
+packages[
+    f'{min_max_scaler_inverse_transform.library_path}.{min_max_scaler_inverse_transform.name}'] = min_max_scaler_inverse_transform
 
 min_max_scaler_partial_fit = Call('partial_fit',
-                          'sklearn.preprocessing.MinMaxScaler',
-                          {'X': None,
-                           'y': None},
-                          False,
-                          CallType.FUNCTION,
-                          [min_max_scaler])
+                                  'sklearn.preprocessing.MinMaxScaler',
+                                  {'X': None,
+                                   'y': None},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [min_max_scaler])
 packages[f'{min_max_scaler_partial_fit.library_path}.{min_max_scaler_partial_fit.name}'] = min_max_scaler_partial_fit
 
 min_max_scaler_get_feature_names_out = Call('get_feature_names_out',
-                          'sklearn.preprocessing.MinMaxScaler',
-                          {'input_features': None},
-                          False,
-                          CallType.FUNCTION,
-                          [pd_dataframe])
-packages[f'{min_max_scaler_get_feature_names_out.library_path}.{min_max_scaler_get_feature_names_out.name}'] = min_max_scaler_get_feature_names_out
+                                            'sklearn.preprocessing.MinMaxScaler',
+                                            {'input_features': None},
+                                            False,
+                                            CallType.FUNCTION,
+                                            [pd_dataframe])
+packages[
+    f'{min_max_scaler_get_feature_names_out.library_path}.{min_max_scaler_get_feature_names_out.name}'] = min_max_scaler_get_feature_names_out
 
 # sklearn # preprocessing # Normalizer
 normalizer = Call('Normalizer',
@@ -1586,20 +1606,20 @@ normalizer_fit = Call('fit',
 packages[f'{normalizer_fit.library_path}.{normalizer_fit.name}'] = normalizer_fit
 
 normalizer_get_params = Call('get_params',
-                            'sklearn.preprocessing.Normalizer',
-                            {'deep': True},
-                            False,
-                            CallType.FUNCTION,
-                            [dataframe_from_dict])
+                             'sklearn.preprocessing.Normalizer',
+                             {'deep': True},
+                             False,
+                             CallType.FUNCTION,
+                             [dataframe_from_dict])
 packages[
     f'{normalizer_get_params.library_path}.{normalizer_get_params.name}'] = normalizer_get_params
 
 normalizer_set_params = Call('set_params',
-                            'sklearn.preprocessing.Normalizer',
-                            {'**params': None},
-                            False,
-                            CallType.FUNCTION,
-                            [normalizer])
+                             'sklearn.preprocessing.Normalizer',
+                             {'**params': None},
+                             False,
+                             CallType.FUNCTION,
+                             [normalizer])
 packages[
     f'{normalizer_set_params.library_path}.{normalizer_set_params.name}'] = normalizer_set_params
 
@@ -1609,7 +1629,8 @@ normalizer_get_feature_names_out = Call('get_feature_names_out',
                                         False,
                                         CallType.FUNCTION,
                                         [pd_dataframe])
-packages[f'{normalizer_get_feature_names_out.library_path}.{normalizer_get_feature_names_out.name}'] = normalizer_get_feature_names_out
+packages[
+    f'{normalizer_get_feature_names_out.library_path}.{normalizer_get_feature_names_out.name}'] = normalizer_get_feature_names_out
 
 # sklearn # preprocessing # OneHotEncoder
 one_hot_encoder = Call('OneHotEncoder',
@@ -1636,11 +1657,11 @@ packages[
     f'{one_hot_encoder_fit_transform.library_path}.{one_hot_encoder_fit_transform.name}'] = one_hot_encoder_fit_transform
 
 one_hot_encoder_inverse_transform = Call('inverse_transform',
-                                     'sklearn.preprocessing.OneHotEncoder',
-                                     {'X': None},
-                                     False,
-                                     CallType.FUNCTION,
-                                     [pd_dataframe])
+                                         'sklearn.preprocessing.OneHotEncoder',
+                                         {'X': None},
+                                         False,
+                                         CallType.FUNCTION,
+                                         [pd_dataframe])
 packages[
     f'{one_hot_encoder_inverse_transform.library_path}.{one_hot_encoder_inverse_transform.name}'] = one_hot_encoder_inverse_transform
 
@@ -1662,38 +1683,40 @@ one_hot_encoder_fit = Call('fit',
 packages[f'{one_hot_encoder_fit.library_path}.{one_hot_encoder_fit.name}'] = one_hot_encoder_fit
 
 one_hot_encoder_get_params = Call('get_params',
-                            'sklearn.preprocessing.OneHotEncoder',
-                            {'deep': True},
-                            False,
-                            CallType.FUNCTION,
-                            [dataframe_from_dict])
+                                  'sklearn.preprocessing.OneHotEncoder',
+                                  {'deep': True},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [dataframe_from_dict])
 packages[
     f'{one_hot_encoder_get_params.library_path}.{one_hot_encoder_get_params.name}'] = one_hot_encoder_get_params
 
 one_hot_encoder_set_params = Call('set_params',
-                            'sklearn.preprocessing.OneHotEncoder',
-                            {'**params': None},
-                            False,
-                            CallType.FUNCTION,
-                            [one_hot_encoder])
+                                  'sklearn.preprocessing.OneHotEncoder',
+                                  {'**params': None},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [one_hot_encoder])
 packages[
     f'{one_hot_encoder_set_params.library_path}.{one_hot_encoder_set_params.name}'] = one_hot_encoder_set_params
 
 one_hot_encoder_get_feature_names_out = Call('get_feature_names_out',
-                                        'sklearn.preprocessing.OneHotEncoder',
-                                        {'input_features': None},
-                                        False,
-                                        CallType.FUNCTION,
-                                        [pd_dataframe])
-packages[f'{one_hot_encoder_get_feature_names_out.library_path}.{one_hot_encoder_get_feature_names_out.name}'] = one_hot_encoder_get_feature_names_out
+                                             'sklearn.preprocessing.OneHotEncoder',
+                                             {'input_features': None},
+                                             False,
+                                             CallType.FUNCTION,
+                                             [pd_dataframe])
+packages[
+    f'{one_hot_encoder_get_feature_names_out.library_path}.{one_hot_encoder_get_feature_names_out.name}'] = one_hot_encoder_get_feature_names_out
 
 one_hot_encoder_get_feature_names = Call('get_feature_names',
-                                        'sklearn.preprocessing.OneHotEncoder',
-                                        {'input_features': None},
-                                        False,
-                                        CallType.FUNCTION,
-                                        [pd_dataframe])
-packages[f'{one_hot_encoder_get_feature_names.library_path}.{one_hot_encoder_get_feature_names.name}'] = one_hot_encoder_get_feature_names
+                                         'sklearn.preprocessing.OneHotEncoder',
+                                         {'input_features': None},
+                                         False,
+                                         CallType.FUNCTION,
+                                         [pd_dataframe])
+packages[
+    f'{one_hot_encoder_get_feature_names.library_path}.{one_hot_encoder_get_feature_names.name}'] = one_hot_encoder_get_feature_names
 
 # sklearn # preprocessing # OrdinalEncoder
 ordinal_encoder = Call('OrdinalEncoder',
@@ -1719,11 +1742,11 @@ packages[
     f'{ordinal_encoder_fit_transform.library_path}.{ordinal_encoder_fit_transform.name}'] = ordinal_encoder_fit_transform
 
 ordinal_encoder_inverse_transform = Call('inverse_transform',
-                                     'sklearn.preprocessing.OrdinalEncoder',
-                                     {'X': None},
-                                     False,
-                                     CallType.FUNCTION,
-                                     [pd_dataframe])
+                                         'sklearn.preprocessing.OrdinalEncoder',
+                                         {'X': None},
+                                         False,
+                                         CallType.FUNCTION,
+                                         [pd_dataframe])
 packages[
     f'{ordinal_encoder_inverse_transform.library_path}.{ordinal_encoder_inverse_transform.name}'] = ordinal_encoder_inverse_transform
 
@@ -1745,174 +1768,178 @@ ordinal_encoder_fit = Call('fit',
 packages[f'{ordinal_encoder_fit.library_path}.{ordinal_encoder_fit.name}'] = ordinal_encoder_fit
 
 ordinal_encoder_get_params = Call('get_params',
-                            'sklearn.preprocessing.OrdinalEncoder',
-                            {'deep': True},
-                            False,
-                            CallType.FUNCTION,
-                            [dataframe_from_dict])
+                                  'sklearn.preprocessing.OrdinalEncoder',
+                                  {'deep': True},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [dataframe_from_dict])
 packages[
     f'{ordinal_encoder_get_params.library_path}.{ordinal_encoder_get_params.name}'] = ordinal_encoder_get_params
 
 ordinal_encoder_set_params = Call('set_params',
-                            'sklearn.preprocessing.OrdinalEncoder',
-                            {'**params': None},
-                            False,
-                            CallType.FUNCTION,
-                            [ordinal_encoder])
+                                  'sklearn.preprocessing.OrdinalEncoder',
+                                  {'**params': None},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [ordinal_encoder])
 packages[
     f'{ordinal_encoder_set_params.library_path}.{ordinal_encoder_set_params.name}'] = ordinal_encoder_set_params
 
 ordinal_encoder_get_feature_names_out = Call('get_feature_names_out',
-                                        'sklearn.preprocessing.OrdinalEncoder',
-                                        {'input_features': None},
-                                        False,
-                                        CallType.FUNCTION,
-                                        [pd_dataframe])
-packages[f'{ordinal_encoder_get_feature_names_out.library_path}.{ordinal_encoder_get_feature_names_out.name}'] = ordinal_encoder_get_feature_names_out
+                                             'sklearn.preprocessing.OrdinalEncoder',
+                                             {'input_features': None},
+                                             False,
+                                             CallType.FUNCTION,
+                                             [pd_dataframe])
+packages[
+    f'{ordinal_encoder_get_feature_names_out.library_path}.{ordinal_encoder_get_feature_names_out.name}'] = ordinal_encoder_get_feature_names_out
 
 # sklearn # preprocessing # PolynomialFeatures
 polynomial_features = Call('PolynomialFeatures',
-                            'sklearn.preprocessing',
-                            {'degree': 2,
-                             'interaction_only': False,
-                             'include_bias': True,
-                             'order': 'C'},
-                            True,
-                            CallType.CLASS)
+                           'sklearn.preprocessing',
+                           {'degree': 2,
+                            'interaction_only': False,
+                            'include_bias': True,
+                            'order': 'C'},
+                           True,
+                           CallType.CLASS)
 packages[f'{polynomial_features.library_path}.{polynomial_features.name}'] = polynomial_features
 
 polynomial_features_fit_transform = Call('fit_transform',
-                                     'sklearn.preprocessing.PolynomialFeatures',
-                                     {'X': None,
-                                      'y': None,
-                                      '**fit_params': None},
-                                     False,
-                                     CallType.FUNCTION,
-                                     [pd_dataframe])
+                                         'sklearn.preprocessing.PolynomialFeatures',
+                                         {'X': None,
+                                          'y': None,
+                                          '**fit_params': None},
+                                         False,
+                                         CallType.FUNCTION,
+                                         [pd_dataframe])
 packages[
     f'{polynomial_features_fit_transform.library_path}.{polynomial_features_fit_transform.name}'] = polynomial_features_fit_transform
 
 polynomial_features_transform = Call('transform',
-                                 'sklearn.preprocessing.PolynomialFeatures',
-                                 {'X': None},
-                                 False,
-                                 CallType.FUNCTION,
-                                 [pd_dataframe])
-packages[f'{polynomial_features_transform.library_path}.{polynomial_features_transform.name}'] = polynomial_features_transform
-
-polynomial_features_fit = Call('fit',
-                           'sklearn.preprocessing.PolynomialFeatures',
-                           {'X': None,
-                            'y': None},
-                           False,
-                           CallType.FUNCTION,
-                           [polynomial_features])
-packages[f'{polynomial_features_fit.library_path}.{polynomial_features_fit.name}'] = polynomial_features_fit
-
-polynomial_features_get_params = Call('get_params',
-                            'sklearn.preprocessing.PolynomialFeatures',
-                            {'deep': True},
-                            False,
-                            CallType.FUNCTION,
-                            [dataframe_from_dict])
-packages[
-    f'{polynomial_features_get_params.library_path}.{polynomial_features_get_params.name}'] = polynomial_features_get_params
-
-polynomial_features_set_params = Call('set_params',
-                            'sklearn.preprocessing.PolynomialFeatures',
-                            {'**params': None},
-                            False,
-                            CallType.FUNCTION,
-                            [polynomial_features])
-packages[
-    f'{polynomial_features_set_params.library_path}.{polynomial_features_set_params.name}'] = polynomial_features_set_params
-
-polynomial_features_get_feature_names_out = Call('get_feature_names_out',
-                                        'sklearn.preprocessing.PolynomialFeatures',
-                                        {'input_features': None},
-                                        False,
-                                        CallType.FUNCTION,
-                                        [pd_dataframe])
-packages[f'{polynomial_features_get_feature_names_out.library_path}.{polynomial_features_get_feature_names_out.name}'] = polynomial_features_get_feature_names_out
-
-# sklearn # preprocessing # PowerTransformer
-power_transformer = Call('PowerTransformer',
-                            'sklearn.preprocessing',
-                            {'method': 'yeo-johnson',
-                             'standardize': True,
-                             'copy': True},
-                            True,
-                            CallType.CLASS)
-packages[f'{power_transformer.library_path}.{power_transformer.name}'] = power_transformer
-
-power_transformer_fit_transform = Call('fit_transform',
-                                     'sklearn.preprocessing.PowerTransformer',
-                                     {'X': None,
-                                      'y': None},
-                                     False,
-                                     CallType.FUNCTION,
-                                     [pd_dataframe])
-packages[
-    f'{power_transformer_fit_transform.library_path}.{power_transformer_fit_transform.name}'] = power_transformer_fit_transform
-
-power_transformer_transform = Call('transform',
-                                 'sklearn.preprocessing.PowerTransformer',
-                                 {'X': None},
-                                 False,
-                                 CallType.FUNCTION,
-                                 [pd_dataframe])
-packages[f'{power_transformer_transform.library_path}.{power_transformer_transform.name}'] = power_transformer_transform
-
-power_transformer_fit = Call('fit',
-                           'sklearn.preprocessing.PowerTransformer',
-                           {'X': None,
-                            'y': None},
-                           False,
-                           CallType.FUNCTION,
-                           [power_transformer])
-packages[f'{power_transformer_fit.library_path}.{power_transformer_fit.name}'] = power_transformer_fit
-
-power_transformer_inverse_transform = Call('inverse_transform',
-                                     'sklearn.preprocessing.PowerTransformer',
+                                     'sklearn.preprocessing.PolynomialFeatures',
                                      {'X': None},
                                      False,
                                      CallType.FUNCTION,
                                      [pd_dataframe])
 packages[
+    f'{polynomial_features_transform.library_path}.{polynomial_features_transform.name}'] = polynomial_features_transform
+
+polynomial_features_fit = Call('fit',
+                               'sklearn.preprocessing.PolynomialFeatures',
+                               {'X': None,
+                                'y': None},
+                               False,
+                               CallType.FUNCTION,
+                               [polynomial_features])
+packages[f'{polynomial_features_fit.library_path}.{polynomial_features_fit.name}'] = polynomial_features_fit
+
+polynomial_features_get_params = Call('get_params',
+                                      'sklearn.preprocessing.PolynomialFeatures',
+                                      {'deep': True},
+                                      False,
+                                      CallType.FUNCTION,
+                                      [dataframe_from_dict])
+packages[
+    f'{polynomial_features_get_params.library_path}.{polynomial_features_get_params.name}'] = polynomial_features_get_params
+
+polynomial_features_set_params = Call('set_params',
+                                      'sklearn.preprocessing.PolynomialFeatures',
+                                      {'**params': None},
+                                      False,
+                                      CallType.FUNCTION,
+                                      [polynomial_features])
+packages[
+    f'{polynomial_features_set_params.library_path}.{polynomial_features_set_params.name}'] = polynomial_features_set_params
+
+polynomial_features_get_feature_names_out = Call('get_feature_names_out',
+                                                 'sklearn.preprocessing.PolynomialFeatures',
+                                                 {'input_features': None},
+                                                 False,
+                                                 CallType.FUNCTION,
+                                                 [pd_dataframe])
+packages[
+    f'{polynomial_features_get_feature_names_out.library_path}.{polynomial_features_get_feature_names_out.name}'] = polynomial_features_get_feature_names_out
+
+# sklearn # preprocessing # PowerTransformer
+power_transformer = Call('PowerTransformer',
+                         'sklearn.preprocessing',
+                         {'method': 'yeo-johnson',
+                          'standardize': True,
+                          'copy': True},
+                         True,
+                         CallType.CLASS)
+packages[f'{power_transformer.library_path}.{power_transformer.name}'] = power_transformer
+
+power_transformer_fit_transform = Call('fit_transform',
+                                       'sklearn.preprocessing.PowerTransformer',
+                                       {'X': None,
+                                        'y': None},
+                                       False,
+                                       CallType.FUNCTION,
+                                       [pd_dataframe])
+packages[
+    f'{power_transformer_fit_transform.library_path}.{power_transformer_fit_transform.name}'] = power_transformer_fit_transform
+
+power_transformer_transform = Call('transform',
+                                   'sklearn.preprocessing.PowerTransformer',
+                                   {'X': None},
+                                   False,
+                                   CallType.FUNCTION,
+                                   [pd_dataframe])
+packages[f'{power_transformer_transform.library_path}.{power_transformer_transform.name}'] = power_transformer_transform
+
+power_transformer_fit = Call('fit',
+                             'sklearn.preprocessing.PowerTransformer',
+                             {'X': None,
+                              'y': None},
+                             False,
+                             CallType.FUNCTION,
+                             [power_transformer])
+packages[f'{power_transformer_fit.library_path}.{power_transformer_fit.name}'] = power_transformer_fit
+
+power_transformer_inverse_transform = Call('inverse_transform',
+                                           'sklearn.preprocessing.PowerTransformer',
+                                           {'X': None},
+                                           False,
+                                           CallType.FUNCTION,
+                                           [pd_dataframe])
+packages[
     f'{power_transformer_inverse_transform.library_path}.{power_transformer_inverse_transform.name}'] = power_transformer_inverse_transform
 
 power_transformer_get_params = Call('get_params',
-                            'sklearn.preprocessing.PowerTransformer',
-                            {'deep': True},
-                            False,
-                            CallType.FUNCTION,
-                            [dataframe_from_dict])
+                                    'sklearn.preprocessing.PowerTransformer',
+                                    {'deep': True},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [dataframe_from_dict])
 packages[
     f'{power_transformer_get_params.library_path}.{power_transformer_get_params.name}'] = power_transformer_get_params
 
 power_transformer_set_params = Call('set_params',
-                            'sklearn.preprocessing.PowerTransformer',
-                            {'**params': None},
-                            False,
-                            CallType.FUNCTION,
-                            [power_transformer])
+                                    'sklearn.preprocessing.PowerTransformer',
+                                    {'**params': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [power_transformer])
 packages[
     f'{power_transformer_set_params.library_path}.{power_transformer_set_params.name}'] = power_transformer_set_params
 
 power_transformer_get_feature_names_out = Call('get_feature_names_out',
-                                        'sklearn.preprocessing.PowerTransformer',
-                                        {'input_features': None},
-                                        False,
-                                        CallType.FUNCTION,
-                                        [pd_dataframe])
-packages[f'{power_transformer_get_feature_names_out.library_path}.{power_transformer_get_feature_names_out.name}'] = power_transformer_get_feature_names_out
+                                               'sklearn.preprocessing.PowerTransformer',
+                                               {'input_features': None},
+                                               False,
+                                               CallType.FUNCTION,
+                                               [pd_dataframe])
+packages[
+    f'{power_transformer_get_feature_names_out.library_path}.{power_transformer_get_feature_names_out.name}'] = power_transformer_get_feature_names_out
 
 # sklearn # preprocessing # QuantileTransformer
 quantile_transformer = Call('QuantileTransformer',
                             'sklearn.preprocessing',
                             {'n_quantiles': 1000,
                              'output_distribution': 'uniform',
-                             'ignore_implicit_zeros':False,
+                             'ignore_implicit_zeros': False,
                              'subsample': 1e5,
                              'random_state': None,
                              'copy': True},
@@ -1921,67 +1948,69 @@ quantile_transformer = Call('QuantileTransformer',
 packages[f'{quantile_transformer.library_path}.{quantile_transformer.name}'] = quantile_transformer
 
 quantile_transformer_fit_transform = Call('fit_transform',
-                                     'sklearn.preprocessing.QuantileTransformer',
-                                     {'X': None,
-                                      'y': None,
-                                      '**fit_params': None},
-                                     False,
-                                     CallType.FUNCTION,
-                                     [pd_dataframe])
+                                          'sklearn.preprocessing.QuantileTransformer',
+                                          {'X': None,
+                                           'y': None,
+                                           '**fit_params': None},
+                                          False,
+                                          CallType.FUNCTION,
+                                          [pd_dataframe])
 packages[
     f'{quantile_transformer_fit_transform.library_path}.{quantile_transformer_fit_transform.name}'] = quantile_transformer_fit_transform
 
 quantile_transformer_transform = Call('transform',
-                                 'sklearn.preprocessing.QuantileTransformer',
-                                 {'X': None},
-                                 False,
-                                 CallType.FUNCTION,
-                                 [pd_dataframe])
-packages[f'{quantile_transformer_transform.library_path}.{quantile_transformer_transform.name}'] = quantile_transformer_transform
+                                      'sklearn.preprocessing.QuantileTransformer',
+                                      {'X': None},
+                                      False,
+                                      CallType.FUNCTION,
+                                      [pd_dataframe])
+packages[
+    f'{quantile_transformer_transform.library_path}.{quantile_transformer_transform.name}'] = quantile_transformer_transform
 
 quantile_transformer_fit = Call('fit',
-                           'sklearn.preprocessing.QuantileTransformer',
-                           {'X': None,
-                            'y': None},
-                           False,
-                           CallType.FUNCTION,
-                           [quantile_transformer])
+                                'sklearn.preprocessing.QuantileTransformer',
+                                {'X': None,
+                                 'y': None},
+                                False,
+                                CallType.FUNCTION,
+                                [quantile_transformer])
 packages[f'{quantile_transformer_fit.library_path}.{quantile_transformer_fit.name}'] = quantile_transformer_fit
 
 quantile_transformer_inverse_transform = Call('inverse_transform',
-                                     'sklearn.preprocessing.QuantileTransformer',
-                                     {'X': None},
-                                     False,
-                                     CallType.FUNCTION,
-                                     [pd_dataframe])
+                                              'sklearn.preprocessing.QuantileTransformer',
+                                              {'X': None},
+                                              False,
+                                              CallType.FUNCTION,
+                                              [pd_dataframe])
 packages[
     f'{quantile_transformer_inverse_transform.library_path}.{quantile_transformer_inverse_transform.name}'] = quantile_transformer_inverse_transform
 
 quantile_transformer_get_params = Call('get_params',
-                            'sklearn.preprocessing.QuantileTransformer',
-                            {'deep': True},
-                            False,
-                            CallType.FUNCTION,
-                            [dataframe_from_dict])
+                                       'sklearn.preprocessing.QuantileTransformer',
+                                       {'deep': True},
+                                       False,
+                                       CallType.FUNCTION,
+                                       [dataframe_from_dict])
 packages[
     f'{quantile_transformer_get_params.library_path}.{quantile_transformer_get_params.name}'] = quantile_transformer_get_params
 
 quantile_transformer_set_params = Call('set_params',
-                            'sklearn.preprocessing.QuantileTransformer',
-                            {'**params': None},
-                            False,
-                            CallType.FUNCTION,
-                            [quantile_transformer])
+                                       'sklearn.preprocessing.QuantileTransformer',
+                                       {'**params': None},
+                                       False,
+                                       CallType.FUNCTION,
+                                       [quantile_transformer])
 packages[
     f'{quantile_transformer_set_params.library_path}.{quantile_transformer_set_params.name}'] = quantile_transformer_set_params
 
 quantile_transformer_get_feature_names_out = Call('get_feature_names_out',
-                                        'sklearn.preprocessing.QuantileTransformer',
-                                        {'input_features': None},
-                                        False,
-                                        CallType.FUNCTION,
-                                        [pd_dataframe])
-packages[f'{quantile_transformer_get_feature_names_out.library_path}.{quantile_transformer_get_feature_names_out.name}'] = quantile_transformer_get_feature_names_out
+                                                  'sklearn.preprocessing.QuantileTransformer',
+                                                  {'input_features': None},
+                                                  False,
+                                                  CallType.FUNCTION,
+                                                  [pd_dataframe])
+packages[
+    f'{quantile_transformer_get_feature_names_out.library_path}.{quantile_transformer_get_feature_names_out.name}'] = quantile_transformer_get_feature_names_out
 
 # sklearn # preprocessing # RobustScaler
 robust_scaler = Call('RobustScaler',
@@ -2023,107 +2052,110 @@ robust_scaler_fit = Call('fit',
 packages[f'{robust_scaler_fit.library_path}.{robust_scaler_fit.name}'] = robust_scaler_fit
 
 robust_scaler_inverse_transform = Call('inverse_transform',
-                                     'sklearn.preprocessing.RobustScaler',
-                                     {'X': None},
-                                     False,
-                                     CallType.FUNCTION,
-                                     [pd_dataframe])
+                                       'sklearn.preprocessing.RobustScaler',
+                                       {'X': None},
+                                       False,
+                                       CallType.FUNCTION,
+                                       [pd_dataframe])
 packages[
     f'{robust_scaler_inverse_transform.library_path}.{robust_scaler_inverse_transform.name}'] = robust_scaler_inverse_transform
 
 robust_scaler_get_params = Call('get_params',
-                            'sklearn.preprocessing.RobustScaler',
-                            {'deep': True},
-                            False,
-                            CallType.FUNCTION,
-                            [dataframe_from_dict])
+                                'sklearn.preprocessing.RobustScaler',
+                                {'deep': True},
+                                False,
+                                CallType.FUNCTION,
+                                [dataframe_from_dict])
 packages[
     f'{robust_scaler_get_params.library_path}.{robust_scaler_get_params.name}'] = robust_scaler_get_params
 
 robust_scaler_set_params = Call('set_params',
-                            'sklearn.preprocessing.RobustScaler',
-                            {'**params': None},
-                            False,
-                            CallType.FUNCTION,
-                            [robust_scaler])
+                                'sklearn.preprocessing.RobustScaler',
+                                {'**params': None},
+                                False,
+                                CallType.FUNCTION,
+                                [robust_scaler])
 packages[
     f'{robust_scaler_set_params.library_path}.{robust_scaler_set_params.name}'] = robust_scaler_set_params
 
 robust_scaler_get_feature_names_out = Call('get_feature_names_out',
-                                        'sklearn.preprocessing.RobustScaler',
-                                        {'input_features': None},
-                                        False,
-                                        CallType.FUNCTION,
-                                        [pd_dataframe])
-packages[f'{robust_scaler_get_feature_names_out.library_path}.{robust_scaler_get_feature_names_out.name}'] = robust_scaler_get_feature_names_out
+                                           'sklearn.preprocessing.RobustScaler',
+                                           {'input_features': None},
+                                           False,
+                                           CallType.FUNCTION,
+                                           [pd_dataframe])
+packages[
+    f'{robust_scaler_get_feature_names_out.library_path}.{robust_scaler_get_feature_names_out.name}'] = robust_scaler_get_feature_names_out
 
 # sklearn # preprocessing # SplineTransformer
 spline_transformer = Call('SplineTransformer',
-                     'sklearn.preprocessing',
-                     {'n_knots': 5,
-                      'degree': 3,
-                      'knots': 'uniform',
-                      'extrapolation': 'constant',
-                      'include_bias': True,
-                      'order': 'C'},
-                     True,
-                     CallType.CLASS)
+                          'sklearn.preprocessing',
+                          {'n_knots': 5,
+                           'degree': 3,
+                           'knots': 'uniform',
+                           'extrapolation': 'constant',
+                           'include_bias': True,
+                           'order': 'C'},
+                          True,
+                          CallType.CLASS)
 packages[f'{spline_transformer.library_path}.{spline_transformer.name}'] = spline_transformer
 
 spline_transformer_fit_transform = Call('fit_transform',
-                                   'sklearn.preprocessing.SplineTransformer',
-                                   {'X': None,
-                                    'y': None,
-                                    '**fit_params': None},
-                                   False,
-                                   CallType.FUNCTION,
-                                   [pd_dataframe])
+                                        'sklearn.preprocessing.SplineTransformer',
+                                        {'X': None,
+                                         'y': None,
+                                         '**fit_params': None},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [pd_dataframe])
 packages[
     f'{spline_transformer_fit_transform.library_path}.{spline_transformer_fit_transform.name}'] = spline_transformer_fit_transform
 
 spline_transformer_transform = Call('transform',
-                               'sklearn.preprocessing.SplineTransformer',
-                               {'X': None},
-                               False,
-                               CallType.FUNCTION,
-                               [pd_dataframe])
-packages[f'{spline_transformer_transform.library_path}.{spline_transformer_transform.name}'] = spline_transformer_transform
+                                    'sklearn.preprocessing.SplineTransformer',
+                                    {'X': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[
+    f'{spline_transformer_transform.library_path}.{spline_transformer_transform.name}'] = spline_transformer_transform
 
 spline_transformer_fit = Call('fit',
-                         'sklearn.preprocessing.SplineTransformer',
-                         {'X': None,
-                          'y': None,
-                          'sample_weight': None},
-                         False,
-                         CallType.FUNCTION,
-                         [spline_transformer])
+                              'sklearn.preprocessing.SplineTransformer',
+                              {'X': None,
+                               'y': None,
+                               'sample_weight': None},
+                              False,
+                              CallType.FUNCTION,
+                              [spline_transformer])
 packages[f'{spline_transformer_fit.library_path}.{spline_transformer_fit.name}'] = spline_transformer_fit
 
 spline_transformer_get_params = Call('get_params',
-                            'sklearn.preprocessing.SplineTransformer',
-                            {'deep': True},
-                            False,
-                            CallType.FUNCTION,
-                            [dataframe_from_dict])
+                                     'sklearn.preprocessing.SplineTransformer',
+                                     {'deep': True},
+                                     False,
+                                     CallType.FUNCTION,
+                                     [dataframe_from_dict])
 packages[
     f'{spline_transformer_get_params.library_path}.{spline_transformer_get_params.name}'] = spline_transformer_get_params
 
 spline_transformer_set_params = Call('set_params',
-                            'sklearn.preprocessing.SplineTransformer',
-                            {'**params': None},
-                            False,
-                            CallType.FUNCTION,
-                            [spline_transformer])
+                                     'sklearn.preprocessing.SplineTransformer',
+                                     {'**params': None},
+                                     False,
+                                     CallType.FUNCTION,
+                                     [spline_transformer])
 packages[
     f'{spline_transformer_set_params.library_path}.{spline_transformer_set_params.name}'] = spline_transformer_set_params
 
 spline_transformer_get_feature_names_out = Call('get_feature_names_out',
-                                        'sklearn.preprocessing.SplineTransformer',
-                                        {'input_features': None},
-                                        False,
-                                        CallType.FUNCTION,
-                                        [pd_dataframe])
-packages[f'{spline_transformer_get_feature_names_out.library_path}.{spline_transformer_get_feature_names_out.name}'] = spline_transformer_get_feature_names_out
+                                                'sklearn.preprocessing.SplineTransformer',
+                                                {'input_features': None},
+                                                False,
+                                                CallType.FUNCTION,
+                                                [pd_dataframe])
+packages[
+    f'{spline_transformer_get_feature_names_out.library_path}.{spline_transformer_get_feature_names_out.name}'] = spline_transformer_get_feature_names_out
 
 # sklearn.preprocessing.MaxAbsScaler
 max_abs_scaler = Call('MaxAbsScaler',
@@ -2134,30 +2166,31 @@ max_abs_scaler = Call('MaxAbsScaler',
 packages[f'{max_abs_scaler.library_path}.{max_abs_scaler.name}'] = max_abs_scaler
 
 max_abs_scaler_get_params = Call('get_params',
-                           'sklearn.preprocessing.MaxAbsScaler',
-                           {'deep': True},
-                           False,
-                           CallType.FUNCTION,
-                           [dataframe_from_dict])
+                                 'sklearn.preprocessing.MaxAbsScaler',
+                                 {'deep': True},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [dataframe_from_dict])
 packages[
     f'{max_abs_scaler_get_params.library_path}.{max_abs_scaler_get_params.name}'] = max_abs_scaler_get_params
 
 max_abs_scaler_set_params = Call('set_params',
-                           'sklearn.preprocessing.MaxAbsScaler',
-                           {'**params': None},
-                           False,
-                           CallType.FUNCTION,
-                           [max_abs_scaler])
+                                 'sklearn.preprocessing.MaxAbsScaler',
+                                 {'**params': None},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [max_abs_scaler])
 packages[
     f'{max_abs_scaler_set_params.library_path}.{max_abs_scaler_set_params.name}'] = max_abs_scaler_set_params
 
 max_abs_scaler_inverse_transform = Call('inverse_transform',
-                                 'sklearn.preprocessing.MaxAbsScaler',
-                                 {'X': None},
-                                 False,
-                                 CallType.FUNCTION,
-                                 [pd_dataframe])
-packages[f'{max_abs_scaler_inverse_transform.library_path}.{max_abs_scaler_inverse_transform.name}'] = max_abs_scaler_inverse_transform
+                                        'sklearn.preprocessing.MaxAbsScaler',
+                                        {'X': None},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [pd_dataframe])
+packages[
+    f'{max_abs_scaler_inverse_transform.library_path}.{max_abs_scaler_inverse_transform.name}'] = max_abs_scaler_inverse_transform
 
 max_abs_scaler_fit_transform = Call('fit_transform',
                                     'sklearn.preprocessing.MaxAbsScaler',
@@ -2187,21 +2220,22 @@ max_abs_scaler_fit = Call('fit',
 packages[f'{max_abs_scaler_fit.library_path}.{max_abs_scaler_fit.name}'] = max_abs_scaler_fit
 
 max_abs_scaler_partial_fit = Call('partial_fit',
-                          'sklearn.preprocessing.MaxAbsScaler',
-                          {'X': None,
-                           'y': None},
-                          False,
-                          CallType.FUNCTION,
-                          [max_abs_scaler])
+                                  'sklearn.preprocessing.MaxAbsScaler',
+                                  {'X': None,
+                                   'y': None},
+                                  False,
+                                  CallType.FUNCTION,
+                                  [max_abs_scaler])
 packages[f'{max_abs_scaler_partial_fit.library_path}.{max_abs_scaler_partial_fit.name}'] = max_abs_scaler_partial_fit
 
 max_abs_scaler_get_feature_names_out = Call('get_feature_names_out',
-                          'sklearn.preprocessing.MaxAbsScaler',
-                          {'input_features': None},
-                          False,
-                          CallType.FUNCTION,
-                          [pd_dataframe])
-packages[f'{max_abs_scaler_get_feature_names_out.library_path}.{max_abs_scaler_get_feature_names_out.name}'] = max_abs_scaler_get_feature_names_out
+                                            'sklearn.preprocessing.MaxAbsScaler',
+                                            {'input_features': None},
+                                            False,
+                                            CallType.FUNCTION,
+                                            [pd_dataframe])
+packages[
+    f'{max_abs_scaler_get_feature_names_out.library_path}.{max_abs_scaler_get_feature_names_out.name}'] = max_abs_scaler_get_feature_names_out
 
 # sklearn # preprocessing # scale
 preprocessing_scale = Call('scale',
@@ -2216,8 +2250,129 @@ preprocessing_scale = Call('scale',
                            [pd_dataframe])
 packages[f'{preprocessing_scale.library_path}.{preprocessing_scale.name}'] = preprocessing_scale
 
+# sklearn # impute
+impute = Call(name='impute', library_path='sklearn', call_type=CallType.PACKAGE)
+packages['sklearn.impute'] = impute
+
+# sklearn # impute # SimpleImputer
+impute_simple_imputer = Call('SimpleImputer',
+                             'sklearn.impute',
+                             {'missing_values': float('nan'),
+                              'strategy': 'mean',
+                              'fill_value': None,
+                              'verbose': 'deprecated',
+                              'copy': True,
+                              'add_indicator': False},
+                             True,
+                             CallType.CLASS)
+packages[f'{impute_simple_imputer.library_path}.{impute_simple_imputer.name}'] = impute_simple_imputer
+
+impute_simple_imputer_fit = Call('fit',
+                                 'sklearn.impute.SimpleImputer',
+                                 {'X': None,
+                                  'y': None},
+                                 False,
+                                 CallType.FUNCTION,
+                                 [impute_simple_imputer])
+packages[
+    f'{impute_simple_imputer_fit.library_path}.{impute_simple_imputer_fit.name}'] = impute_simple_imputer_fit
+
+# sklearn # impute # IterativeImputer
+impute_iterative_imputer = Call('IterativeImputer',
+                                'sklearn.impute',
+                                {'estimator': None,
+                                 'missing_values': float('nan'),
+                                 'sample_posterior': False,
+                                 'max_iter': 10,
+                                 'tol': 0.001,
+                                 'n_nearest_features': None,
+                                 'initial_strategy': 'mean',
+                                 'imputation_order': 'ascending',
+                                 'skip_complete': False,
+                                 'min_value': float('-inf'),
+                                 'max_value': float('inf'),
+                                 'verbose': 0,
+                                 'random_state': None,
+                                 'add_indicator': False},
+                                True,
+                                CallType.CLASS)
+packages[f'{impute_iterative_imputer.library_path}.{impute_iterative_imputer.name}'] = impute_iterative_imputer
+
+impute_iterative_imputer_fit = Call('fit',
+                                    'sklearn.impute.IterativeImputer',
+                                    {'X': None,
+                                     'y': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [impute_iterative_imputer])
+packages[
+    f'{impute_iterative_imputer_fit.library_path}.{impute_iterative_imputer_fit.name}'] = impute_iterative_imputer_fit
+
+# sklearn # impute # KNNImputer
+impute_knn_imputer = Call('KNNImputer',
+                          'sklearn.impute',
+                          {'missing_values': float('nan'),
+                           'n_neighbors': 5,
+                           'weights': 'uniform',
+                           'metric': 'nan_euclidean',
+                           'copy': True,
+                           'add_indicator': False},
+                          True,
+                          CallType.CLASS)
+packages[f'{impute_knn_imputer.library_path}.{impute_knn_imputer.name}'] = impute_knn_imputer
+
+impute_knn_imputer_fit = Call('fit',
+                              'sklearn.impute.KNNImputer',
+                              {'X': None,
+                               'y': None},
+                              False,
+                              CallType.FUNCTION,
+                              [impute_knn_imputer])
+packages[
+    f'{impute_knn_imputer_fit.library_path}.{impute_knn_imputer_fit.name}'] = impute_knn_imputer_fit
+
+# fit_transform(X[, y])
+impute_knn_imputer_fit_transform = Call('fit_transform',
+                                        'sklearn.impute.KNNImputer',
+                                        {'X': None,
+                                         'y': None},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [pd_dataframe])
+packages[
+    f'{impute_knn_imputer_fit_transform.library_path}.{impute_knn_imputer_fit_transform.name}'] = impute_knn_imputer_fit_transform
+# get_feature_names_out([input_features])
+impute_knn_imputer_get_feature_names_out = Call('get_feature_names_out',
+                                                'sklearn.impute.KNNImputer',
+                                                {'input_features': None},
+                                                False,
+                                                CallType.FUNCTION,
+                                                [pd_dataframe])
+packages[
+    f'{impute_knn_imputer_get_feature_names_out.library_path}.{impute_knn_imputer_get_feature_names_out.name}'] = impute_knn_imputer_get_feature_names_out
+# get_params([deep])
+impute_knn_imputer_get_params = Call('get_params',
+                                     'sklearn.impute.KNNImputer',
+                                     {'deep': True},
+                                     False,
+                                     CallType.FUNCTION,
+                                     [pd_dataframe])
+packages[
+    f'{impute_knn_imputer_get_params.library_path}.{impute_knn_imputer_get_params.name}'] = impute_knn_imputer_get_params
+# set_params(**params)
+# transform(X)
+impute_knn_imputer_transform = Call('transform',
+                                    'sklearn.impute.KNNImputer',
+                                    {'X': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[
+    f'{impute_knn_imputer_transform.library_path}.{impute_knn_imputer_transform.name}'] = impute_knn_imputer_transform
+
 # sklearn # model_selection
-packages['sklearn.model_selection'] = Call(name='model_selection', library_path='sklearn', call_type=CallType.PACKAGE)
+model_selection = Call(name='model_selection', library_path='sklearn', call_type=CallType.PACKAGE)
+packages['sklearn.model_selection'] = model_selection
 
 train_test_split_call = Call('train_test_split',
                              'sklearn.model_selection',

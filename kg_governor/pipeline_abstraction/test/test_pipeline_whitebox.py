@@ -1,13 +1,14 @@
 import unittest
 import ast
 import pandas as pd
-from src.datatypes import GraphInformation, File as DataFile
-from src.pipeline_abstraction import NodeVisitor
+
+from src.datatypes import File as DataFile, GraphInformation
 from src.ast_package import (Name, Attribute, Constant, Call, List, Dict, Subscript, Lambda, BinOp, Tuple,
                              get_ast_package, Compare)
 from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
     AttributeComponents
 from src.Calls import packages, pd_dataframe, File
+from src.pipeline_abstraction import NodeVisitor
 import src.util as util
 
 kglids_library = "http://kglids.org/pipeline/library/"
@@ -130,7 +131,10 @@ class AstNameTest(Test):
 
     def test_analyze_call_arguments_to_extract_argument(self):
         value = "pd.DataFrame(train)"
-        self.node_visitor.files['train'] = 'train.csv'
+        self.node_visitor.graph_info.add_node(value)
+        self.node_visitor.working_file['train.csv'] = pd.DataFrame(columns=['a'])
+        self.node_visitor.files['train'] = File('train.csv')
+        self.node_visitor.graph_info.add_file(File('train.csv'))
         self.node_visitor.variables['train'] = 'here'
         call = ast.parse(value).body[0].value
         arg_components = CallArgumentsComponents(packages.get('pandas.DataFrame').parameters.keys())
@@ -139,7 +143,7 @@ class AstNameTest(Test):
         result = self.name.analyze_call_arguments(self.node_visitor, call, arg_components, call_components, 0)
 
         self.assertEqual('train', result, 'argument does not match')
-        self.assertEqual('train.csv', call_components.file, 'argument linked file is missing')
+        self.assertEqual('train.csv', call_components.file.filename, 'argument linked file is missing')
         self.assertEqual('train', arg_components.file_args[0], 'argument component missing linked file')
 
     def test_analyze_call_arguments_to_extract_argument_as_list(self):

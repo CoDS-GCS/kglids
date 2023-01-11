@@ -25,14 +25,14 @@ def main():
 
     dataset: os.DirEntry
     # loop through datasets & pipelines
-    for dataset in os.scandir('../data/kaggle'):
+    for dataset in os.scandir('../../../../CFGDemo/data/kaggle'):
         pipeline: os.DirEntry
         if dataset.is_dir():
             working_file = {}
             table: os.DirEntry
-            if not os.path.isdir(f'../kaggle_small/{dataset.name}'):
+            if not os.path.isdir(f'../../../../CFGDemo/kaggle/{dataset.name}'):
                 continue
-            for table in os.scandir(f'../kaggle_small/{dataset.name}'):
+            for table in os.scandir(f'../../../../CFGDemo/kaggle/{dataset.name}'):
                 if table.name != '.DS_Store':
                     try:
                         working_file[table.name] = pd.read_csv(table.path, nrows=1)
@@ -134,10 +134,10 @@ def pipeline_analysis(working_file, dataset: os.DirEntry, file_path, pipeline_in
     #
     # with open(f'kaggle/{output_filename}-files.json', 'w') as f:
     #     json.dump(file_elements, f)
-    if not os.path.isdir(os.path.join(output_path, output_filename)):
-        os.mkdir(os.path.join(output_path, output_filename))
+    if not os.path.isdir(os.path.join(output_path, DATASET_NAME)):
+        os.mkdir(os.path.join(output_path, DATASET_NAME))
 
-    with open(os.path.join(output_path, output_filename + '.ttl'), 'w') as f:
+    with open(os.path.join(output_path, DATASET_NAME, output_filename + '.ttl'), 'w') as f:
         f.write(build_pipeline_rdf_page(nodes, file_elements))
 
     pipeline_info['uri'] = util.create_pipeline_uri(SOURCE, DATASET_NAME, output_filename)

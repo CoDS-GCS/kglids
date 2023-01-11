@@ -4,7 +4,8 @@ from src.json_to_rdf import (create_prefix, library_call_to_rdf, read_to_rdf, ha
                              create_statement_uri, control_flow_to_rdf, build_statement_rdf,
                              build_table_rdf, build_column_rdf, build_parameter_rdf, build_library_rdf,
                              build_sub_library_rdf, build_pipeline_rdf, build_pipeline_rdf_page, build_library_rdf_page,
-                             build_default_rdf_page, title_to_rdf, date_to_rdf, author_to_rdf, source_to_rdf)
+                             build_default_rdf_page, title_to_rdf, date_to_rdf, author_to_rdf, source_to_rdf,
+                             targets_to_rdf, features_to_rdf)
 
 
 class MyTestCase(unittest.TestCase):
@@ -216,6 +217,62 @@ class MyTestCase(unittest.TestCase):
 
         self.assertEqual(expected, result)
 
+    def test_targets_to_rdf_when_no_targets_return_empty_string(self):
+        expected = ""
+        reads = []
+
+        result = targets_to_rdf(reads)
+
+        self.assertEqual(expected, result)
+
+    def test_targets_to_rdf_when_one_target_return_correct_call_without_separator(self):
+        expected = "\tpipeline:hasTarget <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n"
+        targets = ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv']
+
+        result = targets_to_rdf(targets)
+
+        self.assertEqual(expected, result)
+
+    def test_targets_to_rdf_when_more_targets_return_correct_call_with_separator(self):
+        expected = "\tpipeline:hasTarget <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>, " \
+                   "<http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv/column>;\n"
+        targets = [
+            'http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv',
+            'http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv/column'
+        ]
+
+        result = targets_to_rdf(targets)
+
+        self.assertEqual(expected, result)
+
+    def test_features_to_rdf_when_no_feature_return_empty_string(self):
+        expected = ""
+        features = []
+
+        result = features_to_rdf(features)
+
+        self.assertEqual(expected, result)
+
+    def test_features_to_rdf_when_one_feature_return_correct_call_without_separator(self):
+        expected = "\tpipeline:hasFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n"
+        features = ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv']
+
+        result = features_to_rdf(features)
+
+        self.assertEqual(expected, result)
+
+    def test_features_to_rdf_when_more_features_return_correct_call_with_separator(self):
+        expected = "\tpipeline:hasFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>, " \
+                   "<http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv/column>;\n"
+        features = [
+            'http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv',
+            'http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv/column'
+        ]
+
+        result = features_to_rdf(features)
+
+        self.assertEqual(expected, result)
+
     def test_next_statement_to_rdf_returns_text_when_called(self):
         expected = "\tpipeline:hasNextStatement <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/arnehuang.la-traffic-data-eda/s9>;\n"
         statement = "http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/arnehuang.la-traffic-data-eda/s9"
@@ -240,6 +297,8 @@ class MyTestCase(unittest.TestCase):
                    "\tpipeline:inControlFlow <http://kglids.org/resource/import>;\n" \
                    "\tpipeline:hasParameter \"filepath_or_buffer\";\n" \
                    "\tpipeline:hasDataFlowTo <http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19>;\n" \
+                   "\tpipeline:hasFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n" \
+                   "\tpipeline:hasTarget <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n" \
                    "\tpipeline:hasNextStatement <http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19> .\n"
 
         statement = {
@@ -260,7 +319,9 @@ class MyTestCase(unittest.TestCase):
             ],
             "dataFlow": [
                 "http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19",
-            ]
+            ],
+            "features": ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv'],
+            "targets": ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv']
         }
 
         result = build_statement_rdf(statement)
@@ -273,7 +334,9 @@ class MyTestCase(unittest.TestCase):
                    "\tpipeline:hasText \"df = pd.read_csv(filename, encoding=\'ISO-8859-1\')\";\n" \
                    "\tpipeline:inControlFlow <http://kglids.org/resource/import>;\n" \
                    "\tpipeline:hasParameter \"filepath_or_buffer\";\n" \
-                   "\tpipeline:hasDataFlowTo <http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19> .\n"
+                   "\tpipeline:hasDataFlowTo <http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19>;\n" \
+                   "\tpipeline:hasFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n" \
+                   "\tpipeline:hasTarget <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv> .\n"
         statement = {
             "uri": "http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s18",
             "next": None,
@@ -292,7 +355,9 @@ class MyTestCase(unittest.TestCase):
             ],
             "dataFlow": [
                 "http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19",
-            ]
+            ],
+            "features": ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv'],
+            "targets": ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv']
         }
 
         result = build_statement_rdf(statement)
@@ -425,7 +490,9 @@ class MyTestCase(unittest.TestCase):
             ],
             "dataFlow": [
                 "http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19",
-            ]
+            ],
+            "features": [],
+            "targets": []
         }]
         datasets = [{
             'uri': 'http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv',
@@ -510,7 +577,7 @@ class MyTestCase(unittest.TestCase):
                    "\tpipeline:hasTag \"arts and entertainment\";\n" \
                    "\tpipeline:hasSourceURL \"https://www.kaggle.com/camnugent/nhl-player-salary-prediction-xgboost-rf-and-svm\";\n" \
                    "\tpipeline:hasScore 0.632134442843743;\n" \
-                   "\tkglids:isPartOf <http://kglids.org/resource/kaggle/camnugent.predict-nhl-player-salaries> .\n"
+                   "\tkglids:isPartOf <http://kglids.org/resource/kaggle/camnugent.predict-nhl-player-salaries> .\n\n"
 
         pipelines = [
             {

@@ -52,11 +52,13 @@ class AssignComponents:
     file: str or None
     variable: str or None
     value: str or list  # TODO: Refactor type to array
+    method: str
 
     def __init__(self):
         self.file = None
         self.variable = None
         self.value = ''
+        self.method = ''
 
 
 class BinOpComponents:
