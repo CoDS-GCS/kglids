@@ -23,7 +23,7 @@ from kg_governor.data_profiling.src.model.column_profile import ColumnProfile
 # TODO: [Refactor] have these inside a global project config
 LABEL_SIM_THRESHOLD = 0.75
 BOOLEAN_SIM_THRESHOLD = 0.75
-EMBEDDING_SIM_THRESHOLD = 1.0   # TODO: distance threshold and not normalized
+EMBEDDING_SIM_THRESHOLD = 0.75
 # *****************************************************
 
 
