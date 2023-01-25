@@ -60,12 +60,12 @@ def column_worker(column_name_and_table: Tuple[str, Table]):
     # read the column from the table file. Use the Python engine if there are issues reading the file
     try:
         try:
-            column = pd.read_csv(table, usecols=[column_name], squeeze=True, na_values=[' ', '?', '-'])
+            column = pd.read_csv(table.get_table_path(), usecols=[column_name], squeeze=True, na_values=[' ', '?', '-'])
         except:
-            column = pd.read_csv(table, usecols=[column_name], squeeze=True, na_values=[' ', '?', '-'],
+            column = pd.read_csv(table.get_table_path(), usecols=[column_name], squeeze=True, na_values=[' ', '?', '-'],
                                  engine='python', encoding_errors='replace')
     except:
-        print(f'Warning: Skipping non-parse-able column: {column_name} in table: {table}')
+        print(f'Warning: Skipping non-parse-able column: {column_name} in table: {table.get_table_path()}')
         return
     column = pd.to_numeric(column, errors='ignore')
     column = column.convert_dtypes()

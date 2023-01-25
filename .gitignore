@@ -12,10 +12,8 @@ kg_governor/knowledge_graph_construction/src/utils/glove_embeddings/*
 !kg_governor/knowledge_graph_construction/src/utils/glove_embeddings/README.md
 
 
-/storage/data_sources/*
-!/storage/data_sources/README.md
-/storage/knowledge_graph/*
-!/storage/knowledge_graph/README.md
+/storage/
+!/storage/*/README.md
 
 .idea/
 __pycache__/

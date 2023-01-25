@@ -51,10 +51,10 @@ class NumericalProfileCreator(ProfileCreator):
     
     def _preprocess_column_for_embedding_model(self, device='cpu') -> torch.tensor:
         if self.column.dtype.type in [np.bool_, np.int64, np.uint64]:
-            bin_repr = [[int(j) for j in bitstring.Bits(int=int(i), length=32).bin]
-                        for i in self.column.dropna().values]
+            bin_repr = [[int(j) for j in bitstring.Bits(int=int(min(value, 2**31-1)), length=32).bin]
+                        for value in self.column.dropna().values]
         else:
-            bin_repr = [[int(j) for j in bitstring.Bits(float=float(i), length=32).bin] 
-                        for i in self.column.dropna().values]
+            bin_repr = [[int(j) for j in bitstring.Bits(float=float(value), length=32).bin] 
+                        for value in self.column.dropna().values]
         input_tensor = torch.FloatTensor(bin_repr).to(device)
         return input_tensor
