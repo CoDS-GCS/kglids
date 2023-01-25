@@ -1,11 +1,29 @@
 import bitstring
+import numpy as np
+import pandas as pd
 import torch
 
 from profile_creators.profile_creator import ProfileCreator
 from model.column_profile import ColumnProfile
-
+from column_embeddings.numerical_model import NumericalEmbeddingModel, NumericalScalingModel
+from column_embeddings.utils import load_pretrained_model
+from model.table import Table
+from model.column_data_type import ColumnDataType
 
 class NumericalProfileCreator(ProfileCreator):
+
+    def __init__(self, column: pd.Series, table: Table):
+        super().__init__(column, table)
+
+        # set the data type and load the embedding models
+        self.data_type = ColumnDataType.NUMERICAL
+
+        embedding_model_path = 'column_embeddings/pretrained_models/numerical/20221030142854_numerical_model_embedding_epoch_35.pt'
+        scaling_model_path = 'column_embeddings/pretrained_models/numerical/20221030142854_numerical_model_scaling_epoch_35.pt'
+
+        self.embedding_model = load_pretrained_model(NumericalEmbeddingModel, embedding_model_path)
+        self.scaling_model = load_pretrained_model(NumericalScalingModel, scaling_model_path)
+    
     
     def create_profile(self):
         self._calculate_stats()
@@ -32,7 +50,11 @@ class NumericalProfileCreator(ProfileCreator):
 
     
     def _preprocess_column_for_embedding_model(self, device='cpu') -> torch.tensor:
-        bin_repr = [[int(j) for j in bitstring.BitArray(float=float(i), length=32).bin] 
-                    for i in self.column.dropna().values]
+        if self.column.dtype.type in [np.bool_, np.int64, np.uint64]:
+            bin_repr = [[int(j) for j in bitstring.Bits(int=int(i), length=32).bin]
+                        for i in self.column.dropna().values]
+        else:
+            bin_repr = [[int(j) for j in bitstring.Bits(float=float(i), length=32).bin] 
+                        for i in self.column.dropna().values]
         input_tensor = torch.FloatTensor(bin_repr).to(device)
         return input_tensor

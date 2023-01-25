@@ -92,32 +92,16 @@ class ColumnProfile:
         return profile
     
     def is_numeric(self) -> bool:
-        return self.get_data_type() in [ColumnDataType.INT.value, ColumnDataType.FLOAT.value]
+        return self.get_data_type() == ColumnDataType.NUMERICAL.value
     
     def is_textual(self) -> bool:
-        return self.get_data_type() in [ColumnDataType.NATURAL_LANGUAGE_NAMED_ENTITY.value,
-                                        ColumnDataType.NATURAL_LANGUAGE_TEXT.value, ColumnDataType.STRING.value]
+        return self.get_data_type() in [ColumnDataType.NATURAL_LANGUAGE.value, ColumnDataType.GENERAL_STRING.value]
     
-    def is_boolean(self) -> bool:
-        return self.get_data_type() == ColumnDataType.BOOLEAN.value
+    def is_natural_language(self) -> bool:
+        return self.get_data_type() == ColumnDataType.NATURAL_LANGUAGE.value
     
-    def is_float(self) -> bool:
-        return self.get_data_type() == ColumnDataType.FLOAT.value
-    
-    def is_int(self) -> bool:
-        return self.get_data_type() == ColumnDataType.INT.value
-    
-    def is_date(self) -> bool:
-        return self.get_data_type() == ColumnDataType.DATE.value
-
-    def is_named_entity(self) -> bool:
-        return self.get_data_type() == ColumnDataType.NATURAL_LANGUAGE_NAMED_ENTITY.value
-    
-    def is_natural_language_text(self) -> bool:
-        return self.get_data_type() == ColumnDataType.NATURAL_LANGUAGE_TEXT.value
-    
-    def is_string(self) -> bool:
-        return self.get_data_type() == ColumnDataType.STRING.value
+    def is_general_string(self) -> bool:
+        return self.get_data_type() == ColumnDataType.GENERAL_STRING.value
     
     def get_column_id(self) -> str:
         return self.column_id

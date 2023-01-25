@@ -14,20 +14,19 @@ from column_embeddings.natural_language_model import NaturalLanguageEmbeddingMod
 from column_embeddings.utils import load_pretrained_model
 
 
-class NamedEntityProfileCreator(TextualProfileCreator):
+class NaturalLanguageProfileCreator(TextualProfileCreator):
 
     def __init__(self, column: pd.Series, table: Table):
         super().__init__(column, table)
 
         # set the data type and load the embedding models
-        self.data_type = ColumnDataType.NATURAL_LANGUAGE_NAMED_ENTITY
+        self.data_type = ColumnDataType.NATURAL_LANGUAGE
 
         embedding_model_path = 'column_embeddings/pretrained_models/natural_language/20221020165938_natural_language_model_embedding_epoch_52.pt'
         scaling_model_path = 'column_embeddings/pretrained_models/natural_language/20221020165938_natural_language_model_scaling_epoch_52.pt'
 
         self.embedding_model = load_pretrained_model(NaturalLanguageEmbeddingModel, embedding_model_path)
         self.scaling_model = load_pretrained_model(NaturalLanguageScalingModel, scaling_model_path)
-
 
     def _preprocess_column_for_embedding_model(self, device='cpu') -> torch.tensor:
         fasttext_path = str(Path(__file__).parent.parent) + '/fasttext_embeddings/cc.en.50.bin'

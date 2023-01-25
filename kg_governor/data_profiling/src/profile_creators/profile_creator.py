@@ -14,27 +14,15 @@ class ProfileCreator(ABC):
     # Profile Creator Factory
     @staticmethod
     def get_profile_creator(column: pd.Series, data_type: ColumnDataType, table: Table):
-        if data_type == ColumnDataType.INT:
-            from profile_creators.int_profile_creator import IntProfileCreator
-            return IntProfileCreator(column, table)
-        elif data_type == ColumnDataType.FLOAT:
-            from profile_creators.float_profile_creator import FloatProfileCreator
-            return FloatProfileCreator(column, table)
-        elif data_type == ColumnDataType.BOOLEAN:
-            from profile_creators.boolean_profile_creator import BooleanProfileCreator
-            return BooleanProfileCreator(column, table)
-        elif data_type == ColumnDataType.DATE:
-            from profile_creators.date_profile_creator import DateProfileCreator
-            return DateProfileCreator(column, table)
-        elif data_type == ColumnDataType.NATURAL_LANGUAGE_NAMED_ENTITY:
-            from profile_creators.named_entity_profile_creator import NamedEntityProfileCreator
-            return NamedEntityProfileCreator(column, table)
-        elif data_type == ColumnDataType.NATURAL_LANGUAGE_TEXT:
-            from profile_creators.natural_language_text_profile_creator import NaturalLanguageTextProfileCreator
-            return NaturalLanguageTextProfileCreator(column, table)
-        elif data_type == ColumnDataType.STRING:
-            from profile_creators.string_profile_creator import StringProfileCreator
-            return StringProfileCreator(column, table)
+        if data_type == ColumnDataType.NUMERICAL:
+            from profile_creators.numerical_profile_creator import NumericalProfileCreator
+            return NumericalProfileCreator(column, table)
+        elif data_type == ColumnDataType.NATURAL_LANGUAGE:
+            from profile_creators.natural_language_profile_creator import NaturalLanguageProfileCreator
+            return NaturalLanguageProfileCreator(column, table)
+        elif data_type == ColumnDataType.GENERAL_STRING:
+            from profile_creators.general_string_profile_creator import GeneralStringProfileCreator
+            return GeneralStringProfileCreator(column, table)
         else:
             raise ValueError('Unknown column data type: ' + str(data_type))
     
@@ -58,7 +46,7 @@ class ProfileCreator(ABC):
         
         # stats
         self.total_values_count = len(self.column)
-        self.missing_values_count = self.column.count().item()
+        self.missing_values_count = len(self.column) - self.column.count().item()
         self.distinct_values_count = self.column.nunique()
     
     def _generate_embedding(self):

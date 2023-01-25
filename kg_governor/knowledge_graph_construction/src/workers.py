@@ -106,22 +106,15 @@ def _compute_label_similarity(column1_profile, column2_profile, ontology,
 
 def _compute_content_similarity(col1_profile, col2_profile, ontology, embedding_sim_threshold, boolean_sim_threshold):
     content_sim_triples = []
-    if col1_profile.is_boolean():
-        boolean_sim = 1 - np.abs(col1_profile.get_true_ratio() - col2_profile.get_true_ratio()) 
-        if boolean_sim >= boolean_sim_threshold:
-            content_sim_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                         'hasContentSimilarity', boolean_sim,
-                                                                         ontology))
-    else:
-        # Calculate similarity using CoLR embedding and scaling factor
-        embedding_dist = np.linalg.norm(np.array(col1_profile.get_embedding()) - np.array(col2_profile.get_embedding()))
-        colr_distance = embedding_dist + col1_profile.get_embedding_scaling_factor() \
-                        + col2_profile.get_embedding_scaling_factor()
-        colr_similarity = max(1 - colr_distance, 0)
-        if colr_similarity >= embedding_sim_threshold:
-            content_sim_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
-                                                                         'hasContentSimilarity', colr_similarity,
-                                                                         ontology))
+    # Calculate similarity using CoLR embedding and scaling factor
+    embedding_dist = np.linalg.norm(np.array(col1_profile.get_embedding()) - np.array(col2_profile.get_embedding()))
+    colr_distance = embedding_dist + col1_profile.get_embedding_scaling_factor() \
+                    + col2_profile.get_embedding_scaling_factor()
+    colr_similarity = max(1 - colr_distance, 0)
+    if colr_similarity >= embedding_sim_threshold:
+        content_sim_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
+                                                                     'hasContentSimilarity', colr_similarity,
+                                                                     ontology))
     return content_sim_triples
 
 
