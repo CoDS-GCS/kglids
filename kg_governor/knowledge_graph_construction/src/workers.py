@@ -46,9 +46,6 @@ def column_metadata_worker(column_profiles,  ontology, triples_output_tmp_dir):
             triples.append(Triplet(column_node, RDFResource('hasMinValue', ontology['kglidsData']),
                                    RDFResource(column_profile.get_min_value())))
         
-        if column_profile.is_boolean():
-            triples.append(Triplet(column_node, RDFResource('hasTrueRatio', ontology['kglidsData']),
-                                   RDFResource(column_profile.get_true_ratio())))
 
     filename = ''.join(random.choices(string.ascii_letters + string.digits, k=15)) + '.nt'
     with open(os.path.join(triples_output_tmp_dir, filename), 'w', encoding='utf-8') as f:
