@@ -106,8 +106,15 @@ def targets_to_rdf(targets: List[str]) -> str:
 def features_to_rdf(features: List[str]) -> str:
     if len(features) == 0:
         return ""
-    return f'\tpipeline:hasFeature ' \
+    return f'\tpipeline:hasSelectedFeature ' \
            f'{", ".join([f"<{feature}>" for feature in features])};\n'
+
+
+def not_selected_features_to_rdf(not_selected_features: List[str]) -> str:
+    if len(not_selected_features) == 0:
+        return ""
+    return f'\tpipeline:hasNotSelectedFeature ' \
+           f'{", ".join([f"<{feature}>" for feature in not_selected_features])};\n'
 
 
 def build_statement_rdf(statement: dict) -> str:
@@ -121,6 +128,7 @@ def build_statement_rdf(statement: dict) -> str:
             has_parameter_to_rdf(statement['parameters']),
             has_dataflow_to_rdf(statement['dataFlow']),
             features_to_rdf(statement['features']),
+            not_selected_features_to_rdf(statement['not_features']),
             targets_to_rdf(statement['targets']),
             next_statement_to_rdf(statement['next'])
         ]).rsplit(';', 1)[0],

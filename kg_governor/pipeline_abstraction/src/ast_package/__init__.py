@@ -81,7 +81,8 @@ class Name(AstPackage):
             components.file_args[pos] = parameter_value
             node_visitor.graph_info.add_columns(
                 call_components.file.filename,
-                list(node_visitor.working_file.get(call_components.file.filename, pd.DataFrame(columns=[])).columns)
+                node_visitor.var_columns.get(parameter_value, [])
+                # list(node_visitor.working_file.get(call_components.file.filename, pd.DataFrame(columns=[])).columns)
             )
         if parameter_value in node_visitor.variables.keys():
             components.call_args[pos] = parameter_value
@@ -352,6 +353,7 @@ class Subscript(AstPackage):
 
     def extract_assign_value(self, node_visitor: ast.NodeVisitor, node: ast.Assign, components: AssignComponents):
         components.value, components.variable = node_visitor.visit_Subscript(cast(ast.Subscript, node.value))
+
         node_visitor._extract_dataflow(components.value)
 
         if isinstance(components.value, list):

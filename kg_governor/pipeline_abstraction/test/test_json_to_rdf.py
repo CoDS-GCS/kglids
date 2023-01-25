@@ -5,7 +5,7 @@ from src.json_to_rdf import (create_prefix, library_call_to_rdf, read_to_rdf, ha
                              build_table_rdf, build_column_rdf, build_parameter_rdf, build_library_rdf,
                              build_sub_library_rdf, build_pipeline_rdf, build_pipeline_rdf_page, build_library_rdf_page,
                              build_default_rdf_page, title_to_rdf, date_to_rdf, author_to_rdf, source_to_rdf,
-                             targets_to_rdf, features_to_rdf)
+                             targets_to_rdf, features_to_rdf, not_selected_features_to_rdf)
 
 
 class MyTestCase(unittest.TestCase):
@@ -254,7 +254,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_features_to_rdf_when_one_feature_return_correct_call_without_separator(self):
-        expected = "\tpipeline:hasFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n"
+        expected = "\tpipeline:hasSelectedFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n"
         features = ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv']
 
         result = features_to_rdf(features)
@@ -262,7 +262,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_features_to_rdf_when_more_features_return_correct_call_with_separator(self):
-        expected = "\tpipeline:hasFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>, " \
+        expected = "\tpipeline:hasSelectedFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>, " \
                    "<http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv/column>;\n"
         features = [
             'http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv',
@@ -270,6 +270,34 @@ class MyTestCase(unittest.TestCase):
         ]
 
         result = features_to_rdf(features)
+
+        self.assertEqual(expected, result)
+
+    def test_not_features_to_rdf_when_no_feature_return_empty_string(self):
+        expected = ""
+        not_selected_features = []
+
+        result = not_selected_features_to_rdf(not_selected_features)
+
+        self.assertEqual(expected, result)
+
+    def test_not_features_to_rdf_when_one_feature_return_correct_call_without_separator(self):
+        expected = "\tpipeline:hasNotSelectedFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n"
+        not_selected_features = ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv']
+
+        result = not_selected_features_to_rdf(not_selected_features)
+
+        self.assertEqual(expected, result)
+
+    def test_not_features_to_rdf_when_more_features_return_correct_call_with_separator(self):
+        expected = "\tpipeline:hasNotSelectedFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>, " \
+                   "<http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv/column>;\n"
+        not_selected_features = [
+            'http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv',
+            'http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv/column'
+        ]
+
+        result = not_selected_features_to_rdf(not_selected_features)
 
         self.assertEqual(expected, result)
 
@@ -297,7 +325,8 @@ class MyTestCase(unittest.TestCase):
                    "\tpipeline:inControlFlow <http://kglids.org/resource/import>;\n" \
                    "\tpipeline:hasParameter \"filepath_or_buffer\";\n" \
                    "\tpipeline:hasDataFlowTo <http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19>;\n" \
-                   "\tpipeline:hasFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n" \
+                   "\tpipeline:hasSelectedFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n" \
+                   "\tpipeline:hasNotSelectedFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n" \
                    "\tpipeline:hasTarget <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n" \
                    "\tpipeline:hasNextStatement <http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19> .\n"
 
@@ -321,6 +350,7 @@ class MyTestCase(unittest.TestCase):
                 "http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19",
             ],
             "features": ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv'],
+            "not_features": ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv'],
             "targets": ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv']
         }
 
@@ -335,7 +365,8 @@ class MyTestCase(unittest.TestCase):
                    "\tpipeline:inControlFlow <http://kglids.org/resource/import>;\n" \
                    "\tpipeline:hasParameter \"filepath_or_buffer\";\n" \
                    "\tpipeline:hasDataFlowTo <http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19>;\n" \
-                   "\tpipeline:hasFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n" \
+                   "\tpipeline:hasSelectedFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n" \
+                   "\tpipeline:hasNotSelectedFeature <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv>;\n" \
                    "\tpipeline:hasTarget <http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv> .\n"
         statement = {
             "uri": "http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s18",
@@ -357,6 +388,7 @@ class MyTestCase(unittest.TestCase):
                 "http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19",
             ],
             "features": ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv'],
+            "not_features": ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv'],
             "targets": ['http://kglids.org/resource/kaggle/cityofLA.los-angeles-traffic-collision-data/traffic-collision-data-from-2010-to-present.csv']
         }
 
@@ -492,6 +524,7 @@ class MyTestCase(unittest.TestCase):
                 "http://kglids.org/resource/kaggle/leonardopena.top50spotify2019/deepakdeepu8978.how-popular-a-song-is-according-to-spotify/s19",
             ],
             "features": [],
+            "not_features": [],
             "targets": []
         }]
         datasets = [{

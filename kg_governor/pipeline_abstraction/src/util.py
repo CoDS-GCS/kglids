@@ -8,6 +8,10 @@ import src.Calls as Calls
 from src.Calls import packages
 
 
+def encode(entity):
+    return urllib.parse.quote_plus(str(entity))
+
+
 def is_file(string):
     if not isinstance(string, str):
         return False
@@ -45,19 +49,19 @@ def get_package(package_name, alias):
 
 
 def create_file_id(source: str, dataset: str, table_name: str) -> str:
-    return f"kglids.org/{url_encode(source)}/{url_encode(dataset)}/" \
-           f"dataResource/{url_encode(table_name)}"
+    return f"kglids.org/{encode(source)}/{encode(dataset)}/" \
+           f"dataResource/{encode(table_name)}"
 
 
 def create_column_name(source: str, dataset: str, table_name: str, column: str):
-    return f"http://kglids.org/resource/{url_encode(source)}/" \
-           f"{url_encode(dataset)}/dataResource/{url_encode(table_name)}/" \
-           f"{url_encode(column)}"
+    return f"http://kglids.org/resource/{encode(source)}/" \
+           f"{encode(dataset)}/dataResource/{encode(table_name)}/" \
+           f"{encode(column)}"
 
 
 def create_statement_uri(source: str, dataset_name: str, python_file_name: str, line_id: int):
     return f"http://kglids.org/resource/{source}/" \
-           f"{url_encode(dataset_name)}/dataResource/{url_encode(python_file_name)}/" \
+           f"{encode(dataset_name)}/dataResource/{encode(python_file_name)}/" \
            f"s{line_id}"
 
 
@@ -79,27 +83,27 @@ def create_built_in_uri(library_name):
 
 
 def create_file_uri(source: str, dataset_name: str, file_name: str):
-    return f"http://kglids.org/resource/{url_encode(source)}/" \
-           f"{url_encode(dataset_name)}/dataResource/{url_encode(file_name)}"
+    return f"http://kglids.org/resource/{encode(source)}/" \
+           f"{encode(dataset_name)}/dataResource/{encode(file_name)}"
 
 
 def create_dataset_uri(source: str, dataset_name: str):
-    return f"http://kglids.org/resource/{url_encode(source)}/" \
-           f"{url_encode(dataset_name)}"
+    return f"http://kglids.org/resource/{encode(source)}/" \
+           f"{encode(dataset_name)}"
 
 
 def create_source_uri(source: str):
-    return f"http://kglids.org/resource/{url_encode(source)}/"
+    return f"http://kglids.org/resource/{encode(source)}/"
 
 
 def create_pipeline_uri(source, dataset_name, file_name):
-    return f"http://kglids.org/resource/{url_encode(source)}/" \
-           f"{url_encode(dataset_name)}/" \
-           f"{url_encode(file_name)}"
+    return f"http://kglids.org/resource/{encode(source)}/" \
+           f"{encode(dataset_name)}/" \
+           f"{encode(file_name)}"
 
 
-def url_encode(string):
-    return urllib.parse.quote(str(string), safe='')  # safe parameter is important.
+# def url_encode(string):
+    # return urllib.parse.quote(str(string), safe='')  # safe parameter is important.
 
 
 def parse_line_text(text: str) -> str:

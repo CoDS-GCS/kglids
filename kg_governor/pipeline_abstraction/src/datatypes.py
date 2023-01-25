@@ -10,7 +10,7 @@ from src.util import (parse_line_text, create_import_uri, create_file_uri, creat
 class Node:
     __slots__ = ('previous', 'next', 'text', 'uri', 'data_flow',
                  'parameters', 'calls', 'read', 'control_flow',
-                 'targets', 'features')
+                 'targets', 'features', 'not_features')
 
     def __init__(self, previous, text):
         self.previous = previous
@@ -24,6 +24,7 @@ class Node:
         self.data_flow = []
         self.targets = []
         self.features = []
+        self.not_features = []
 
     def generate_uri(self, source, dataset, file, node_id):
         self.uri = util.create_statement_uri(source, dataset, file, node_id)
@@ -35,6 +36,7 @@ class Node:
         read_array = [value.repr() for value in self.read]
         data_flow = [value.uri for value in self.data_flow]
         features = [value.uri for value in self.features]
+        not_features = [value.uri for value in self.not_features]
         targets = [value.uri for value in self.targets]
 
         return {"uri": self.uri,
@@ -47,6 +49,7 @@ class Node:
                 "read": read_array,
                 "dataFlow": data_flow,
                 "features": features,
+                "not_features": not_features,
                 "targets": targets
                 }
 
@@ -270,3 +273,9 @@ class GraphInformation:
                 column = Column(column_uri)
                 self.tail.features.append(column)
 
+    def add_not_selected_features(self, columns, filename):
+        if columns is not None:
+            for column in columns:
+                column_uri = create_column_name(self.source, self.dataset_name, filename, column)
+                column = Column(column_uri)
+                self.tail.not_features.append(column)
