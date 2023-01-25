@@ -21,8 +21,8 @@ class StringProfileCreator(TextualProfileCreator):
         # set the data type and load the embedding models
         self.data_type = ColumnDataType.STRING
 
-        embedding_model_path = 'column_embeddings/pretrained_models/string/20221020165957_string_model_embedding_epoch_100.pt'
-        scaling_model_path = 'column_embeddings/pretrained_models/string/20221020165957_string_model_scaling_epoch_100.pt'
+        embedding_model_path = 'column_embeddings/pretrained_models/general_string/20221020165957_general_string_model_embedding_epoch_100.pt'
+        scaling_model_path = 'column_embeddings/pretrained_models/general_string/20221020165957_general_string_model_scaling_epoch_100.pt'
 
         self.embedding_model = load_pretrained_model(StringEmbeddingModel, embedding_model_path)
         self.scaling_model = load_pretrained_model(StringScalingModel, scaling_model_path)
