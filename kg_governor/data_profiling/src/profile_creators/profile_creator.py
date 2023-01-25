@@ -58,7 +58,7 @@ class ProfileCreator(ABC):
         
         # stats
         self.total_values_count = len(self.column)
-        self.missing_values_count = self.column.count().item()
+        self.missing_values_count = len(self.column) - self.column.count().item()
         self.distinct_values_count = self.column.nunique()
     
     def _generate_embedding(self):
