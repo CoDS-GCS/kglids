@@ -23,7 +23,7 @@ from kg_governor.data_profiling.src.model.column_profile import ColumnProfile
 # TODO: [Refactor] have these inside a global project config
 LABEL_SIM_THRESHOLD = 0.75
 BOOLEAN_SIM_THRESHOLD = 0.75
-EMBEDDING_SIM_THRESHOLD = 0.75
+EMBEDDING_SIM_THRESHOLD = 0.25  # TODO: this is between 0 and 1 but not normalized
 # *****************************************************
 
 
@@ -31,7 +31,8 @@ class DataGlobalSchemaBuilder:
     # TODO: [Refactor] add all kglids URIs to knowledge graph config.py
     # TODO: [Refactor] have Spark configuration read from the global project config
     # TODO: [Refactor] read raw word embeddings path from global project config
-    def __init__(self, column_profiles_path, out_graph_path, spark_mode):
+    def __init__(self, column_profiles_path, out_graph_path, spark_mode, label_sim_threshold,
+                 embedding_sim_threshold):
         self.column_profiles_base_dir = column_profiles_path
         self.graph_output_path = out_graph_path
         self.out_graph_base_dir = os.path.dirname(self.graph_output_path)
@@ -46,6 +47,9 @@ class DataGlobalSchemaBuilder:
 
         self.memory_size = (os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') // 1024**3) - 1 # total RAM - 1 GB
         self.is_cluster_mode = spark_mode == 'cluster'
+        
+        self.label_sim_threshold = label_sim_threshold
+        self.embedding_sim_threshold = embedding_sim_threshold
 
         self.ontology = {'kglids': 'http://kglids.org/ontology/',
                          'kglidsData': 'http://kglids.org/ontology/data/',
@@ -167,13 +171,15 @@ class DataGlobalSchemaBuilder:
         column_profile_indexes = list(range(len(self.column_profiles)))
         random.shuffle(column_profile_indexes)
         column_profile_indexes_rdd = self.spark.parallelize(column_profile_indexes)
+        label_sim_threshold = self.label_sim_threshold
+        embedding_sim_threshold = self.embedding_sim_threshold
         column_profile_indexes_rdd.map(
             lambda x: column_pair_similarity_worker(column_idx=x,
                                                     column_profiles=column_profiles,
                                                     ontology=ontology,
                                                     triples_output_tmp_dir=tmp_graph_dir,
-                                                    label_sim_threshold=LABEL_SIM_THRESHOLD,
-                                                    embedding_sim_threshold=EMBEDDING_SIM_THRESHOLD,
+                                                    label_sim_threshold=label_sim_threshold,
+                                                    embedding_sim_threshold=embedding_sim_threshold,
                                                     boolean_sim_threshold=BOOLEAN_SIM_THRESHOLD,
                                                     word_embedding=word_embedding)) \
                                 .collect()
@@ -200,12 +206,17 @@ def main():
                         default='../../../storage/knowledge_graph/data_global_schema/data_global_schema_graph.ttl',
                         help='Path to save the graph, including graph file name.')
     parser.add_argument('--spark-mode', type=str, default='local', help="Possible values: 'local' or 'cluster'")
+    parser.add_argument('--label-sim-threshold', type=float, default=LABEL_SIM_THRESHOLD)
+    parser.add_argument('--embedding-sim-threshold', type=float, default=EMBEDDING_SIM_THRESHOLD)
     args = parser.parse_args()
-
+    
+    
     start_all = datetime.now()
     knowledge_graph_builder = DataGlobalSchemaBuilder(column_profiles_path=args.column_profiles_path,
                                                       out_graph_path=args.out_graph_path,
-                                                      spark_mode=args.spark_mode)
+                                                      spark_mode=args.spark_mode,
+                                                      label_sim_threshold=args.label_sim_threshold,
+                                                      embedding_sim_threshold=args.embedding_sim_threshold)
 
     # Membership (e.g. table -> dataset) and metadata (e.g. min, max) triples
     print(datetime.now(), "• 1. Building Membership and Metadata triples\n")
