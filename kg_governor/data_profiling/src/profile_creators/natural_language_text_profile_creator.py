@@ -22,8 +22,8 @@ class NaturalLanguageTextProfileCreator(TextualProfileCreator):
         # set the data type and load the embedding models
         self.data_type = ColumnDataType.NATURAL_LANGUAGE_TEXT
 
-        embedding_model_path = 'column_embeddings/pretrained_models/natural_language/20221020165938_natural_language_model_embedding_epoch_52.pt'
-        scaling_model_path = 'column_embeddings/pretrained_models/natural_language/20221020165938_natural_language_model_scaling_epoch_52.pt'
+        embedding_model_path = 'column_embeddings/pretrained_models/natural_language_text/20230113132355_natural_language_text_model_embedding_epoch_94.pt'
+        scaling_model_path = 'column_embeddings/pretrained_models/natural_language_text/20230113132355_natural_language_text_model_scaling_epoch_94.pt'
 
         self.embedding_model = load_pretrained_model(NaturalLanguageEmbeddingModel, embedding_model_path)
         self.scaling_model = load_pretrained_model(NaturalLanguageScalingModel, scaling_model_path)

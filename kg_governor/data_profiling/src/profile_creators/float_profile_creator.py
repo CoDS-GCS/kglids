@@ -15,8 +15,8 @@ class FloatProfileCreator(NumericalProfileCreator):
         # set the data type and load the embedding models
         self.data_type = ColumnDataType.FLOAT
 
-        embedding_model_path = 'column_embeddings/pretrained_models/numerical/20221030142854_numerical_model_embedding_epoch_35.pt'
-        scaling_model_path = 'column_embeddings/pretrained_models/numerical/20221030142854_numerical_model_scaling_epoch_35.pt'
+        embedding_model_path = 'column_embeddings/pretrained_models/float/20230124151732_float_model_embedding_epoch_89.pt'
+        scaling_model_path = 'column_embeddings/pretrained_models/float/20230124151732_float_model_scaling_epoch_89.pt'
 
         self.embedding_model = load_pretrained_model(NumericalEmbeddingModel, embedding_model_path)
         self.scaling_model = load_pretrained_model(NumericalScalingModel, scaling_model_path)
