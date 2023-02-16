@@ -36,7 +36,7 @@ class RDFResource:
         if self.isBlank:
             return '_:{}'.format(self.content)
         if isinstance(self.content, str):
-            return '"{}"'.format(self.content)
+            return '"{}"'.format(self.content.replace('"', '\\"'))
         if pd.isnull(self.content):
             return '"NaN"^^xsd:double'
         if isinstance(self.content, float):
