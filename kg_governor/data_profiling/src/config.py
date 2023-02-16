@@ -21,6 +21,8 @@ class ProfilerConfig:
     # directory to save the generated column profiles. 
     output_path = '/home/mossad/projects/kglids/kg_governor/data_profiling/src/storage/profiles/'
     
+    # whether to run Spark in local or cluster mode. 
+    is_spark_local_mode = True
     # number of workers (processes) to use when profiling columns. Defaults to the number of threads.
     n_workers = os.cpu_count()
     # maximum memory in GB to be used by Spark

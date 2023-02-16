@@ -1,6 +1,5 @@
 from datetime import datetime
 import glob
-import multiprocessing as mp
 import os
 from pathlib import Path
 import shutil
@@ -8,9 +7,9 @@ from typing import Tuple
 import warnings
 warnings.simplefilter('ignore')
 
-from tqdm import tqdm
 import pandas as pd
 from pyspark import SparkConf, SparkContext
+from pyspark.sql import SparkSession
 
 from fine_grained_type_detector import FineGrainedColumnTypeDetector
 from profile_creators.profile_creator import ProfileCreator
@@ -21,10 +20,17 @@ from config import profiler_config
 def main():
     start_time = datetime.now()
     print(datetime.now(), ': Initializing Spark')
+    
     # initialize spark
-    spark = SparkContext(conf=SparkConf().setMaster(f'local[*]')
-                         .set('spark.driver.memory', f'{profiler_config.max_memory}g'))
-
+    if profiler_config.is_spark_local_mode:
+        spark = SparkContext(conf=SparkConf().setMaster(f'local[*]')
+                             .set('spark.driver.memory', f'{profiler_config.max_memory}g'))
+    else:
+        
+        spark = SparkSession.builder.appName("KGLiDSProfiler").getOrCreate().sparkContext
+        # add python dependencies
+        for pyfile in glob.glob('./**/*.py', recursive=True):
+            spark.addPyFile(pyfile)
 
     if os.path.exists(profiler_config.output_path):
         print(datetime.now(), ': Deleting existing column profiles in:', profiler_config.output_path)
