@@ -8,7 +8,7 @@ from model.column_profile import ColumnProfile
 from model.table import Table
 from model.column_data_type import ColumnDataType
 from column_embeddings.numerical_model import NumericalEmbeddingModel, NumericalScalingModel
-from column_embeddings.utils import load_pretrained_model
+from column_embeddings.column_embeddings_utils import load_pretrained_model
 
 class DateProfileCreator(ProfileCreator):
     

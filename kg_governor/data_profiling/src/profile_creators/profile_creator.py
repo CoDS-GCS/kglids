@@ -6,7 +6,7 @@ import torch
 from model.column_data_type import ColumnDataType
 from model.table import Table
 from utils import generate_column_id, generate_table_id, generate_dataset_id
-from column_embeddings.utils import EMBEDDING_SIZE
+from column_embeddings.column_embeddings_utils import EMBEDDING_SIZE
 
 
 class ProfileCreator(ABC):

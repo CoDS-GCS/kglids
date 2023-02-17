@@ -11,7 +11,7 @@ from profile_creators.textual_profile_creator import TextualProfileCreator
 from model.table import Table
 from model.column_data_type import ColumnDataType
 from column_embeddings.natural_language_model import NaturalLanguageEmbeddingModel, NaturalLanguageScalingModel
-from column_embeddings.utils import load_pretrained_model
+from column_embeddings.column_embeddings_utils import load_pretrained_model
 
 
 class NaturalLanguageTextProfileCreator(TextualProfileCreator):
