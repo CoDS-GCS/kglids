@@ -31,6 +31,11 @@ def main():
         # add python dependencies
         for pyfile in glob.glob('./**/*.py', recursive=True):
             spark.addPyFile(pyfile)
+        # add embedding model files
+        for embedding_file in glob.glob('./column_embeddings/pretrained_models/**/*.pt', recursive=True):
+            spark.addFile(embedding_file)
+        # add fasttext embeddings file
+        spark.addFile('./fasttext_embeddings/cc.en.50.bin')
 
     if os.path.exists(profiler_config.output_path):
         print(datetime.now(), ': Deleting existing column profiles in:', profiler_config.output_path)
