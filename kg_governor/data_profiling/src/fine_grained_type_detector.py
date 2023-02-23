@@ -34,7 +34,7 @@ class FineGrainedColumnTypeDetector:
             return ColumnDataType.BOOLEAN
         
         elif column.dtype.type in [np.int64, np.uint64]:
-            if column.isin([0, 1]).all():
+            if set(column.unique()) == {0, 1}:
                 return ColumnDataType.BOOLEAN
             return ColumnDataType.INT
         
