@@ -1,11 +1,12 @@
-import os
-import shutil
+import argparse
 from datetime import datetime
+import glob
+import multiprocessing as mp
+import os
 import random
+import shutil
 import string
 import sys
-import argparse
-import multiprocessing as mp
 
 sys.path.append('../../../')
 
@@ -86,10 +87,10 @@ class DataGlobalSchemaBuilder:
                                       .getOrCreate()
                                       .sparkContext)
             # TODO: [Refactor] make sure this is updated. 
-            self.spark.addPyFile('workers.py')
-            self.spark.addPyFile('utils/word_embeddings.py')
-            self.spark.addPyFile('utils/utils.py')
-            self.spark.addPyFile('../../data_profiling/src/data/column_profile.py')
+            # add python dependencies
+            for pyfile in glob.glob('./**/*.py', recursive=True):
+                self.spark.addPyFile(pyfile)
+            # self.spark.addPyFile('../../data_profiling/src/data/column_profile.py')
         else:
             self.spark = SparkContext(conf=SparkConf().setMaster(f'local[*]')
                                                       .set('spark.driver.memory', f'{self.memory_size}g'))
