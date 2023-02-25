@@ -29,12 +29,17 @@ class NaturalLanguageTextProfileCreator(TextualProfileCreator):
         self.scaling_model = load_pretrained_model(NaturalLanguageScalingModel, scaling_model_path)
 
     def _preprocess_column_for_embedding_model(self, device='cpu') -> torch.tensor:
+        non_missing = self.column.dropna()
+        if len(non_missing) > 1000:
+            sample = non_missing.sample(int(0.1*len(non_missing)))
+        else:
+            sample = non_missing.sample(min(len(non_missing), 1000))
         fasttext_path = str(Path(__file__).parent.parent) + '/fasttext_embeddings/cc.en.50.bin'
         fasttext_model = fasttext.load_model(fasttext_path)
         tokenizer = TweetTokenizer()
 
         input_values = []
-        for text in self.column.dropna().values:
+        for text in sample.values:
             fasttext_words = [word for word in tokenizer.tokenize(text) if fasttext_model.get_word_id(word) != -1]
             if fasttext_words:
                 input_values.append(np.average([fasttext_model.get_word_vector(word) for word in fasttext_words],

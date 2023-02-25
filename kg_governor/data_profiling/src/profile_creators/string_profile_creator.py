@@ -28,7 +28,12 @@ class StringProfileCreator(TextualProfileCreator):
         self.scaling_model = load_pretrained_model(StringScalingModel, scaling_model_path)
 
     def _preprocess_column_for_embedding_model(self, device='cpu') -> torch.tensor:
+        non_missing = self.column.dropna()
+        if len(non_missing) > 1000:
+            sample = non_missing.sample(int(0.1 * len(non_missing)))
+        else:
+            sample = non_missing.sample(min(len(non_missing), 1000))
         char_level_embed_model = chars2vec.load_model('eng_50')
-        input_vector = char_level_embed_model.vectorize_words(self.column.dropna().tolist())
+        input_vector = char_level_embed_model.vectorize_words(sample.tolist())
         input_tensor = torch.FloatTensor(input_vector).to(device)
         return input_tensor
