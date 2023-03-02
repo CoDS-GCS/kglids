@@ -9,6 +9,9 @@ Instead, data scientists still spend a considerable amount of their time trying 
 ## Technical Report
 Our technical report that includes more details on our system and interfaces is available ([Here](technical_report.pdf))  
 
+## Linked Data Science: Systems and Applications
+To learn more about Linked Data Science and its applications, please watch Dr. Essam Mansour's talk at Waterloo DSG Seminar ([Here](https://www.youtube.com/watch?v=99wvN04C5fU)). 
+
 ## Installation
 * Clone the `kglids` repo 
 * Create `kglids` Conda environment (Python 3.8) and install pip requirements.
