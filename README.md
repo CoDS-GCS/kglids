@@ -7,7 +7,7 @@
 Instead, data scientists still spend a considerable amount of their time trying to recover relevant information and experiences from colleagues, trial and error, lengthy exploration, etc. In this paper, we, therefore, propose a scalable system (KGLiDS) that employs machine learning to extract the semantics of data science pipelines and captures them in a knowledge graph, which can then be exploited to assist data scientists in various ways. This abstraction is the key to enabling Linked Data Science since it allows us to share the essence of pipelines between platforms, companies, and institutions without revealing critical internal information and instead focusing on the semantics of what is being processed and how. Our comprehensive evaluation uses thousands of datasets and more than thirteen thousand pipeline scripts extracted from data discovery benchmarks and the Kaggle portal and shows that KGLiDS significantly outperforms state-of-the-art systems on related tasks, such as dataset recommendation and pipeline classification. </div>
 
 ## Technical Report
-Our technical report that includes more details on our system and interfaces is available ([Here](technical_report.pdf))  
+Our technical report is available on [ArXiv](https://arxiv.org/abs/2303.02204) and includes more details on our system and interfaces is available
 
 ## Linked Data Science: Systems and Applications
 To learn more about Linked Data Science and its applications, please watch Dr. Essam Mansour's talk at Waterloo DSG Seminar ([Here](https://www.youtube.com/watch?v=99wvN04C5fU)). 
