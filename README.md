@@ -122,10 +122,4 @@ For any questions please contact us:
 
 mossad.helali@mail.concordia.ca
 
-shubham.vashisth@mail.concordia.ca
-
-philippe.carrier@mail.concordia.ca
-
-khose@cs.aau.dk
-
 essam.mansour@concordia.ca
