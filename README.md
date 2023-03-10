@@ -112,6 +112,15 @@ See the full list of supported APIs [here](docs/KGLiDS_apis.md).
 
 ## Citing Our Work
 If you find our work useful, please cite it in your research.
+```
+@article{kglids,
+         title={Linked Data Science Powered by Knowledge Graphs}, 
+         author={Mossad Helali and Shubham Vashisth and Philippe Carrier and Katja Hose and Essam Mansour},
+         year={2023},
+         journal={ArXiv},
+         url = {https://arxiv.org/abs/2303.02204}
+}
+```
 
 
 ## Contributions
