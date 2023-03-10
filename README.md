@@ -114,14 +114,17 @@ See the full list of supported APIs [here](docs/KGLiDS_apis.md).
 If you find our work useful, please cite it in your research.
 
 
+## Contributions
+We encourage contributions and bug fixes, please don't hesitate to open a PR or create an issue if you face any bugs.
+
 ## Questions
 For any questions please contact us:
 
-mossad.helali@concordia.ca
+mossad.helali@mail.concordia.ca
 
-shubham.vashisth@concordia.ca
+shubham.vashisth@mail.concordia.ca
 
-philippe.carrier@concordia.ca
+philippe.carrier@mail.concordia.ca
 
 khose@cs.aau.dk
 
