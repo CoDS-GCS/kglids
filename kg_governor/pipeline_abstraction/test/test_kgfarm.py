@@ -87,6 +87,28 @@ class KGFarmTest(Test):
         self.assertIn('x', node_visitor.variables.keys())
         self.assertListEqual(['a', 'b'], node_visitor.variables.get('x'))
 
+    def test_when_dataframe_is_split_twice_it_reads_the_correct_column(self):
+        value = "import pandas as pd\n" \
+                "df = pd.read_csv('file.csv')\n"\
+                "y = df[['a']][:]"
+
+        node_visitor = parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['a', 'b'])
+        self.assertEqual(
+            util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'a'),
+            self.graph.tail.read[0].uri)
+
+    def test_when_dataframe_is_slice_with_attribute_link_correct_columns(self):
+        value = "import pandas as pd\n" \
+                "df = pd.read_csv('file.csv')\n"\
+                "y = df[df.a, :]"
+
+        parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['a', 'b'])
+
+        # self.assertEqual(len(self.graph.tail.read[0].uri), 1)
+        self.assertEqual(
+            util.create_column_name(SOURCE, DATASET_NAME, 'file.csv', 'a'),
+            self.graph.tail.read[0].uri)
+
     def test_when_variable_is_save_then_it_assigned_package_to_variable(self):
         value = "import pandas as pd\n\n" \
                 "df = pd.read_csv('file.csv')"
@@ -524,6 +546,18 @@ class KGFarmTest(Test):
         self.assertListEqual([col_uri_small_bags], [x.uri for x in self.graph.tail.not_features])
         # self.assertListEqual(columns, node_visitor.var_columns.get('df'))
 
+    def test_empty_value_in_tuple_return_all_element(self):
+        value = "import pandas as pd\n" \
+                "df = pd.read_csv('file.csv')\n" \
+                "X = df.loc[:,]"
+
+        node_visitor = parse_and_visit_node_with_file(value, self.graph, 'file.csv', ['a'])
+        col_uri_a = create_column_uri('file.csv', 'a')
+
+        self.assertEqual(
+            node_visitor.var_columns['X'],
+            ['a']
+        )
 
 if __name__ == '__main__':
     unittest.main()

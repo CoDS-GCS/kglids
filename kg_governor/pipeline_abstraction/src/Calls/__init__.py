@@ -1266,6 +1266,44 @@ standard_scaler_get_feature_names_out = Call('get_feature_names_out',
 packages[
     f'{standard_scaler_get_feature_names_out.library_path}.{standard_scaler_get_feature_names_out.name}'] = standard_scaler_get_feature_names_out
 
+# sklearn # preprocessing # PolynomialFeatures
+polynomial_features =  Call('PolynomialFeatures',
+                       'sklearn.preprocessing',
+                       {'degree': 2,
+                        'interaction_only': False, 
+                        'include_bias': True, 
+                        'order': 'C'},
+                       True,
+                       CallType.CLASS)
+packages[f'{polynomial_features.library_path}.{polynomial_features.name}'] = polynomial_features
+
+polynomial_features_fit = Call('fit',
+                           'sklearn.preprocessing.PolynomialFeatures',
+                           {'X': None, 
+                            'y': None},
+                           False,
+                           CallType.FUNCTION,
+                           [polynomial_features])
+packages[f'{polynomial_features_fit.library_path}.{polynomial_features_fit.name}'] = polynomial_features_fit
+
+polynomial_features_fit_transform = Call('fit_transform',
+                           'sklearn.preprocessing.PolynomialFeatures',
+                           {'X': None, 
+                            'y': None},
+                           False,
+                           CallType.FUNCTION,
+                           [pd_dataframe])
+packages[f'{polynomial_features_fit_transform.library_path}.{polynomial_features_fit_transform.name}'] = polynomial_features_fit_transform
+
+polynomial_features_transform = Call('transform',
+                           'sklearn.preprocessing.PolynomialFeatures',
+                           {'X': None},
+                           False,
+                           CallType.FUNCTION,
+                           [pd_dataframe])
+packages[f'{polynomial_features_transform.library_path}.{polynomial_features_transform.name}'] = polynomial_features_transform
+
+
 # sklearn # preprocessing # LabelBinarizer
 label_binarizer = Call('LabelBinarizer',
                        'sklearn.preprocessing',
@@ -2263,121 +2301,66 @@ packages[f'{preprocessing_scale.library_path}.{preprocessing_scale.name}'] = pre
 impute = Call(name='impute', library_path='sklearn', call_type=CallType.PACKAGE)
 packages['sklearn.impute'] = impute
 
-# # sklearn # impute # SimpleImputer
-# impute_simple_imputer = Call('SimpleImputer',
-#                              'sklearn.impute',
-#                              {'missing_values': float('nan'),
-#                               'strategy': 'mean',
-#                               'fill_value': None,
-#                               'verbose': 'deprecated',
-#                               'copy': True,
-#                               'add_indicator': False},
-#                              True,
-#                              CallType.CLASS)
-# packages[f'{impute_simple_imputer.library_path}.{impute_simple_imputer.name}'] = impute_simple_imputer
-#
-# impute_simple_imputer_fit = Call('fit',
-#                                  'sklearn.impute.SimpleImputer',
-#                                  {'X': None,
-#                                   'y': None},
-#                                  False,
-#                                  CallType.FUNCTION,
-#                                  [impute_simple_imputer])
-# packages[
-#     f'{impute_simple_imputer_fit.library_path}.{impute_simple_imputer_fit.name}'] = impute_simple_imputer_fit
-#
-# # sklearn # impute # IterativeImputer
-# impute_iterative_imputer = Call('IterativeImputer',
-#                                 'sklearn.impute',
-#                                 {'estimator': None,
-#                                  'missing_values': float('nan'),
-#                                  'sample_posterior': False,
-#                                  'max_iter': 10,
-#                                  'tol': 0.001,
-#                                  'n_nearest_features': None,
-#                                  'initial_strategy': 'mean',
-#                                  'imputation_order': 'ascending',
-#                                  'skip_complete': False,
-#                                  'min_value': float('-inf'),
-#                                  'max_value': float('inf'),
-#                                  'verbose': 0,
-#                                  'random_state': None,
-#                                  'add_indicator': False},
-#                                 True,
-#                                 CallType.CLASS)
-# packages[f'{impute_iterative_imputer.library_path}.{impute_iterative_imputer.name}'] = impute_iterative_imputer
-#
-# impute_iterative_imputer_fit = Call('fit',
-#                                     'sklearn.impute.IterativeImputer',
-#                                     {'X': None,
-#                                      'y': None},
-#                                     False,
-#                                     CallType.FUNCTION,
-#                                     [impute_iterative_imputer])
-# packages[
-#     f'{impute_iterative_imputer_fit.library_path}.{impute_iterative_imputer_fit.name}'] = impute_iterative_imputer_fit
-#
-# # sklearn # impute # KNNImputer
-# impute_knn_imputer = Call('KNNImputer',
-#                           'sklearn.impute',
-#                           {'missing_values': float('nan'),
-#                            'n_neighbors': 5,
-#                            'weights': 'uniform',
-#                            'metric': 'nan_euclidean',
-#                            'copy': True,
-#                            'add_indicator': False},
-#                           True,
-#                           CallType.CLASS)
-# packages[f'{impute_knn_imputer.library_path}.{impute_knn_imputer.name}'] = impute_knn_imputer
-#
-# impute_knn_imputer_fit = Call('fit',
-#                               'sklearn.impute.KNNImputer',
-#                               {'X': None,
-#                                'y': None},
-#                               False,
-#                               CallType.FUNCTION,
-#                               [impute_knn_imputer])
-# packages[
-#     f'{impute_knn_imputer_fit.library_path}.{impute_knn_imputer_fit.name}'] = impute_knn_imputer_fit
-#
-# # fit_transform(X[, y])
-# impute_knn_imputer_fit_transform = Call('fit_transform',
-#                                         'sklearn.impute.KNNImputer',
-#                                         {'X': None,
-#                                          'y': None},
-#                                         False,
-#                                         CallType.FUNCTION,
-#                                         [pd_dataframe])
-# packages[
-#     f'{impute_knn_imputer_fit_transform.library_path}.{impute_knn_imputer_fit_transform.name}'] = impute_knn_imputer_fit_transform
-# # get_feature_names_out([input_features])
-# impute_knn_imputer_get_feature_names_out = Call('get_feature_names_out',
-#                                                 'sklearn.impute.KNNImputer',
-#                                                 {'input_features': None},
-#                                                 False,
-#                                                 CallType.FUNCTION,
-#                                                 [pd_dataframe])
-# packages[
-#     f'{impute_knn_imputer_get_feature_names_out.library_path}.{impute_knn_imputer_get_feature_names_out.name}'] = impute_knn_imputer_get_feature_names_out
-# # get_params([deep])
-# impute_knn_imputer_get_params = Call('get_params',
-#                                      'sklearn.impute.KNNImputer',
-#                                      {'deep': True},
-#                                      False,
-#                                      CallType.FUNCTION,
-#                                      [pd_dataframe])
-# packages[
-#     f'{impute_knn_imputer_get_params.library_path}.{impute_knn_imputer_get_params.name}'] = impute_knn_imputer_get_params
-# # set_params(**params)
-# # transform(X)
-# impute_knn_imputer_transform = Call('transform',
-#                                     'sklearn.impute.KNNImputer',
-#                                     {'X': None},
-#                                     False,
-#                                     CallType.FUNCTION,
-#                                     [pd_dataframe])
-# packages[
-#     f'{impute_knn_imputer_transform.library_path}.{impute_knn_imputer_transform.name}'] = impute_knn_imputer_transform
+# sklearn # feature_selection
+feature_selection = Call(name='feature_selection', library_path='sklearn', call_type=CallType.PACKAGE)
+packages['sklearn.feature_selection'] = feature_selection
+
+# sklearn # feature_selection # SelectFromModel
+select_from_model = Call('SelectFromModel',
+                        'sklearn.feature_selection',
+                        {'estimator': None,
+                         'threshold': None,
+                         'prefit': False, 
+                         'norm_order': 1, 
+                         'max_features': None, 
+                         'importance_getter': 'auto'},
+                        True,
+                        CallType.CLASS)
+packages[f'{select_from_model.library_path}.{select_from_model.name}'] = select_from_model
+
+select_from_model_fit = Call('fit',
+                        'sklearn.feature_selection.SelectFromModel',
+                        {'X': None, 
+                         'y': None},
+                        False,
+                        CallType.FUNCTION,
+                        [select_from_model])
+packages[f'{select_from_model_fit.library_path}.{select_from_model_fit.name}'] = select_from_model_fit
+
+select_from_model_fit_transform = Call('fit_transform',
+                        'sklearn.feature_selection.SelectFromModel',
+                        {'X': None, 
+                         'y': None},
+                        False,
+                        CallType.FUNCTION,
+                        [pd_dataframe])
+packages[f'{select_from_model_fit_transform.library_path}.{select_from_model_fit_transform.name}'] = select_from_model_fit_transform
+
+select_from_model_inverse_transform = Call('inverse_transform',
+                        'sklearn.feature_selection.SelectFromModel',
+                        {'X': None},
+                        False,
+                        CallType.FUNCTION,
+                        [pd_dataframe])
+packages[f'{select_from_model_inverse_transform.library_path}.{select_from_model_inverse_transform.name}'] = select_from_model_inverse_transform
+
+select_from_model_partial_fit = Call('partial_fit',
+                        'sklearn.feature_selection.SelectFromModel',
+                        {'X': None, 
+                         'y': None},
+                        False,
+                        CallType.FUNCTION,
+                        [select_from_model])
+packages[f'{select_from_model_partial_fit.library_path}.{select_from_model_partial_fit.name}'] = select_from_model_partial_fit
+
+select_from_model_transform = Call('transform',
+                        'sklearn.feature_selection.SelectFromModel',
+                        {'X': None},
+                        False,
+                        CallType.FUNCTION,
+                        [pd_dataframe])
+packages[f'{select_from_model_transform.library_path}.{select_from_model_transform.name}'] = select_from_model_transform
+
 
 # sklearn # model_selection
 model_selection = Call(name='model_selection', library_path='sklearn', call_type=CallType.PACKAGE)
@@ -2414,6 +2397,181 @@ cross_val_score = Call('cross_val_score',
                        [pd_dataframe])
 packages[f'{cross_val_score.library_path}.{cross_val_score.name}'] = cross_val_score
 
+# sklearn # tree
+packages['sklearn.tree'] = Call(name='tree', library_path='sklearn', call_type=CallType.PACKAGE)
+
+# sklearn # tree # DecisionTreeClassifier
+decision_tree_classifier = Call('DecisionTreeClassifier',
+                             'sklearn.tree',
+                             {'criterion': 'gini',
+                              'splitter': 'best',
+                              'max_depth': None,
+                              'min_samples_split': 2,
+                              'min_samples_leaf': 1,
+                              'min_weight_fraction_leaf': 0.0,
+                              'max_features': None,
+                              'random_state': None,
+                              'max_leaf_nodes': None,
+                              'min_impurity_decrease': 0.0,
+                              'class_weight': None,
+                              'ccp_alpha': 0.0},
+                             True,
+                             CallType.CLASS)
+packages[f'{decision_tree_classifier.library_path}.{decision_tree_classifier.name}'] = decision_tree_classifier
+
+decision_tree_classifier_fit = Call('fit',
+                             'sklearn.tree.DecisionTreeClassifier',
+                             {'X': None,
+                              'y': None,
+                              'sample_weight': None,
+                              'check_input': True},
+                             False,
+                             CallType.FUNCTION,
+                                    [decision_tree_classifier])
+packages[f'{decision_tree_classifier_fit.library_path}.{decision_tree_classifier_fit.name}'] = decision_tree_classifier_fit
+
+decision_tree_classifier_predict = Call('predict',
+                                    'sklearn.tree.DecisionTreeClassifier',
+                                    {'X': None,
+                                     'check_input': True},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[f'{decision_tree_classifier_predict.library_path}.{decision_tree_classifier_predict.name}'] = decision_tree_classifier_predict
+
+decision_tree_classifier_predict_log_proba = Call('predict_log_proba',
+                                    'sklearn.tree.DecisionTreeClassifier',
+                                    {'X': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[f'{decision_tree_classifier_predict_log_proba.library_path}.{decision_tree_classifier_predict_log_proba.name}'] = decision_tree_classifier_predict_log_proba
+
+decision_tree_classifier_predict_proba = Call('predict_proba',
+                                    'sklearn.tree.DecisionTreeClassifier',
+                                    {'X': None,
+                                     'check_input': True},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[f'{decision_tree_classifier_predict_proba.library_path}.{decision_tree_classifier_predict_proba.name}'] = decision_tree_classifier_predict_proba
+
+
+# sklearn # tree # DecisionTreeRegressor
+decision_tree_regressor = Call('DecisionTreeRegressor',
+                             'sklearn.tree',
+                             {'criterion': 'squared_error',
+                              'splitter': 'best',
+                              'max_depth': None,
+                              'min_samples_split': 2,
+                              'min_samples_leaf': 1,
+                              'min_weight_fraction_leaf': 0.0,
+                              'max_features': None,
+                              'random_state': None,
+                              'max_leaf_nodes': None,
+                              'min_impurity_decrease': 0.0,
+                              'ccp_alpha': 0.0},
+                             True,
+                             CallType.CLASS)
+packages[f'{decision_tree_regressor.library_path}.{decision_tree_regressor.name}'] = decision_tree_regressor
+
+decision_tree_regressor_fit = Call('fit',
+                             'sklearn.tree.DecisionTreeRegressor',
+                             {'X': None,
+                              'y': None,
+                              'sample_weight': None,
+                              'check_input': True},
+                             False,
+                             CallType.FUNCTION,
+                                    [decision_tree_regressor])
+packages[f'{decision_tree_regressor_fit.library_path}.{decision_tree_regressor_fit.name}'] = decision_tree_regressor_fit
+
+decision_tree_regressor_predict = Call('predict',
+                                    'sklearn.tree.DecisionTreeRegressor',
+                                    {'X': None,
+                                     'check_input': True},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[f'{decision_tree_regressor_predict.library_path}.{decision_tree_regressor_predict.name}'] = decision_tree_regressor_predict
+
+
+# sklearn # neighbors
+packages['sklearn.neighbors'] = Call(name='neighbors', library_path='sklearn', call_type=CallType.PACKAGE)
+
+# sklearn # tree # KNeighborsClassifier
+k_neighbors_classifier = Call('KNeighborsClassifier',
+                             'sklearn.neighbors',
+                             {'n_neighbors': 5,
+                              'weights': 'uniform',
+                              'algorithm': 'auto',
+                              'leaf_size': 30,
+                              'p': 2,
+                              'metric': 'minkowski',
+                              'metric_params': None,
+                              'n_jobs': None},
+                             True,
+                             CallType.CLASS)
+packages[f'{k_neighbors_classifier.library_path}.{k_neighbors_classifier.name}'] = k_neighbors_classifier
+
+k_neighbors_classifier_fit = Call('fit',
+                             'sklearn.neighbors.KNeighborsClassifier',
+                             {'X': None,
+                              'y': None},
+                             False,
+                             CallType.FUNCTION,
+                                    [k_neighbors_classifier])
+packages[f'{k_neighbors_classifier_fit.library_path}.{k_neighbors_classifier_fit.name}'] = k_neighbors_classifier_fit
+
+k_neighbors_classifier_predict = Call('predict',
+                                    'sklearn.neighbors.KNeighborsClassifier',
+                                    {'X': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[f'{k_neighbors_classifier_predict.library_path}.{k_neighbors_classifier_predict.name}'] = k_neighbors_classifier_predict
+
+k_neighbors_classifier_predict_proba = Call('predict_proba',
+                                    'sklearn.neighbors.KNeighborsClassifier',
+                                    {'X': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[f'{k_neighbors_classifier_predict_proba.library_path}.{k_neighbors_classifier_predict_proba.name}'] = k_neighbors_classifier_predict_proba
+
+# sklearn # tree # KNeighborsRegressor
+k_neighbors_regressor = Call('KNeighborsRegressor',
+                             'sklearn.neighbors',
+                             {'n_neighbors': 5,
+                              'weights': 'uniform',
+                              'algorithm': 'auto',
+                              'leaf_size': 30,
+                              'p': 2,
+                              'metric': 'minkowski',
+                              'metric_params': None,
+                              'n_jobs': None},
+                             True,
+                             CallType.CLASS)
+packages[f'{k_neighbors_regressor.library_path}.{k_neighbors_regressor.name}'] = k_neighbors_regressor
+
+k_neighbors_regressor_fit = Call('fit',
+                             'sklearn.neighbors.KNeighborsRegressor',
+                             {'X': None,
+                              'y': None},
+                             False,
+                             CallType.FUNCTION,
+                                    [k_neighbors_regressor])
+packages[f'{k_neighbors_regressor_fit.library_path}.{k_neighbors_regressor_fit.name}'] = k_neighbors_regressor_fit
+
+k_neighbors_regressor_predict = Call('predict',
+                                    'sklearn.neighbors.KNeighborsRegressor',
+                                    {'X': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [pd_dataframe])
+packages[f'{k_neighbors_regressor_predict.library_path}.{k_neighbors_regressor_predict.name}'] = k_neighbors_regressor_predict
+
+
 # sklearn # metrics
 packages['sklearn.metrics'] = Call(name='metrics', library_path='sklearn', call_type=CallType.PACKAGE)
 
@@ -2434,7 +2592,24 @@ packages['sklearn.ensemble'] = Call(name='ensemble', library_path='sklearn', cal
 # sklearn # ensemble # RandomForestClassifier
 random_forest_classifier = Call('RandomForestClassifier',
                                 'sklearn.ensemble',
-                                {'n_estimators': 100},
+                                {'n_estimators': 100,
+                                 'criterion': 'gini',
+                                 'max_depth': None,
+                                 'min_samples_split': 2,
+                                 'min_samples_leaf': 1,
+                                 'min_weight_fraction_leaf': 0.0,
+                                 'max_features': 'sqrt',
+                                 'max_leaf_nodes': None,
+                                 'min_impurity_decrease': 0.0,
+                                 'bootstrap': True,
+                                 'oob_score': False,
+                                 'n_jobs': None,
+                                 'random_state': None,
+                                 'verbose': 0,
+                                 'warm_start': False,
+                                 'class_weight': None,
+                                 'ccp_alpha': 0.0,
+                                 'max_samples': None},
                                 True,
                                 CallType.CLASS)
 packages[f'{random_forest_classifier.library_path}.{random_forest_classifier.name}'] = random_forest_classifier
@@ -2459,10 +2634,72 @@ random_forest_classifier_predict = Call('predict',
 packages[
     f'{random_forest_classifier_predict.library_path}.{random_forest_classifier_predict.name}'] = random_forest_classifier_predict
 
+# sklearn # ensemble # RandomForestRegressor
+random_forest_regressor = Call('RandomForestRegressor',
+                                'sklearn.ensemble',
+                                {'n_estimators': 100, 'criterion': 'squared_error',
+                                 'max_depth': None,
+                                 'min_samples_split': 2,
+                                 'min_samples_leaf': 1,
+                                 'min_weight_fraction_leaf': 0.0,
+                                 'max_features': 1.0,
+                                 'max_leaf_nodes': None,
+                                 'min_impurity_decrease': 0.0,
+                                 'bootstrap': True,
+                                 'oob_score': False,
+                                 'n_jobs': None,
+                                 'random_state': None,
+                                 'verbose': 0,
+                                 'warm_start': False,
+                                 'ccp_alpha': 0.0,
+                                 'max_samples': None},
+                                True,
+                                CallType.CLASS)
+packages[f'{random_forest_regressor.library_path}.{random_forest_regressor.name}'] = random_forest_regressor
+
+random_forest_regressor_fit = Call('fit',
+                                    'sklearn.ensemble.RandomForestRegressor',
+                                    {'X': None,
+                                     'y': None,
+                                     'sample_weight': None},
+                                    False,
+                                    CallType.FUNCTION,
+                                    [random_forest_regressor])
+packages[
+    f'{random_forest_regressor_fit.library_path}.{random_forest_regressor_fit.name}'] = random_forest_regressor_fit
+
+random_forest_regressor_predict = Call('predict',
+                                        'sklearn.ensemble.RandomForestRegressor',
+                                        {'X': None},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [pd_dataframe])
+packages[
+    f'{random_forest_regressor_predict.library_path}.{random_forest_regressor_predict.name}'] = random_forest_regressor_predict
+
 # sklearn # ensemble # GradientBoostingClassifier
 gradient_boosting_classifier = Call('GradientBoostingClassifier',
                                     'sklearn.ensemble',
-                                    {},
+                                    {'loss': 'log_loss',
+                                     'learning_rate': 0.1,
+                                     'n_estimators': 100,
+                                     'subsample': 1.0,
+                                     'criterion': 'friedman_mse',
+                                     'min_samples_split': 2,
+                                     'min_samples_leaf': 1,
+                                     'min_weight_fraction_leaf': 0.0,
+                                     'max_depth': 3,
+                                     'min_impurity_decrease': 0.0,
+                                     'init': None,
+                                     'random_state': None,
+                                     'max_features': None,
+                                     'verbose': 0,
+                                     'max_leaf_nodes': None,
+                                     'warm_start': False,
+                                     'validation_fraction': 0.1,
+                                     'n_iter_no_change': None,
+                                     'tol': 0.0001,
+                                     'ccp_alpha': 0.0},
                                     True,
                                     CallType.CLASS)
 packages[
@@ -2488,6 +2725,56 @@ gradient_boosting_classifier_predict = Call('predict',
                                             [pd_dataframe])
 packages[
     f'{gradient_boosting_classifier_predict.library_path}.{gradient_boosting_classifier_predict.name}'] = gradient_boosting_classifier_predict
+
+# sklearn # ensemble # GradientBoostingRegressor
+gradient_boosting_regressor = Call('GradientBoostingRegressor',
+                                    'sklearn.ensemble',
+                                    {'loss': 'squared_error',
+                                     'learning_rate': 0.1,
+                                     'n_estimators': 100,
+                                     'subsample': 1.0,
+                                     'criterion': 'friedman_mse',
+                                     'min_samples_split': 2,
+                                     'min_samples_leaf': 1,
+                                     'min_weight_fraction_leaf': 0.0,
+                                     'max_depth': 3,
+                                     'min_impurity_decrease': 0.0,
+                                     'init': None,
+                                     'random_state': None,
+                                     'max_features': None,
+                                     'alpha': 0.9,
+                                     'verbose': 0,
+                                     'max_leaf_nodes': None,
+                                     'warm_start': False,
+                                     'validation_fraction': 0.1,
+                                     'n_iter_no_change': None,
+                                     'tol': 0.0001,
+                                     'ccp_alpha': 0.0},
+                                    True,
+                                    CallType.CLASS)
+packages[
+    f'{gradient_boosting_regressor.library_path}.{gradient_boosting_regressor.name}'] = gradient_boosting_regressor
+
+gradient_boosting_regressor_fit = Call('fit',
+                                        'sklearn.ensemble.GradientBoostingRegressor',
+                                        {'X': None,
+                                         'y': None,
+                                         'sample_weight': None,
+                                         'monitor': None},
+                                        False,
+                                        CallType.FUNCTION,
+                                        [gradient_boosting_regressor])
+packages[
+    f'{gradient_boosting_regressor_fit.library_path}.{gradient_boosting_regressor_fit.name}'] = gradient_boosting_regressor_fit
+
+gradient_boosting_regressor_predict = Call('predict',
+                                            'sklearn.ensemble.GradientBoostingRegressor',
+                                            {'X': None},
+                                            False,
+                                            CallType.FUNCTION,
+                                            [pd_dataframe])
+packages[
+    f'{gradient_boosting_regressor_predict.library_path}.{gradient_boosting_regressor_predict.name}'] = gradient_boosting_regressor_predict
 
 # sklearn # linear_model
 packages['sklearn.linear_model'] = Call(name='linear_model', library_path='sklearn', call_type=CallType.PACKAGE)
@@ -2518,6 +2805,37 @@ logistic_regression_predict = Call('predict',
                                    [pd_dataframe])
 packages[f'{logistic_regression_predict.library_path}.{logistic_regression_predict.name}'] = logistic_regression_predict
 
+# sklearn # linear_model # LinearRegression
+linear_regression = Call('LinearRegression',
+                           'sklearn.linear_model',
+                           { 'fit_intercept': True,
+                             'copy_X': True,
+                             'n_jobs': None,
+                             'positive': False},
+                           True,
+                           CallType.CLASS)
+packages[f'{linear_regression.library_path}.{linear_regression.name}'] = linear_regression
+
+linear_regression_fit = Call('fit',
+                             'sklearn.linear_model.LinearRegression',
+                               {'X': None,
+                                'y': None,
+                                'sample_weight': None},
+                               False,
+                               CallType.FUNCTION,
+                               [linear_regression])
+packages[f'{linear_regression_fit.library_path}.{linear_regression_fit.name}'] = linear_regression_fit
+
+linear_regression_predict = Call('predict',
+                                   'sklearn.linear_model.LinearRegression',
+                                   {'X': None},
+                                   False,
+                                   CallType.FUNCTION,
+                                   [pd_dataframe])
+packages[f'{linear_regression_predict.library_path}.{linear_regression_predict.name}'] = linear_regression_predict
+
+
+
 # sklearn # linear_model # SGDClassifier
 sgd_classifier = Call('SGDClassifier',
                       'sklearn.linear_model',
@@ -2545,6 +2863,283 @@ sgd_classifier_predict = Call('predict',
                               CallType.FUNCTION,
                               [pd_dataframe])
 packages[f'{sgd_classifier_predict.library_path}.{sgd_classifier_predict.name}'] = sgd_classifier_predict
+
+# sklearn # linear_model # Lasso
+lasso = Call('Lasso',
+                      'sklearn.linear_model',
+                      {'alpha': 1.0,
+                       'fit_intercept': True,
+                       'precompute': False,
+                       'copy_X': True,
+                       'max_iter': 1000,
+                       'tol': 0.0001,
+                       'warm_start': False,
+                       'positive': False,
+                       'random_state': None,
+                       'selection': 'cyclic'},
+                      True,
+                      CallType.CLASS)
+packages[f'{lasso.library_path}.{lasso.name}'] = lasso
+
+lasso_fit = Call('fit',
+                          'sklearn.linear_model.Lasso',
+                          {'X': None,
+                           'y': None,
+                           'sample_weight': None,
+                           'check_input': True},
+                          False,
+                          CallType.FUNCTION,
+                          [lasso])
+packages[f'{lasso_fit.library_path}.{lasso_fit.name}'] = lasso_fit
+
+lasso_predict = Call('predict',
+                              'sklearn.linear_model.Lasso',
+                              {'X': None},
+                              False,
+                              CallType.FUNCTION,
+                              [pd_dataframe])
+packages[f'{lasso_predict.library_path}.{lasso_predict.name}'] = lasso_predict
+
+# sklearn # linear_model # LassoCV
+lasso_cv = Call('LassoCV',
+                      'sklearn.linear_model',
+                      {'eps': 0.001,
+                       'n_alphas': 100,
+                       'alphas': None,
+                       'fit_intercept': True,
+                       'precompute': 'auto',
+                       'max_iter': 1000,
+                       'tol': 0.0001,
+                       'copy_X': True,
+                       'cv': None,
+                       'verbose': False,
+                       'n_jobs': None,
+                       'positive': False,
+                       'random_state': None,
+                       'selection': 'cyclic'},
+                      True,
+                      CallType.CLASS)
+packages[f'{lasso_cv.library_path}.{lasso_cv.name}'] = lasso_cv
+
+lasso_cv_fit = Call('fit',
+                          'sklearn.linear_model.LassoCV',
+                          {'X': None,
+                           'y': None,
+                           'sample_weight': None},
+                          False,
+                          CallType.FUNCTION,
+                          [lasso_cv])
+packages[f'{lasso_cv_fit.library_path}.{lasso_cv_fit.name}'] = lasso_cv_fit
+
+lasso_cv_predict = Call('predict',
+                              'sklearn.linear_model.LassoCV',
+                              {'X': None},
+                              False,
+                              CallType.FUNCTION,
+                              [pd_dataframe])
+packages[f'{lasso_cv_predict.library_path}.{lasso_cv_predict.name}'] = lasso_cv_predict
+
+# sklearn # linear_model # LassoLars
+lasso_lars = Call('LassoLars',
+                      'sklearn.linear_model',
+                      {'alpha': 1.0,
+                       'fit_intercept': True,
+                       'verbose': False,
+                       'normalize': 'deprecated',
+                       'precompute': 'auto',
+                       'max_iter': 500,
+                       'eps': 2.220446049250313e-16,
+                       'copy_X': True,
+                       'fit_path': True,
+                       'positive': False,
+                       'jitter': None,
+                       'random_state': None},
+                      True,
+                      CallType.CLASS)
+packages[f'{lasso_lars.library_path}.{lasso_lars.name}'] = lasso_lars
+
+lasso_lars_fit = Call('fit',
+                          'sklearn.linear_model.LassoLars',
+                          {'X': None,
+                           'y': None,
+                           'Xy': None},
+                          False,
+                          CallType.FUNCTION,
+                          [lasso_lars])
+packages[f'{lasso_lars_fit.library_path}.{lasso_lars_fit.name}'] = lasso_lars_fit
+
+lasso_lars_predict = Call('predict',
+                              'sklearn.linear_model.LassoLars',
+                              {'X': None},
+                              False,
+                              CallType.FUNCTION,
+                              [pd_dataframe])
+packages[f'{lasso_lars_predict.library_path}.{lasso_lars_predict.name}'] = lasso_lars_predict
+
+# sklearn # linear_model # Ridge
+ridge = Call('Ridge',
+                      'sklearn.linear_model',
+                      {'alpha': 1.0,
+                       'fit_intercept': True,
+                       'copy_X': True,
+                       'max_iter': None,
+                       'tol': 0.0001,
+                       'solver': 'auto',
+                       'positive': False,
+                       'random_state': None},
+                      True,
+                      CallType.CLASS)
+packages[f'{ridge.library_path}.{ridge.name}'] = ridge
+
+ridge_fit = Call('fit',
+                          'sklearn.linear_model.Ridge',
+                          {'X': None,
+                           'y': None,
+                           'sample_weight': None},
+                          False,
+                          CallType.FUNCTION,
+                          [ridge])
+packages[f'{ridge_fit.library_path}.{ridge_fit.name}'] = ridge_fit
+
+ridge_predict = Call('predict',
+                              'sklearn.linear_model.Ridge',
+                              {'X': None},
+                              False,
+                              CallType.FUNCTION,
+                              [pd_dataframe])
+packages[f'{ridge_predict.library_path}.{ridge_predict.name}'] = ridge_predict
+
+# sklearn # linear_model # SGDRegressor
+sgd_regressor = Call('SGDRegressor',
+                      'sklearn.linear_model',
+                      {'loss': 'squared_error',
+                       'penalty': 'l2',
+                       'alpha': 0.0001,
+                       'l1_ratio': 0.15,
+                       'fit_intercept': True,
+                       'max_iter': 1000,
+                       'tol': 0.001,
+                       'shuffle': True,
+                       'verbose': 0,
+                       'epsilon': 0.1,
+                       'random_state': None,
+                       'learning_rate': 'invscaling',
+                       'eta0': 0.01,
+                       'power_t': 0.25,
+                       'early_stopping': False,
+                       'validation_fraction': 0.1,
+                       'n_iter_no_change': 5,
+                       'warm_start': False,
+                       'average': False},
+                      True,
+                      CallType.CLASS)
+packages[f'{sgd_regressor.library_path}.{sgd_regressor.name}'] = sgd_regressor
+
+sgd_regressor_fit = Call('fit',
+                          'sklearn.linear_model.SGDRegressor',
+                          {'X': None,
+                           'y': None,
+                           'coef_init': None,
+                           'intercept_init': None,
+                           'sample_weight': None},
+                          False,
+                          CallType.FUNCTION,
+                          [sgd_regressor])
+packages[f'{sgd_regressor_fit.library_path}.{sgd_regressor_fit.name}'] = sgd_regressor_fit
+
+sgd_regressor_partial_fit = Call('partial_fit',
+                          'sklearn.linear_model.SGDRegressor',
+                          {'X': None,
+                           'y': None,
+                           'sample_weight': None},
+                          False,
+                          CallType.FUNCTION,
+                          [sgd_regressor])
+packages[f'{sgd_regressor_partial_fit.library_path}.{sgd_regressor_partial_fit.name}'] = sgd_regressor_partial_fit
+
+sgd_regressor_predict = Call('predict',
+                              'sklearn.linear_model.SGDRegressor',
+                              {'X': None},
+                              False,
+                              CallType.FUNCTION,
+                              [pd_dataframe])
+packages[f'{sgd_regressor_predict.library_path}.{sgd_regressor_predict.name}'] = sgd_regressor_predict
+
+# sklearn # linear_model # RANSACRegressor
+ransac_regressor = Call('RANSACRegressor',
+                      'sklearn.linear_model',
+                      {'estimator': None,
+                      'min_samples': None,
+                      'residual_threshold': None, 
+                      'is_data_valid': None, 
+                      'is_model_valid': None, 
+                      'max_trials': 100, 
+                      'max_skips': np.inf, 
+                      'stop_n_inliers': np.inf, 
+                      'stop_score': np.inf, 
+                      'stop_probability': 0.99, 
+                      'loss': 'absolute_error', 
+                      'random_state': None, 
+                      'base_estimator': 'deprecated'},
+                      True,
+                      CallType.CLASS)
+packages[f'{ransac_regressor.library_path}.{ransac_regressor.name}'] = ransac_regressor
+
+ransac_regressor_fit = Call('fit',
+                          'sklearn.linear_model.RANSACRegressor',
+                          {'X': None,
+                           'y': None,
+                           'sample_weight': None},
+                          False,
+                          CallType.FUNCTION,
+                          [ransac_regressor])
+packages[f'{ransac_regressor_fit.library_path}.{ransac_regressor_fit.name}'] = ransac_regressor_fit
+
+ransac_regressor_predict = Call('predict',
+                              'sklearn.linear_model.RANSACRegressor',
+                              {'X': None},
+                              False,
+                              CallType.FUNCTION,
+                              [pd_dataframe])
+packages[f'{sgd_regressor_predict.library_path}.{sgd_regressor_predict.name}'] = sgd_regressor_predict
+
+# sklearn # linear_model # ElasticNet
+elastic_net = Call('ElasticNet',
+                      'sklearn.linear_model',
+                      {'alpha': 1.0,
+                       'l1_ratio':0.5,
+                       'fit_intercept': True,
+                       'precompute': False, 
+                       'max_iter': 1000, 
+                       'copy_X': True, 
+                       'tol': 0.0001, 
+                       'warm_start': False, 
+                       'positive': False, 
+                       'random_state': None, 
+                       'selection': 'cyclic'},
+                      True,
+                      CallType.CLASS)
+packages[f'{elastic_net.library_path}.{elastic_net.name}'] = elastic_net
+
+elastic_net_fit = Call('fit',
+                          'sklearn.linear_model.ElasticNet',
+                          {'X': None,
+                           'y': None,
+                           'sample_weight': None,
+                           'check_input': True},
+                          False,
+                          CallType.FUNCTION,
+                          [elastic_net])
+packages[f'{elastic_net_fit.library_path}.{elastic_net_fit.name}'] = elastic_net_fit
+
+elastic_net_predict = Call('predict',
+                              'sklearn.linear_model.ElasticNet',
+                              {'X': None},
+                              False,
+                              CallType.FUNCTION,
+                              [pd_dataframe])
+packages[f'{elastic_net_predict.library_path}.{elastic_net_predict.name}'] = elastic_net_predict
+
 
 # sklearn # svm
 packages['sklearn.svm'] = Call(name='svm', library_path='sklearn', call_type=CallType.PACKAGE)
@@ -2589,6 +3184,221 @@ svc_predict = Call('predict',
                    [pd_dataframe])
 packages[f'{svc_predict.library_path}.{svc_predict.name}'] = svc_predict
 
+# sklearn # svm # LinearSVC
+linear_svc = Call('LinearSVC',
+           'sklearn.svm',
+           {'penalty': 'l2', 
+            'loss': 'squared_hinge', 
+            'dual': True, 
+            'tol': 0.0001, 
+            'C': 1.0, 
+            'multi_class': 'ovr', 
+            'fit_intercept': True, 
+            'intercept_scaling': 1, 
+            'class_weight': None, 
+            'verbose': 0, 
+            'random_state': None, 
+            'max_iter': 1000},
+           True,
+           CallType.CLASS)
+packages[f'{linear_svc.library_path}.{linear_svc.name}'] = linear_svc
+
+linear_svc_fit = Call('fit',
+               'sklearn.svm.LinearSVC',
+               {'X': None,
+                'y': None,
+                'sample_weight': None},
+               False,
+               CallType.FUNCTION,
+               [linear_svc])
+packages[f'{linear_svc_fit.library_path}.{linear_svc_fit.name}'] = linear_svc_fit
+
+linear_svc_predict = Call('predict',
+                   'sklearn.svm.LinearSVC',
+                   {'X': None},
+                   False,
+                   CallType.FUNCTION,
+                   [pd_dataframe])
+packages[f'{linear_svc_predict.library_path}.{linear_svc_predict.name}'] = linear_svc_predict
+
+# sklearn # svm # LinearSVR
+linear_svr = Call('LinearSVR',
+           'sklearn.svm',
+           {'epsilon': 0.0,
+            'tol': 0.0001, 
+            'C': 1.0, 
+            'loss': 'epsilon_insensitive', 
+            'fit_intercept': True, 
+            'intercept_scaling': 1.0, 
+            'dual': True, 
+            'verbose': 0, 
+            'random_state': None, 
+            'max_iter': 1000},
+           True,
+           CallType.CLASS)
+packages[f'{linear_svr.library_path}.{linear_svr.name}'] = linear_svr
+
+linear_svr_fit = Call('fit',
+               'sklearn.svm.LinearSVR',
+               {'X': None,
+                'y': None,
+                'sample_weight': None},
+               False,
+               CallType.FUNCTION,
+               [linear_svr])
+packages[f'{linear_svr_fit.library_path}.{linear_svr_fit.name}'] = linear_svr_fit
+
+linear_svr_predict = Call('predict',
+                   'sklearn.svm.LinearSVR',
+                   {'X': None},
+                   False,
+                   CallType.FUNCTION,
+                   [pd_dataframe])
+packages[f'{linear_svr_predict.library_path}.{linear_svr_predict.name}'] = linear_svr_predict
+
+# sklearn # dummy
+packages['sklearn.dummy'] = Call(name='dummy', library_path='sklearn', call_type=CallType.PACKAGE)
+
+# sklearn # dummy # DummyClassifier
+dummy_classifier = Call('DummyClassifier',
+           'sklearn.dummy',
+           {'strategy': 'prior',
+            'random_state': None, 
+            'constant': None},
+           True,
+           CallType.CLASS)
+packages[f'{dummy_classifier.library_path}.{dummy_classifier.name}'] = dummy_classifier
+
+dummy_classifier_fit = Call('fit',
+               'sklearn.dummy.DummyClassifier',
+               {'X': None,
+                'y': None,
+                'sample_weight': None},
+               False,
+               CallType.FUNCTION,
+               [dummy_classifier])
+packages[f'{dummy_classifier_fit.library_path}.{dummy_classifier_fit.name}'] = dummy_classifier_fit
+
+dummy_classifier_predict = Call('predict',
+               'sklearn.dummy.DummyClassifier',
+               {'X': None},
+               False,
+               CallType.FUNCTION,
+               [pd_dataframe])
+packages[f'{dummy_classifier_predict.library_path}.{dummy_classifier_predict.name}'] = dummy_classifier_predict
+
+dummy_classifier_predict_log_proba = Call('predict_log_proba',
+               'sklearn.dummy.DummyClassifier',
+               {'X': None},
+               False,
+               CallType.FUNCTION,
+               [pd_dataframe])
+packages[f'{dummy_classifier_predict_log_proba.library_path}.{dummy_classifier_predict_log_proba.name}'] = dummy_classifier_predict_log_proba
+
+dummy_classifier_predict_proba = Call('predict_proba',
+               'sklearn.dummy.DummyClassifier',
+               {'X': None},
+               False,
+               CallType.FUNCTION,
+               [pd_dataframe])
+packages[f'{dummy_classifier_predict_proba.library_path}.{dummy_classifier_predict_proba.name}'] = dummy_classifier_predict_proba
+
+# sklearn # dummy # DummyRegressor
+dummy_regressor = Call('DummyRegressor',
+           'sklearn.dummy',
+           {'strategy': 'mean',
+            'constant': None, 
+            'quantile': None},
+           True,
+           CallType.CLASS)
+packages[f'{dummy_regressor.library_path}.{dummy_regressor.name}'] = dummy_regressor
+
+dummy_regressor_fit = Call('fit',
+               'sklearn.dummy.DummyRegressor',
+               {'X': None,
+                'y': None,
+                'sample_weight': None},
+               False,
+               CallType.FUNCTION,
+               [dummy_regressor])
+packages[f'{dummy_regressor_fit.library_path}.{dummy_regressor_fit.name}'] = dummy_regressor_fit
+
+dummy_regressor_predict = Call('predict',
+               'sklearn.dummy.DummyRegressor',
+               {'X': None,
+                'return_std': False},
+               False,
+               CallType.FUNCTION,
+               [pd_dataframe])
+packages[f'{dummy_regressor_predict.library_path}.{dummy_regressor_predict.name}'] = dummy_regressor_predict
+
+
+# sklearn # naive_bayes
+packages['sklearn.naive_bayes'] = Call(name='naive_bayes', library_path='sklearn', call_type=CallType.PACKAGE)
+
+# sklearn # naive_bayes # GaussianNB
+gaussian_nb = Call('GaussianNB',
+           'sklearn.naive_bayes',
+           {'priors': None,
+            'var_smoothing': 1e-09},
+           True,
+           CallType.CLASS)
+packages[f'{gaussian_nb.library_path}.{gaussian_nb.name}'] = gaussian_nb
+
+gaussian_nb_fit = Call('fit',
+               'sklearn.naive_bayes.GaussianNB',
+               {'X': None,
+                'y': None,
+                'sample_weight': None},
+               False,
+               CallType.FUNCTION,
+               [gaussian_nb])
+packages[f'{gaussian_nb_fit.library_path}.{gaussian_nb_fit.name}'] = gaussian_nb_fit
+
+gaussian_nb_partial_fit = Call('partial_fit',
+               'sklearn.naive_bayes.GaussianNB',
+               {'X': None,
+                'y': None,
+                'classes': None,
+                'sample_weight': None},
+               False,
+               CallType.FUNCTION,
+               [gaussian_nb])
+packages[f'{gaussian_nb_partial_fit.library_path}.{gaussian_nb_partial_fit.name}'] = gaussian_nb_partial_fit
+
+gaussian_nb_predict = Call('predict',
+               'sklearn.naive_bayes.GaussianNB',
+               {'X': None},
+               False,
+               CallType.FUNCTION,
+               [pd_dataframe])
+packages[f'{gaussian_nb_predict.library_path}.{gaussian_nb_predict.name}'] = gaussian_nb_predict
+
+gaussian_nb_predict_joint_log_proba = Call('predict_joint_log_proba',
+               'sklearn.naive_bayes.GaussianNB',
+               {'X': None},
+               False,
+               CallType.FUNCTION,
+               [pd_dataframe])
+packages[f'{gaussian_nb_predict_joint_log_proba.library_path}.{gaussian_nb_predict_joint_log_proba.name}'] = gaussian_nb_predict_joint_log_proba
+
+gaussian_nb_predict_log_proba = Call('predict_log_proba',
+               'sklearn.naive_bayes.GaussianNB',
+               {'X': None},
+               False,
+               CallType.FUNCTION,
+               [pd_dataframe])
+packages[f'{gaussian_nb_predict_log_proba.library_path}.{gaussian_nb_predict_log_proba.name}'] = gaussian_nb_predict_log_proba
+
+gaussian_nb_predict_proba = Call('predict_proba',
+               'sklearn.naive_bayes.GaussianNB',
+               {'X': None},
+               False,
+               CallType.FUNCTION,
+               [pd_dataframe])
+packages[f'{gaussian_nb_predict_proba.library_path}.{gaussian_nb_predict_proba.name}'] = gaussian_nb_predict_proba
+
+
 # ada_boost_classifier =
 # ada_boost_regressor =
 # bagging_classifier =
@@ -2608,28 +3418,17 @@ packages[f'{svc_predict.library_path}.{svc_predict.name}'] = svc_predict
 # passive_aggressive_classifier =
 # ridge_classifier =
 # ridge_classifier_CV =
-# linear_regression =
-# ridge =
 # ridge_CV =
 # SGDRegressor =
-# elastic_net =
 # elastic_net_CV =
-# lasso =
-# lasso_CV =
 # ARDRegression =
 # passive_aggressive_regressor =
 # bernoulliN =
 # categorical_NB =
 # gaussian_NB =
-# KNeighbors_classifier =
-# KNeighbors_regressor =
 # MLP_classifier =
 # MLP_regressor =
-# LinearSVC =
-# LinearSVR =
 # SVR =
-# DecisionTreeClassifier =
-# DecisionTreeRegressor =
 # ColumnTransformer =
 # FastICA =
 # IncrementalPCA =
@@ -2640,7 +3439,6 @@ packages[f'{svc_predict.library_path}.{svc_predict.name}'] = svc_predict
 # CountVectorizer =
 # HashingVectorizer =
 # TfidfVectorizer =
-# SimpleImputer =
 # IterativeImputer =
 # KNNImputer =
 

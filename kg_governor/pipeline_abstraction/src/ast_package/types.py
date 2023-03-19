@@ -18,6 +18,8 @@ class CallComponents:
             return
         if type(package) in (str, list, int):
             return
+        if isinstance(package, tuple):
+            return
 
         self.base_package = self.parent_library
         self.package = f"{package.library_path}.{package.name}.{'.'.join(self.rest)}"

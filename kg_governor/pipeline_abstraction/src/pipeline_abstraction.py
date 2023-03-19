@@ -119,7 +119,12 @@ class NodeVisitor(ast.NodeVisitor):
                         if w_file is not None:
                             self.var_columns[target] = list(w_file)
                     else:
-                        self.var_columns[target] = [x.uri.rsplit('/', 1)[1].replace('+', ' ') for x in self.graph_info.tail.read]
+                        columns = [x.uri.rsplit('/', 1)[1].replace('+', ' ') for x in self.graph_info.tail.read]
+                        if not self.var_columns.get(target):
+                            self.var_columns[target] = [] # self.var_columns.get(assign_components.variable, [])
+                        for column in columns:
+                            if column not in self.var_columns[target]:
+                                self.var_columns[target].append(column)
     def visit_AugAssign(self, node: AugAssign) -> Any:
         pass
 
@@ -260,7 +265,19 @@ class NodeVisitor(ast.NodeVisitor):
             return format_node_text(node)
 
     def visit_UnaryOp(self, node: UnaryOp) -> Any:
-        pass
+        op = 1
+        num = '0'
+        if isinstance(node.op, ast.USub):
+            op = -1
+
+        if isinstance(node.operand, ast.Constant):
+            num = self.visit_Constant(node.operand)
+        else:
+            print("UNARY OPERAND:", node.__dict__)
+            print(astor.to_source(node))
+
+
+        return op * num
 
     def visit_Lambda(self, node: Lambda) -> Any:
         pass
@@ -327,6 +344,8 @@ class NodeVisitor(ast.NodeVisitor):
             self.visit_Subscript(node.left)
         elif isinstance(node.left, ast.Call):
             self.visit_Call(node.left)
+        elif isinstance(node.left, ast.Name):
+            self.visit_Name(node.left)
         else:
             print("COMPARE LEFT:", node.__dict__)
             print(astor.to_source(node))
@@ -474,7 +493,6 @@ class NodeVisitor(ast.NodeVisitor):
     def visit_Subscript(self, node: Subscript) -> Any:
         value_package = get_ast_package(node.value)
         name, base = value_package.extract_subscript_value(self, node)
-
         if not isinstance(name, list):
             var = self.variables.get(name, self.variables.get(base))
             file = self.files.get(name, self.files.get(base))
@@ -482,7 +500,7 @@ class NodeVisitor(ast.NodeVisitor):
                 working_file = self.working_file.get(file.filename, pd.DataFrame())
                 if isinstance(node.slice, ast.Index):
                     index = self.visit_Index(node.slice)
-                    column_list = list(working_file)
+                    column_list = self.var_columns.get(base, list(working_file))
 
                     if not isinstance(index, list):
                         index = self.variables.get(index, index)
@@ -522,7 +540,7 @@ class NodeVisitor(ast.NodeVisitor):
                             self.graph_info.add_columns(file.filename, slices[1])
                 elif isinstance(node.slice, ast.Slice):
                     lower, upper, step = self.visit_Slice(node.slice)
-                    columns = list(working_file)
+                    columns = self.var_columns.get(base, list(working_file))
                     if lower is None:
                         lower = 0
                     if upper is None:
@@ -544,6 +562,71 @@ class NodeVisitor(ast.NodeVisitor):
                                 if col == lower:
                                     self.columns.append(col)
                                     is_checked = True
+                elif isinstance(node.slice, ast.Name):
+                    name = self.visit_Name(node.slice)
+                    column_list = self.var_columns.get(base, list(working_file))
+                    cols = self.variables.get(name)
+                    if type(cols) != list:
+                        cols = [cols]
+                    for col in cols:
+                        if col in column_list:
+                            self.columns.append(col)
+                elif isinstance(node.slice, ast.Constant):
+                    col = self.visit_Constant(node.slice)
+                    column_list = self.var_columns.get(base, list(working_file))
+                    if isinstance(col, int):
+                        if col < len(column_list):
+                            self.columns.append(column_list[col])
+                    elif isinstance(col, str):
+                        if col in column_list:
+                            self.columns.append(col)
+                elif isinstance(node.slice, ast.Tuple):
+                    values = self.visit_Tuple(node.slice)
+                    column_list = self.var_columns.get(base, list(working_file))
+                    if len(column_list) > 0:
+                        print(astor.to_source(node))
+                        if len(values) == 1:
+                            values.append((0, -1, None))
+                        if len(values) == 0:
+                            values.append((0, -1, None))
+                            values.append((0, -1, None))
+
+                        if isinstance(values[1], tuple):
+                            beg = values[1][0]
+                            end = values[1][1]
+                            if type(beg) != int:
+                                beg = column_list.index(beg) if beg in column_list else 0
+                                end = column_list.index(end) + 1 if end in column_list else len(column_list)
+                            if end == -1:
+                                end = len(column_list)
+
+                            for x in range(max(beg, 0), min(end, len(column_list))):
+                                self.columns.append(column_list[x])
+                        elif isinstance(values[1], int):
+                            col_index = values[1] if values[1] >= 0 else max(len(column_list) + values[1], 0)
+                            if col_index < len(column_list):
+                                self.columns.append(column_list[col_index])
+                        elif isinstance(values[1], str):
+                            if values[1] in column_list:
+                                self.columns.append(values[1])
+                        elif isinstance(values[1], list):
+                            for el in values[1]:
+                                if isinstance(el, int):
+                                    if el < len(column_list):
+                                        self.columns.append(column_list[el])
+                                elif isinstance(el, str):
+                                    if el in column_list:
+                                        self.columns.append(el)
+                elif isinstance(node.slice, ast.List):
+                    cols = self.visit_List(node.slice)
+                    column_list = self.var_columns.get(base, list(working_file))
+                    for col in cols:
+                        if col in column_list:
+                            self.columns.append(col)
+                elif isinstance(node.slice, ast.BinOp):
+                    self.visit_BinOp(node.slice)
+                elif isinstance(node.slice, ast.Compare):
+                    self.visit_Compare(node.slice)
                 else:
                     print('SUBSCRIPT SOMETHING', node.slice, node.__dict__)
                     print(astor.to_source(node))
@@ -577,6 +660,22 @@ class NodeVisitor(ast.NodeVisitor):
             elif isinstance(element, ast.Call):
                 _, _, _, base = self.visit_Call(element)
                 elements.append(base)
+            elif isinstance(element, ast.Slice):
+                elements.append(self.visit_Slice(element))
+            elif isinstance(element, ast.List):
+                elements.append(self.visit_List(element))
+            elif isinstance(element, ast.Compare):
+                elements.append(self.visit_Compare(element))
+            elif isinstance(element, ast.BinOp):
+                elements.append(self.visit_BinOp(element))
+            elif isinstance(element, ast.UnaryOp):
+                elements.append(self.visit_UnaryOp(element))
+            elif isinstance(element, ast.Name):
+                name = self.visit_Name(element)
+                elements.append(self.variables.get(name, []))
+            elif isinstance(element, ast.Attribute):
+                print(self.visit_Attribute(element)) # TODO: FIX THIS ISSUE
+                elements.append((0, -1, None))
             else:
                 print("TUPLE ELTS:", node.__dict__)
                 print(astor.to_source(node))
@@ -643,10 +742,10 @@ class NodeVisitor(ast.NodeVisitor):
         pass
 
     def visit_UAdd(self, node: UAdd) -> Any:
-        pass
+        return ''
 
     def visit_USub(self, node: USub) -> Any:
-        pass
+        return '-'
 
     def visit_Eq(self, node: Eq) -> Any:
         pass
@@ -733,7 +832,7 @@ class NodeVisitor(ast.NodeVisitor):
         elif isinstance(node.value, ast.List):
             return self.visit_List(node.value)
         elif isinstance(node.value, ast.Subscript):
-            print(self.visit_Subscript(node.value))  # TODO: MAKE SOMETHING OF THIS VALUE
+            self.visit_Subscript(node.value)  # TODO: MAKE SOMETHING OF THIS VALUE
         elif isinstance(node.value, ast.Name):
             return self.visit_Name(node.value)
         else:

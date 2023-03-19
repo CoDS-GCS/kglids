@@ -157,6 +157,9 @@ class Name(AstPackage):
                 components.parent_path = value
         elif type(package) in (int, float):
             components.parent_path = value
+        elif isinstance(package, tuple):
+            components.path = f"{value}.{node.attr}"
+            components.parent_path = value
         elif package is not None:
             components.path = f"{package.library_path}.{package.name}{'' if is_column else f'.{node.attr}'}"
             components.parent_path = value
@@ -432,7 +435,8 @@ class Tuple(AstPackage):
     def analyze_assign_target(self, node_visitor: ast.NodeVisitor, node: ast, components: AssignComponents):
         tuple_values = node_visitor.visit_Tuple(node)
         for el in tuple_values:
-            node_visitor.data_flow_container[el] = node_visitor.graph_info.tail
+            if isinstance(el, str):
+                node_visitor.data_flow_container[el] = node_visitor.graph_info.tail
 
         if components.value is not None and tuple_values is not None:
             for sub_target, package in tuple(zip(tuple_values, components.value)):
