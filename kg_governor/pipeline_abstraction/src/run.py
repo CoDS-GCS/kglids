@@ -3,6 +3,8 @@ import json
 import os
 import pandas as pd
 import time
+from glob import glob
+from pathlib import Path
 
 import src.Calls as Calls
 import src.util as util
@@ -12,6 +14,7 @@ from src.datatypes import Library
 from src.pipeline_abstraction import NodeVisitor
 from src.datatypes import GraphInformation
 from src.json_to_rdf import build_pipeline_rdf_page, build_default_rdf_page, build_library_rdf_page
+from src.config import abstraction_config
 
 libraries: Dict[str, Library]
 libraries = dict()
@@ -21,23 +24,21 @@ default_graph = []
 def main():
     overall_start = time.time()
     
-    OUTPUT_PATH = '../../../storage/knowledge_graph/pipelines_and_libraries/'
-
     dataset: os.DirEntry
     # loop through datasets & pipelines
-    for dataset in os.scandir('../data/kaggle'):
+    for dataset in os.scandir(abstraction_config.data_source_path):
         pipeline: os.DirEntry
         if dataset.is_dir():
             working_file = {}
             table: os.DirEntry
-            if not os.path.isdir(f'../kaggle_small/{dataset.name}'):
+            tables = glob(os.path.join(dataset.path, '**', '*.csv'), recursive=True)
+            if not tables:
                 continue
-            for table in os.scandir(f'../kaggle_small/{dataset.name}'):
-                if table.name != '.DS_Store':
-                    try:
-                        working_file[table.name] = pd.read_csv(table.path, nrows=1)
-                    except Exception as e:
-                        print("-<>", table.name, e)
+            for table in tables:
+                try:
+                    working_file[Path(table).name] = pd.read_csv(table, nrows=1)
+                except Exception as e:
+                    print("-<>", table, e)
             if not os.path.isdir(f'{dataset.path}/notebooks/'):
                 continue
             for pipeline in os.scandir(f'{dataset.path}/notebooks'):
@@ -55,22 +56,17 @@ def main():
                                                   dataset=dataset,
                                                   file_path=file.path,
                                                   pipeline_info=pipeline_info,
-                                                  output_path=OUTPUT_PATH,
+                                                  output_path=abstraction_config.output_graphs_path,
                                                   output_filename=metadata['id'].replace('/', '.'))
                     except FileNotFoundError as e:
                         continue
 
     libs = [library.str() for library in libraries.values()]
-    # with open('kaggle/library.json', 'w') as f:
-    #     json.dump(libs, f)
-    #
-    # with open('kaggle/default.json', 'w') as f:
-    #     json.dump(default_graph, f)
 
-    with open(os.path.join(OUTPUT_PATH, 'library.ttl'), 'w') as f:
+    with open(os.path.join(abstraction_config.output_graphs_path, 'library.ttl'), 'w') as f:
         f.write(build_library_rdf_page(libs))
 
-    with open(os.path.join(OUTPUT_PATH, 'default.ttl'), 'w') as f:
+    with open(os.path.join(abstraction_config.output_graphs_path, 'default.ttl'), 'w') as f:
         f.write(build_default_rdf_page(default_graph))
 
 
@@ -134,10 +130,9 @@ def pipeline_analysis(working_file, dataset: os.DirEntry, file_path, pipeline_in
     #
     # with open(f'kaggle/{output_filename}-files.json', 'w') as f:
     #     json.dump(file_elements, f)
-    if not os.path.isdir(os.path.join(output_path, output_filename)):
-        os.mkdir(os.path.join(output_path, output_filename))
-
-    with open(os.path.join(output_path, output_filename + '.ttl'), 'w') as f:
+    os.makedirs(os.path.join(output_path, dataset.name), exist_ok=True)
+    
+    with open(os.path.join(output_path, dataset.name, output_filename + '.ttl'), 'w') as f:
         f.write(build_pipeline_rdf_page(nodes, file_elements))
 
     pipeline_info['uri'] = util.create_pipeline_uri(SOURCE, DATASET_NAME, output_filename)

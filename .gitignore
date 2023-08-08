@@ -27,3 +27,9 @@ wandb/
 
 
 kg_governor/data_profiling/src/fasttext_embeddings/cc.en.50.bin
+
+kg_governor/pipeline_abstraction/data/
+
+kg_governor/pipeline_abstraction/kaggle_small/
+
+kg_governor/pipeline_abstraction/kglids_graphs_for_kgpip_training_datasets_full/
