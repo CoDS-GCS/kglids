@@ -30,3 +30,5 @@ chars2vec==0.1.7
 keras==2.8.0
 tensorflow==2.8.0
 protobuf==3.19.1
+psycopg==3.1.10
+jupyter==1.0.0
