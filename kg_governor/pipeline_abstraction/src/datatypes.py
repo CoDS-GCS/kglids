@@ -177,7 +177,8 @@ class GraphInformation:
                 continue
 
             if lib_uri not in container.keys():
-                library = Library(lib_uri, packages.get(library_path, Calls.Call()).call_type.value)
+                default_call = Calls.Call() if '.' in library_path else Calls.Call(call_type=Calls.CallType.LIBRARY)
+                library = Library(lib_uri, packages.get(library_path, default_call).call_type.value)
                 container[lib_uri] = library
             else:
                 library = container.get(lib_uri)
