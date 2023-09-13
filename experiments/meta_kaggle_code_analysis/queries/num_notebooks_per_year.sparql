@@ -1,0 +1,10 @@
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+prefix kglids: <http://kglids.org/ontology/>
+prefix pipeline: <http://kglids.org/ontology/pipeline/>
+
+SELECT ?year (COUNT(?notebook) AS ?num_year_notebooks)
+WHERE {
+    ?notebook pipeline:isWrittenOn ?date .
+
+}
+GROUP BY (YEAR(xsd:dateTime(?date)) AS ?year)

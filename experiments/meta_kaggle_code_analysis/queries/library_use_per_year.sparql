@@ -1,0 +1,18 @@
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+prefix kglids: <http://kglids.org/ontology/>
+prefix pipeline: <http://kglids.org/ontology/pipeline/>
+PREFIX kglidsRc: <http://kglids.org/resource/>
+
+SELECT ?year ?library (COUNT(DISTINCT ?notebook) AS ?num_year_lib_notebooks)
+WHERE {
+        graph ?notebook {
+            ?statement pipeline:inControlFlow kglidsRc:import.
+            ?statement ?calls ?library_module
+        }
+        ?library_module kglids:isPartOf* ?library.
+        ?library a kglids:Library .
+        ?notebook pipeline:isWrittenOn ?date .
+}
+GROUP BY (YEAR(xsd:dateTime(?date)) AS ?year) ?library
+HAVING (?num_year_lib_notebooks > 50)
+ORDER BY ?year DESC(?num_year_lib_notebooks)
