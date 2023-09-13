@@ -10,42 +10,43 @@ from src.ast_package.types import CallComponents, CallArgumentsComponents, Assig
 
 class AstPackage:
     def extract_func(self, node_visitor: ast.NodeVisitor, node: ast.Call, components: CallComponents):
-        print("CALL FUNC:", node.__dict__)
-        print(astor.to_source(node))
+        # print("CALL FUNC:", node.__dict__)
+        astor.to_source(node)
 
     def analyze_call_arguments(self, node_visitor: ast.NodeVisitor, node: ast.Call, components: CallArgumentsComponents,
                                call_components: CallComponents, pos: int):
-        print("CALL ARG:", node.__dict__)
-        print(astor.to_source(node))
+        # print("CALL ARG:", node.__dict__)
+        astor.to_source(node)
 
     def extract_assign_value(self, node_visitor: ast.NodeVisitor, node: ast.Assign, components: AssignComponents):
-        print("ASSIGN VALUE:", node.__dict__)
-        print(astor.to_source(node))
+        # print("ASSIGN VALUE:", node.__dict__)
+        astor.to_source(node)
 
     def analyze_assign_target(self, node_visitor: ast.NodeVisitor, node: ast, components: AssignComponents):
-        print("ASSIGN TARGET:", node.__dict__)
-        print(astor.to_source(node))
+        # print("ASSIGN TARGET:", node.__dict__)
+        astor.to_source(node)
 
     def extract_keyword_value(self, node_visitor: ast.NodeVisitor, node: ast):
-        print("KEYWORD VALUE:", node.__dict__)
+        # print("KEYWORD VALUE:", node.__dict__)
+        pass
 
     def extract_list_element(self, node_visitor: ast.NodeVisitor, node: ast.List, pos: int, list_elements: list):
-        print("LIST VALUE:", node.__dict__)
-        print(astor.to_source(node))
+        # print("LIST VALUE:", node.__dict__)
+        astor.to_source(node)
 
     def analyze_bin_op_branch(self, node_visitor: ast.NodeVisitor, node: ast.BinOp, side: str, components: BinOpComponents):
-        print(f"BinOp {side.upper()} BRANCH VALUE:", node.__dict__)
-        print(astor.to_source(node))
+        # print(f"BinOp {side.upper()} BRANCH VALUE:", node.__dict__)
+        astor.to_source(node)
 
     def extract_subscript_value(self, node_visitor: ast.NodeVisitor, node: ast.Subscript):
-        print("SUBSCRIPT VALUE", node.__dict__)
-        print(astor.to_source(node))
+        # print("SUBSCRIPT VALUE", node.__dict__)
+        astor.to_source(node)
         return None, None
 
     def analyze_attribute_value(self, node_visitor: ast.NodeVisitor, node: ast.Attribute,
                                 components: AttributeComponents):
-        print("ATTRIBUTE VALUE:", node.__dict__)
-        print(astor.to_source(node))
+        # print("ATTRIBUTE VALUE:", node.__dict__)
+        astor.to_source(node)
 
 
 class Name(AstPackage):
@@ -252,7 +253,8 @@ class Call(AstPackage):
             components.parent_path = base
             components.file = file
         else:
-            print("ATTRIBUTE VALUE CALL: NO RETURN TYPE")
+            pass
+            # print("ATTRIBUTE VALUE CALL: NO RETURN TYPE")
 
 
 class List(AstPackage):
