@@ -24,7 +24,7 @@ __pycache__/
 
 wandb/
 
-
+errors.csv
 
 kg_governor/data_profiling/src/fasttext_embeddings/cc.en.50.bin
 
