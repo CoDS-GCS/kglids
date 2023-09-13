@@ -5,6 +5,8 @@
 /experiments/pipeline_abstraction_experiments/**/*.tsv
 /experiments/pipeline_abstraction_experiments/**/*.pickle
 
+/experiments/meta_kaggle_code_analysis/**/*.csv
+
 kg_governor/data_profiling/src/temp_spark/
 kg_governor/data_profiling/src/storage
 kg_governor/knowledge_graph_construction/src/out
