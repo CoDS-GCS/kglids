@@ -104,6 +104,10 @@ def main():
     with psycopg.connect(**meta_kaggle_db_creds) as conn:
         kernels_df = pd.read_sql_query(dataset_query, conn).fillna('')
 
+    # remove irrelevant notebook ids from filemap
+    notebook_ids = set(kernels_df['kernel_version_id'])
+    notebook_id_to_path = {k: v for k, v in notebook_id_to_path.items() if k in notebook_ids}
+
     # 2 copy the meta kaggle code notebooks to output dir and convert file to .py (if ipynb)
     print(datetime.now(), ': Loading and converting', len(kernels_df), 'notebooks.')
     os.makedirs(output_files_path, exist_ok=True)
@@ -111,12 +115,10 @@ def main():
     pool = mp.Pool()
     rows = kernels_df.apply(lambda row: (row['kernel_version_id'], row['author'], row['kernel_name'],
                                          row['title'], row['votes'], row['score'], row['creation_date'],
-                                         row['data_source'], row['tags'], notebook_id_to_path, output_files_path),
+                                         row['data_source'], row['tags'], notebook_id_to_path.copy(), output_files_path),
                             axis=1).tolist()
-    # list(tqdm(pool.imap_unordered(convert_and_save_notebook, rows), total=len(rows)))
-    # TODO: multiprocessing takes longer time. Why?
-    for row in tqdm(rows):
-        convert_and_save_notebook(row)
+    list(tqdm(pool.imap_unordered(convert_and_save_notebook, rows), total=len(rows)))
+
     print(datetime.now(), ': Done.')
 
 
