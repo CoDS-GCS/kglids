@@ -5,6 +5,8 @@
 /experiments/pipeline_abstraction_experiments/**/*.tsv
 /experiments/pipeline_abstraction_experiments/**/*.pickle
 
+/experiments/meta_kaggle_code_analysis/**/*.csv
+
 kg_governor/data_profiling/src/temp_spark/
 kg_governor/data_profiling/src/storage
 kg_governor/knowledge_graph_construction/src/out
@@ -12,9 +14,9 @@ kg_governor/knowledge_graph_construction/src/utils/glove_embeddings/*
 !kg_governor/knowledge_graph_construction/src/utils/glove_embeddings/README.md
 
 
-/storage/
+/storage/*
 !/storage/*/README.md
-
+!/storage/utils/
 
 .idea/
 __pycache__/
@@ -24,7 +26,7 @@ __pycache__/
 
 wandb/
 
-
+errors.csv
 
 kg_governor/data_profiling/src/fasttext_embeddings/cc.en.50.bin
 

@@ -187,8 +187,10 @@ def source_to_rdf(source: str) -> str:
 
 
 def score_to_rdf(score: float) -> str:
-    return f"\tpipeline:hasScore {score};\n"
-
+    if score:
+        return f"\tpipeline:hasScore {score};\n"
+    else:
+        return ""
 
 def dataset_to_rdf(dataset: str) -> str:
     return f"\tkglids:isPartOf <{dataset}> .\n"

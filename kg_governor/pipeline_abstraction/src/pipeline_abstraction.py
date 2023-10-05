@@ -191,8 +191,8 @@ class NodeVisitor(ast.NodeVisitor):
         elif isinstance(node.value, ast.Constant):
             pass
         else:
-            print("EXPR VALUE:", node.__dict__)
-            print(astor.to_source(node))
+            # print("EXPR VALUE:", node.__dict__)
+            astor.to_source(node)
 
     def visit_Pass(self, node: Pass) -> Any:
         pass
@@ -255,8 +255,8 @@ class NodeVisitor(ast.NodeVisitor):
             if isinstance(key, ast.Constant):
                 keys.append(self.visit_Constant(key))
             else:
-                print("DICT KEY:", node)
-                print(astor.to_source(node))
+                # print("DICT KEY:", node)
+                astor.to_source(node)
 
         for value in node.values:
             if isinstance(value, ast.Constant):
@@ -272,8 +272,8 @@ class NodeVisitor(ast.NodeVisitor):
                 _, _, _, base = self.visit_Call(value)
                 values.append(base)
             else:
-                print("DICT VALUE:", node.values)
-                print(astor.to_source(node))
+                # print("DICT VALUE:", node.values)
+                astor.to_source(node)
 
         return {a: b for a, b in tuple(zip(keys, values))}
 
@@ -307,8 +307,8 @@ class NodeVisitor(ast.NodeVisitor):
         elif isinstance(node.left, ast.Call):
             self.visit_Call(node.left)
         else:
-            print("COMPARE LEFT:", node.__dict__)
-            print(astor.to_source(node))
+            # print("COMPARE LEFT:", node.__dict__)
+            astor.to_source(node)
 
         for comparator in node.comparators:
             if isinstance(comparator, ast.Call):
@@ -451,8 +451,8 @@ class NodeVisitor(ast.NodeVisitor):
                                     self.columns.append(col)
                                     is_checked = True
                 else:
-                    print('SUBSCRIPT SOMETHING', node.slice, node.__dict__)
-                    print(astor.to_source(node))
+                    # print('SUBSCRIPT SOMETHING', node.slice, node.__dict__)
+                    astor.to_source(node)
                 self._connect_node_to_column(file)
         return name, base
 
@@ -484,8 +484,8 @@ class NodeVisitor(ast.NodeVisitor):
                 _, _, _, base = self.visit_Call(element)
                 elements.append(base)
             else:
-                print("TUPLE ELTS:", node.__dict__)
-                print(astor.to_source(node))
+                # print("TUPLE ELTS:", node.__dict__)
+                astor.to_source(node)
         return elements
 
     def visit_Del(self, node: Del) -> Any:
@@ -618,8 +618,8 @@ class NodeVisitor(ast.NodeVisitor):
             elif isinstance(dim, ast.Index):
                 sl = self.visit_Index(dim)
             else:
-                print("EXT_SLICE DIM:", node.__dict__)
-                print(astor.to_source(node))
+                # print("EXT_SLICE DIM:", node.__dict__)
+                astor.to_source(node)
         pass
 
     def visit_Index(self, node: ast.Index) -> Any:
@@ -632,12 +632,13 @@ class NodeVisitor(ast.NodeVisitor):
         elif isinstance(node.value, ast.List):
             return self.visit_List(node.value)
         elif isinstance(node.value, ast.Subscript):
-            print(self.visit_Subscript(node.value))  # TODO: MAKE SOMETHING OF THIS VALUE
+            pass
+            # print(self.visit_Subscript(node.value))  # TODO: MAKE SOMETHING OF THIS VALUE
         elif isinstance(node.value, ast.Name):
             return self.visit_Name(node.value)
         else:
-            print("INDEX VALUE:", node.__dict__)
-            print(astor.to_source(node))
+            # print("INDEX VALUE:", node.__dict__)
+            astor.to_source(node)
 
     def visit_Suite(self, node: ast.Suite) -> Any:
         pass
@@ -765,8 +766,8 @@ class SubGraph(NodeVisitor):
             if var is not None and isinstance(var, Calls.Call):
                 self.return_type = var.return_types
         else:
-            print("SUBGRAPH RETURN VALUE:", node.__dict__)
-            print(astor.to_source(node))
+            # print("SUBGRAPH RETURN VALUE:", node.__dict__)
+            astor.to_source(node)
 
 
 class ParamSubGraph(NodeVisitor):
@@ -813,8 +814,8 @@ class ForSubGraph(NodeVisitor):
             if isinstance(node.target, ast.Name):
                 target = self.visit_Name(node.target)
             else:
-                print("FOR TARGET", node.__dict__)
-                print(astor.to_source(node))
+                # print("FOR TARGET", node.__dict__)
+                astor.to_source(node)
 
             if isinstance(node.iter, ast.Call):
                 self.visit_Call(node.iter)
@@ -823,8 +824,8 @@ class ForSubGraph(NodeVisitor):
             elif isinstance(node.iter, ast.List):
                 self.variables[target] = self.visit_List(node.iter)
             else:
-                print("FOR ITER:", node.__dict__)
-                print(astor.to_source(node))
+                # print("FOR ITER:", node.__dict__)
+                astor.to_source(node)
 
             if iter_value in self.variables.keys():
                 self.variables[target] = self.variables.get(iter_value)
