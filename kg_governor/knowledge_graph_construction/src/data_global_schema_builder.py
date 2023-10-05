@@ -13,19 +13,13 @@ sys.path.append('../../../')
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 from tqdm import tqdm
+import stardog as sd
 
+# TODO: [Refactor] project structure needs to be changed. These imports won't work in terminal without the sys call.
 from workers import column_metadata_worker, column_pair_similarity_worker
-from utils.word_embeddings import WordEmbeddings
-from utils.utils import generate_label, RDFResource, Triplet
-# TODO: [Refactor] project structure needs to be changed. This import won't work in terminal without the above sys call.
+from kg_governor.knowledge_graph_construction.src.utils.word_embeddings import WordEmbeddings
+from kg_governor.knowledge_graph_construction.src.utils.utils import generate_label, RDFResource, Triplet
 from kg_governor.data_profiling.src.model.column_profile import ColumnProfile
-
-# ************* SYSTEM PARAMETERS**********************
-# TODO: [Refactor] have these inside a global project config
-DEFAULT_LABEL_SIM_THRESHOLD = 0.75
-DEFAULT_BOOLEAN_SIM_THRESHOLD = 0.75
-DEFAULT_EMBEDDING_SIM_THRESHOLD = 0.75
-# *****************************************************
 
 
 class DataGlobalSchemaBuilder:
@@ -202,9 +196,15 @@ def main():
     # TODO: [Refactor] read column profiles path from project config.py
     # TODO: [Refactor] add graph output path to project config.py
     
+    # ************* SYSTEM PARAMETERS**********************
+    # TODO: [Refactor] have these inside a global project config
+    DEFAULT_LABEL_SIM_THRESHOLD = 0.75
+    DEFAULT_BOOLEAN_SIM_THRESHOLD = 0.75
+    DEFAULT_EMBEDDING_SIM_THRESHOLD = 0.75
+    # *****************************************************
     parser = argparse.ArgumentParser()
     parser.add_argument('--column-profiles-path', type=str,  
-                        default='../../data_profiling/src/storage/metadata/profiles', help='Path to column profiles')
+                        default='../../../storage/profiles/smaller_real_profiles', help='Path to column profiles')
     parser.add_argument('--out-graph-path', type=str,
                         default='../../../storage/knowledge_graph/data_global_schema/data_global_schema_graph.ttl',
                         help='Path to save the graph, including graph file name.')
@@ -212,6 +212,8 @@ def main():
     parser.add_argument('--label-sim-threshold', type=float, default=DEFAULT_LABEL_SIM_THRESHOLD)
     parser.add_argument('--embedding-sim-threshold', type=float, default=DEFAULT_EMBEDDING_SIM_THRESHOLD)
     parser.add_argument('--boolean-sim-threshold', type=float, default=DEFAULT_BOOLEAN_SIM_THRESHOLD)
+    parser.add_argument('--stardog-endpoint', type=str, default='http://localhost:5820')
+    parser.add_argument('--stardog-db', type=str)
     args = parser.parse_args()
 
     start_all = datetime.now()
@@ -238,10 +240,21 @@ def main():
     print(datetime.now(), '• 3. Combining intermediate subgraphs from workers\n')
     knowledge_graph_builder.build_graph()
 
-    print(datetime.now(), f'\n• Done. Graph Saved to: {args.out_graph_path}\n')
+    print(datetime.now(), f'\n• Graph Saved to: {args.out_graph_path}\n')
 
+    print(datetime.now(), '• 4. Loading graph to Stardog at:', args.stardog_endpoint, args.stardog_db, '\n')
+    with sd.Admin(endpoint=args.stardog_endpoint) as admin:
+        if args.stardog_db in [db.name for db in admin.databases()]:
+            admin.database(args.stardog_db).drop()
+        db = admin.new_database(args.stardog_db, {'edge.properties': True})
+
+    conn = sd.Connection(args.stardog_db, endpoint=args.stardog_endpoint)
+    conn.begin()
+    conn.add(sd.content.File(args.out_graph_path))
+    conn.commit()
+    
     end_all = datetime.now()
-    print(datetime.now(), "Total time to build graph: " + str(end_all - start_all))
+    print(datetime.now(), "Done. Total time to build graph: " + str(end_all - start_all))
 
 
 if __name__ == '__main__':
