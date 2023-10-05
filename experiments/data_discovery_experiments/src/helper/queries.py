@@ -33,7 +33,7 @@ def get_top_k_tables(pairs: list):
             top_k[p[0]] = updated_score
 
     top_k = list(dict(sorted(top_k.items(), key=lambda item: item[1], reverse=True)).keys())
-    top_k = [list(ele) for ele in top_k]
+    top_k = [tuple(ele) for ele in top_k]
     return top_k
 
 
@@ -216,7 +216,7 @@ def get_related_columns_between_2_tables_j_attribute_precision(SPARQL, query_tab
 top_k_per_target_table = {}
 
 
-def get_top_k_related_tables(sparql, query_table, k, thresh):
+def get_top_k_related_tables_with_cache(sparql, query_table, k, thresh):
     if query_table in top_k_per_target_table:
         top_k = top_k_per_target_table.get(query_table)
         return top_k[:k]
@@ -231,3 +231,16 @@ def get_top_k_related_tables(sparql, query_table, k, thresh):
             result.append([(table1, table2), certainty])
         top_k_per_target_table[query_table] = get_top_k_tables(result)
         return top_k_per_target_table.get(query_table)[:k]
+
+
+def get_top_k_related_tables(sparql, query_table, k, thresh):
+
+    result = []
+    res = execute_query(sparql, get_similar_relation_tables_query(query_table, thresh))
+    for r in res:
+        table1 = r["table_name1"]["value"]
+        table2 = r["table_name2"]["value"]
+        certainty = float(r["certainty"]["value"])
+        result.append([(table1, table2), certainty])
+    result = get_top_k_tables(result)
+    return result[:k]

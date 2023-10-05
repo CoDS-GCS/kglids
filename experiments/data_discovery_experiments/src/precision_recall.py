@@ -3,18 +3,22 @@ import time
 import random
 import numpy as np
 from matplotlib import pyplot as plt
+import pickle
+
 from helper.queries import *
-from helper.config import *
-from helper.cache import *
+from helper.config import connect_to_stardog
+from helper.cache import cache_score
+from helper.common import get_table_mapping
 
 # *************EXPERIMENT PARAMETERS**************
 THRESHOLD = 0.75
 NO_RANDOM_QUERY_TABLES = 100
-DATASET = 'synthetic'
-DATABASE = 'synthetic'
+DATASET = 'smallerReal'   # synthetic
+DATABASE = 'kglids_smaller_real_fine_grained_075'  
+MAX_K = 185 if DATASET == 'smallerReal' else 350
 # ************************************************
 EXPERIMENT_NAME = 'precision_recall'
-SAVE_RESULT_AS = EXPERIMENT_NAME + '_' + DATASET
+SAVE_RESULT_AS = EXPERIMENT_NAME + '_' + DATASET + '_' + DATABASE
 SPARQL = connect_to_stardog(db=DATABASE)
 # ************************************************
 
@@ -39,15 +43,6 @@ def load_groundtruth():
     return df
 
 
-def get_table_mapping(df: pd.DataFrame):
-    print("getting mapping between tables from ground truth")
-    query_tables = df[df.columns[0]].to_list()
-    candidate_tables = df[df.columns[1]].to_list()
-    mapping = []
-    for i in range(len(query_tables)):
-        mapping.append([query_tables[i], candidate_tables[i]])
-
-    return mapping
 
 
 def get_n_random_tables(df: pd.DataFrame, n: int):
@@ -58,7 +53,10 @@ def get_n_random_tables(df: pd.DataFrame, n: int):
 
 def calculate_scores(pred: list, test: list):
     tp = fp = 0
-
+    
+    if not pred:
+        return 0, 0
+    
     for pair in pred:
         if pair in test:
             tp = tp + 1  # have it ground truth and have it in predictions
@@ -76,37 +74,44 @@ def calculate_scores(pred: list, test: list):
 
 def run_experiment(df, test_mapping: list):
     query_tables = get_n_random_tables(df, NO_RANDOM_QUERY_TABLES)
+    
     print('\n• running experiment!')
     top_k = []
     if DATASET == 'smallerReal':
         top_k = [5, 20, 35, 50, 65, 80, 95, 110, 125, 140, 155, 170, 185]
     elif DATASET == 'synthetic':
         top_k = [5, 20, 50, 80, 110, 140, 170, 200, 230, 260, 290, 320, 350]
-    res = {}
-    for k in top_k:
-        print("\ncalculating scores for k = {}".format(k))
-
+    
+    precisions = {}
+    recalls = {}
+    for table in tqdm.tqdm(query_tables):
+        top_related_tables = get_top_k_related_tables(SPARQL, table, max(top_k), THRESHOLD)
         precision_per_table = []
         recall_per_table = []
 
-        for table in tqdm.tqdm(query_tables):
-            predicted_mapping = get_top_k_related_tables(SPARQL, table, k, THRESHOLD)
-            precision, recall = calculate_scores(predicted_mapping, test_mapping)
+        for k in top_k:
+            precision, recall = calculate_scores(top_related_tables[:k], test_mapping)
             precision_per_table.append(precision)
             recall_per_table.append(recall)
-        print("Avg. precision for k = {} : {}".format(k, np.mean(precision_per_table)))
-        print("Avg. recall for k = {} : {}".format(k, np.mean(recall_per_table)))
-        res[k] = {'precision': np.mean(precision_per_table), 'recall': np.mean(recall_per_table)}
-        cache_score(res, k, top_k, SAVE_RESULT_AS)
+        precisions[table] = precision_per_table
+        recalls[table] = recall_per_table
+
+    precisions_df = pd.DataFrame.from_dict(precisions, orient='index', columns=top_k)
+    recalls_df = pd.DataFrame.from_dict(recalls, orient='index', columns=top_k)
+    print('Average Precisions:\n', precisions_df.mean())
+    print('Average Recalls:\n', recalls_df.mean())
+
+    res = {k: {'precision': np.mean(precisions_df[k]), 'recall': np.mean(recalls_df[k])} for k in top_k}
+    cache_score(res, max(top_k), top_k, SAVE_RESULT_AS)
 
 
 def visualize(exp_res: dict):
     def plot_scores(top_k: list, metric: list, metric_name: str, title, d3l, aurum):
         label_size = 17
         default_ticks = range(len(top_k))
-        plt.plot(default_ticks, metric, 'g', label='KGLiDS', marker="x")
-        plt.plot(default_ticks, d3l, 'cornflowerblue', label='D3L', marker="s")
-        plt.plot(default_ticks, aurum, 'darkorange', label='Aurum', marker="d")
+        plt.plot(default_ticks, d3l, 'cornflowerblue', linestyle='--', label='$D^3L$', marker="o")
+        plt.plot(default_ticks, aurum, 'darkorange', linestyle='--', label='Aurum', marker="x")
+        plt.plot(default_ticks, metric, 'forestgreen', label='KGLiDS', marker="s")
         plt.xticks(default_ticks, top_k)
         plt.ylim(ymin=0)
         plt.yticks(np.arange(0.0, 1.1, 0.1))
@@ -152,7 +157,7 @@ def main():
     run_experiment(df, test_mapping)
     print('Total time taken: ', time.time()-t1)
 
-    exp_res = load_cache(f'precision_recall_{DATASET}_k-{350}.pkl')
+    exp_res = load_cache(f'{SAVE_RESULT_AS}_k-{MAX_K}.pkl')
     visualize(exp_res)
     print('done.')
 
