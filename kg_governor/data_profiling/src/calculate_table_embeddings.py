@@ -26,11 +26,11 @@ def main():
         if profile['data_type'] == ColumnDataType.BOOLEAN.value:
             continue
         if profile['table_id'] not in table_embeddings_per_dtype:
-            table_embeddings_per_dtype[profile['table_id']] = {dtype: np.zeros(len(profile['embedding'])) for dtype in embedding_types}
-            table_embeddings_count[profile['table_id']] = {dtype: 0 for dtype in embedding_types}
+            table_embeddings_per_dtype[profile['table_name']] = {dtype: np.zeros(len(profile['embedding'])) for dtype in embedding_types}
+            table_embeddings_count[profile['table_name']] = {dtype: 0 for dtype in embedding_types}
             
-        table_embeddings_per_dtype[profile['table_id']][profile['data_type']] += np.array(profile['embedding'])
-        table_embeddings_count[profile['table_id']][profile['data_type']] += 1
+        table_embeddings_per_dtype[profile['table_name']][profile['data_type']] += np.array(profile['embedding'])
+        table_embeddings_count[profile['table_name']][profile['data_type']] += 1
     
     table_embeddings = {}
     for table in table_embeddings_per_dtype.keys():
@@ -38,7 +38,7 @@ def main():
             if table_embeddings_count[table][dtype] != 0:
                 table_embeddings_per_dtype[table][dtype] /= table_embeddings_count[table][dtype]
         table_embeddings[table] = np.concatenate([table_embeddings_per_dtype[table][dtype] for dtype in embedding_types])
-    with open('table_embeddings.pickle', 'wb') as f:
+    with open(os.path.expanduser('~/projects/kglids/storage/embeddings/smaller_real_table_embeddings.pickle'), 'wb') as f:
         pickle.dump(table_embeddings, f)
 
 

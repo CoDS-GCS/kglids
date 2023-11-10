@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from datetime import datetime
 import glob
 import os
@@ -14,10 +15,21 @@ from pyspark.sql import SparkSession
 from fine_grained_type_detector import FineGrainedColumnTypeDetector
 from profile_creators.profile_creator import ProfileCreator
 from model.table import Table
-from config import profiler_config
+from config import profiler_config, DataSource
 
 
 def main():
+    parser = ArgumentParser()
+    parser.add_argument('--data-source-name', type=str, default=None)
+    parser.add_argument('--data-source-path', type=str, default=None)
+    parser.add_argument('--output-path', type=str, default=None)
+    args = parser.parse_args()
+    if args.data_source_name and args.data_source_path:
+        extra_source = DataSource(name=args.data_source_name, path=args.data_source_path)
+        profiler_config.data_sources.append(extra_source)
+    if args.output_path:
+        profiler_config.output_path = args.output_path
+    
     start_time = datetime.now()
     print(datetime.now(), ': Initializing Spark')
     
