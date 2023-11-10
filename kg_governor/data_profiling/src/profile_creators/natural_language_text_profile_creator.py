@@ -30,7 +30,7 @@ class NaturalLanguageTextProfileCreator(TextualProfileCreator):
 
     def _preprocess_column_for_embedding_model(self, device='cpu') -> torch.tensor:
         non_missing = self.column.dropna()
-        if len(non_missing) > 1000:
+        if len(non_missing) > 10000:
             sample = non_missing.sample(int(0.1*len(non_missing)))
         else:
             sample = non_missing.sample(min(len(non_missing), 1000))
