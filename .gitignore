@@ -14,8 +14,8 @@ kg_governor/knowledge_graph_construction/src/utils/glove_embeddings/*
 !kg_governor/knowledge_graph_construction/src/utils/glove_embeddings/README.md
 
 
-/storage/*
-!/storage/*/README.md
+/storage/
+!/storage/**/README.md
 !/storage/utils/
 
 .idea/

@@ -1,3 +1,1 @@
-WIP
-
-Here goes FAISS embeddings loading/saving
+Here goes table embeddings.
