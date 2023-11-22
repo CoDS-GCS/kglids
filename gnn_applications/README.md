@@ -1,5 +1,8 @@
-# GNN Benchmark Datasets
-The following table contains the names and details of benchmark datasets used to evaluate the different Graph Neural Network (GNN) applications of KGLiDS:
+# Graph Neural Network (GNN) Applications
+This directory contains the GNN-based applications of KGLiDS, including Data Cleaning, Data Transformation, and AutoML.
+
+# Benchmark Datasets
+The following table contains the names and details of benchmark datasets used to evaluate the different GNN applications of KGLiDS:
 
 |Num|Dataset                               |Size (MB)|#Rows  |#Columns|#Categorical|#Numerical|%MV     |ML Task        |
 |---|--------------------------------------|---------|-------|--------|------------|----------|--------|---------------|
@@ -39,20 +42,19 @@ The following table contains the names and details of benchmark datasets used to
 |33 |christine                             |31.3888  |5418   |1637    |0           |1637      |0       |binary         |
 |34 |kc1                                   |0.1446   |2109   |22      |0           |22        |0       |binary         |
 |35 |MiniBooNE                             |69.3548  |130064 |51      |0           |51        |0       |binary         |
-|36 |riccardo                              |413.9889 |20000  |4297    |0           |4297      |0       |binary         |
-|37 |sylvine                               |0.4107   |5124   |21      |0           |21        |0       |binary         |
-|38 |cnae-9                                |1.771    |1080   |857     |0           |857       |0       |multi-class    |
-|39 |connect-4                             |5.541    |67557  |43      |0           |43        |0       |multi-class    |
-|40 |dilbert                               |175.9978 |10000  |2001    |0           |2001      |0       |multi-class    |
-|41 |fabert                                |13.0473  |8237   |801     |0           |801       |0       |multi-class    |
-|42 |jungle_chess_2pcs_raw_endgame_complete|0.5985   |44819  |7       |1           |6         |0       |multi-class    |
-|43 |robert                                |268.0512 |10000  |7201    |0           |7201      |0       |multi-class    |
-|44 |vehicle                               |0.0529   |846    |19      |1           |18        |0       |multi-class    |
-|45 |fri_c1_1000_25                        |0.2259   |1000   |26      |1           |25        |0       |binary         |
-|46 |car_evaluation                        |0.0728   |1728   |22      |0           |22        |0       |multi-class    |
-|47 |glass                                 |0.0101   |205    |10      |0           |10        |0       |multi-class    |
-|48 |kropt                                 |0.5073   |28056  |7       |4           |3         |0       |multi-class    |
-|49 |cpu_act_761                           |0.6856   |8192   |22      |1           |21        |0       |binary         |
-|50 |cpu_small_735                         |0.426    |8192   |13      |1           |12        |0       |binary         |
-|51 |page-blocks                           |0.2256   |5473   |11      |1           |10        |0       |binary         |
-|52 |waveform-5000                         |1.0052   |5000   |41      |1           |40        |0       |binary         |
+|36 |sylvine                               |0.4107   |5124   |21      |0           |21        |0       |binary         |
+|37 |cnae-9                                |1.771    |1080   |857     |0           |857       |0       |multi-class    |
+|38 |connect-4                             |5.541    |67557  |43      |0           |43        |0       |multi-class    |
+|39 |dilbert                               |175.9978 |10000  |2001    |0           |2001      |0       |multi-class    |
+|40 |fabert                                |13.0473  |8237   |801     |0           |801       |0       |multi-class    |
+|41 |jungle_chess_2pcs_raw_endgame_complete|0.5985   |44819  |7       |1           |6         |0       |multi-class    |
+|42 |robert                                |268.0512 |10000  |7201    |0           |7201      |0       |multi-class    |
+|43 |vehicle                               |0.0529   |846    |19      |1           |18        |0       |multi-class    |
+|44 |fri_c1_1000_25                        |0.2259   |1000   |26      |1           |25        |0       |binary         |
+|45 |car_evaluation                        |0.0728   |1728   |22      |0           |22        |0       |multi-class    |
+|46 |glass                                 |0.0101   |205    |10      |0           |10        |0       |multi-class    |
+|47 |kropt                                 |0.5073   |28056  |7       |4           |3         |0       |multi-class    |
+|48 |cpu_act_761                           |0.6856   |8192   |22      |1           |21        |0       |binary         |
+|49 |cpu_small_735                         |0.426    |8192   |13      |1           |12        |0       |binary         |
+|50 |page-blocks                           |0.2256   |5473   |11      |1           |10        |0       |binary         |
+|51 |waveform-5000                         |1.0052   |5000   |41      |1           |40        |0       |binary         |
