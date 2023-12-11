@@ -79,7 +79,7 @@ def main():
 def pipeline_analysis(args):
     working_file, dataset, file_path, pipeline_info, output_path, output_filename = args
 
-    SOURCE = 'kaggle'
+    SOURCE = abstraction_config.data_source
     DATASET_NAME = dataset
     PYTHON_FILE_NAME = output_filename[:200] # trim filename to 200 characters to avoid OSError
 
