@@ -3,6 +3,7 @@ from datetime import datetime
 import os
 from glob import glob
 import requests
+from urllib.parse import quote_plus
 
 from tqdm import tqdm
 
@@ -38,7 +39,7 @@ def upload_file(file_path, graphdb_endpoint, graphdb_repo, named_graph_uri=None)
         file_content = f.read()
     upload_url = f'{graphdb_endpoint}/repositories/{graphdb_repo}/statements'
     if named_graph_uri:
-        upload_url = f'{graphdb_endpoint}/repositories/{graphdb_repo}/rdf-graphs/service?graph={named_graph_uri}'
+        upload_url = f'{graphdb_endpoint}/repositories/{graphdb_repo}/rdf-graphs/service?graph={quote_plus(named_graph_uri)}'
 
     response = requests.post(upload_url, headers=headers, data=file_content)
     if response.status_code // 100 != 2:
@@ -47,7 +48,7 @@ def upload_file(file_path, graphdb_endpoint, graphdb_repo, named_graph_uri=None)
 
 def main():
     graphdb_endpoint = 'http://localhost:7200'
-    graphdb_repo = 'kaggle_demo'
+    graphdb_repo = 'kglids_demo_icde_24'
     pipeline_graphs_base_dir = os.path.expanduser('~/projects/kglids/storage/pipeline_graphs/kaggle_demo')
     populate_pipeline_graphs(pipeline_graphs_base_dir, graphdb_endpoint, graphdb_repo)
     
