@@ -35,7 +35,7 @@ def main():
     
     # initialize spark
     if profiler_config.is_spark_local_mode:
-        spark = SparkContext(conf=SparkConf().setMaster(f'local[*]')
+        spark = SparkContext(conf=SparkConf().setMaster(f'local[{profiler_config.n_workers}]')
                              .set('spark.driver.memory', f'{profiler_config.max_memory}g'))
     else:
         
@@ -61,9 +61,12 @@ def main():
     for data_source in profiler_config.data_sources:
         for filename in glob.glob(os.path.join(data_source.path, '**/*.' + data_source.file_type), recursive=True):
             if os.path.isfile(filename) and os.path.getsize(filename) > 0:   # if not an empty file
+                dataset_base_dir = Path(filename).resolve()
+                while dataset_base_dir.parent != Path(data_source.path).resolve():
+                    dataset_base_dir = dataset_base_dir.parent
                 table = Table(data_source=data_source.name,
-                                    table_path=filename,
-                                    dataset_name=Path(filename).resolve().parent.name)
+                              table_path=filename,
+                              dataset_name=dataset_base_dir.name)
                 # read only the header
                 header = pd.read_csv(table.get_table_path(), nrows=0, engine='python', encoding_errors='replace')
                 columns_and_tables.extend([(col, table) for col in header.columns])
