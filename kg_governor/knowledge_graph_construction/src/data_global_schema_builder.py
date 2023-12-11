@@ -212,8 +212,8 @@ def main():
     parser.add_argument('--label-sim-threshold', type=float, default=DEFAULT_LABEL_SIM_THRESHOLD)
     parser.add_argument('--embedding-sim-threshold', type=float, default=DEFAULT_EMBEDDING_SIM_THRESHOLD)
     parser.add_argument('--boolean-sim-threshold', type=float, default=DEFAULT_BOOLEAN_SIM_THRESHOLD)
-    parser.add_argument('--stardog-endpoint', type=str, default='http://localhost:5820')
-    parser.add_argument('--stardog-db', type=str)
+    # parser.add_argument('--stardog-endpoint', type=str, default='http://localhost:5820')
+    # parser.add_argument('--stardog-db', type=str)
     args = parser.parse_args()
 
     start_all = datetime.now()
@@ -242,16 +242,16 @@ def main():
 
     print(datetime.now(), f'\n• Graph Saved to: {args.out_graph_path}\n')
 
-    print(datetime.now(), '• 4. Loading graph to Stardog at:', args.stardog_endpoint, args.stardog_db, '\n')
-    with sd.Admin(endpoint=args.stardog_endpoint) as admin:
-        if args.stardog_db in [db.name for db in admin.databases()]:
-            admin.database(args.stardog_db).drop()
-        db = admin.new_database(args.stardog_db, {'edge.properties': True})
-
-    conn = sd.Connection(args.stardog_db, endpoint=args.stardog_endpoint)
-    conn.begin()
-    conn.add(sd.content.File(args.out_graph_path))
-    conn.commit()
+    # print(datetime.now(), '• 4. Loading graph to Stardog at:', args.stardog_endpoint, args.stardog_db, '\n')
+    # with sd.Admin(endpoint=args.stardog_endpoint) as admin:
+    #     if args.stardog_db in [db.name for db in admin.databases()]:
+    #         admin.database(args.stardog_db).drop()
+    #     db = admin.new_database(args.stardog_db, {'edge.properties': True})
+    # 
+    # conn = sd.Connection(args.stardog_db, endpoint=args.stardog_endpoint)
+    # conn.begin()
+    # conn.add(sd.content.File(args.out_graph_path))
+    # conn.commit()
     
     end_all = datetime.now()
     print(datetime.now(), "Done. Total time to build graph: " + str(end_all - start_all))
