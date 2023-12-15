@@ -5,9 +5,9 @@ from tqdm import tqdm
 
 
 class KGLiDS:
-    def __init__(self, endpoint: str = 'localhost', port=5820, db: str = 'kglids'):
-        self.conn = connect_to_stardog(endpoint, port, db)
-        self.conn.begin()
+    def __init__(self, endpoint: str = 'http://localhost:7200', db: str = 'kglids'):
+        self.conn = connect_to_graphdb(endpoint, graphdb_repo=db)
+        
 
     def get_datasets_info(self, show_query: bool = False):
         return get_datasets_info(self.conn, show_query).sort_values('Dataset', ignore_index=True, ascending=True)
@@ -29,7 +29,7 @@ class KGLiDS:
         elif isinstance(table, pd.Series) and isinstance(k, int):
             dataset = table["Dataset"]
             table = table["Table"]
-            recommendations = recommend_tables(self.conn, dataset, table, k, 'data:hasPrimaryKeyForeignKeySimilarity',
+            recommendations = recommend_tables(self.conn, dataset, table, k, 'data:hasContentSimilarity',
                                                show_query)
             recommendations['Score'] = list(map(lambda x: round(x, 2), [float(i) / max(recommendations['Score'].
                                                        tolist()) for i in (recommendations['Score'].tolist())]))
@@ -47,7 +47,7 @@ class KGLiDS:
         elif isinstance(table, pd.Series) and isinstance(k, int):
             dataset = table["Dataset"]
             table = table["Table"]
-            recommendations = recommend_tables(self.conn, dataset, table, k, 'data:hasSemanticSimilarity',
+            recommendations = recommend_tables(self.conn, dataset, table, k, 'data:hasLabelSimilarity',
                                                show_query)
             recommendations['Score'] = list(map(lambda x: round(x, 2), [float(i) / max(recommendations['Score'].
                                                 tolist()) for i in (recommendations['Score'].tolist())]))
@@ -112,7 +112,7 @@ class KGLiDS:
         return df
 
     def get_path_between_tables(self, source_table: pd.Series, target_table: pd.Series, hops: int,
-                                relation: str = 'data:hasPrimaryKeyForeignKeySimilarity', show_query: bool = False):
+                                relation: str = 'data:hasContentSimilarity', show_query: bool = False):
         return get_path_between_tables(self.conn, source_table, target_table, hops, relation, show_query)
 
     def query(self, rdf_query: str):
@@ -162,7 +162,7 @@ class KGLiDS:
             if k > len(library_count):
                 k = len(library_count)
                 if k == 1:
-                    print('Single library was found for {}: '.format(k, task))
+                    print('Single library was found for {}: '.format(task))
                 else:
                     print('Maximum {} libraries were found for {}: '.format(k, task))
             else:
@@ -175,7 +175,7 @@ class KGLiDS:
             for i in libraries[:len(libraries)-1]:
                 print(i + ',', end=' ')
             print(libraries[-1])
-            for k, v in tqdm(library_info.to_dict('index').items()):
+            for k, v in library_info.to_dict('index').items():
                 if v['Library'] not in libraries:
                     library_info = library_info.drop(k)
             return library_info.sort_values(by=['Library']).reset_index(drop=True)

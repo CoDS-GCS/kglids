@@ -7,8 +7,8 @@ import seaborn as sns
 from graphviz import Digraph
 from camelsplit import camelsplit
 from matplotlib import pyplot as plt
-from data_items.knowledge_graph.src.label import Label
-from api.helpers.helper import execute_query
+from kg_governor.knowledge_graph_construction.src.utils.utils import Label
+from api.helpers.helper import query_graphdb
 
 PREFIXES = """
     PREFIX kglids: <http://kglids.org/ontology/>
@@ -22,7 +22,7 @@ PREFIXES = """
 
 
 def query_kglids(config, rdf_query):
-    return execute_query(config, PREFIXES + rdf_query)
+    return query_graphdb(config, PREFIXES + rdf_query)
 
 
 def get_datasets_info(config, show_query):
@@ -37,7 +37,7 @@ def get_datasets_info(config, show_query):
     group by ?Dataset """
     if show_query:
         print(query)
-    return execute_query(config, query)
+    return query_graphdb(config, query)
 
 
 def get_tables_info(config, dataset: str, show_query):
@@ -56,7 +56,7 @@ def get_tables_info(config, dataset: str, show_query):
     }""" % dataset
     if show_query:
         print(query)
-    return execute_query(config, query)
+    return query_graphdb(config, query)
 
 
 def get_top_k_tables(pairs: list):
@@ -106,7 +106,7 @@ def recommend_tables(config, dataset: str, table: str, k: int, relation: str, sh
     if show_query:
         print(query)
 
-    res = execute_query(config, query, return_type='json')
+    res = query_graphdb(config, query, return_type='json')
     result = []
     for r in res:
         table1 = r["table_name1"]["value"]
@@ -162,10 +162,10 @@ def show_graph_info(config, show_query):
     """
     if show_query:
         print(query1, '\n', query3, '\n', query2, '\n', query4)
-    dataset = execute_query(config, query1)
-    tables = execute_query(config, query2)
-    pipelines = execute_query(config, query3)
-    columns = execute_query(config, query4)
+    dataset = query_graphdb(config, query1)
+    tables = query_graphdb(config, query2)
+    pipelines = query_graphdb(config, query3)
+    columns = query_graphdb(config, query4)
     return pd.concat([dataset, pipelines, tables, columns], axis=1)
 
 
@@ -182,7 +182,7 @@ def get_table_path(config, dataset, table):
     }
     """ % (dataset, table)
 
-    res = execute_query(config, query)["results"]["bindings"][0]
+    res = query_graphdb(config, query)["results"]["bindings"][0]
     return res["table_path"]["value"]
 
 
@@ -203,7 +203,7 @@ def get_table_info(config, dataset, table, show_query):
     """ % (dataset, table)
     if show_query:
         print(query)
-    res = execute_query(config, query)["results"]["bindings"][0]
+    res = query_graphdb(config, query)["results"]["bindings"][0]
     rows = res["number_of_rows"]["value"]
     columns = res["number_of_columns"]["value"]
 
@@ -242,7 +242,7 @@ def search_tables_on(config, all_conditions: tuple, show_query: bool):
     query = search(all_conditions)
     if show_query:
         print(query)
-    res = execute_query(config, query, return_type='json')
+    res = query_graphdb(config, query, return_type='json')
 
     for result in res:
         yield _create_tables_df_row(result)
@@ -265,7 +265,7 @@ def _get_iri(config, dataset_name: str, table_name: str = None, show_query: bool
                 '\n?dataset a kglids:Dataset.}' % (table_name, dataset_name)
     if show_query:
         print(query)
-    results = execute_query(config, query, return_type='json')
+    results = query_graphdb(config, query, return_type='json')
     bindings = results
     if not bindings:
         return None
@@ -351,9 +351,9 @@ def get_path_between(config, start_iri: str, target_iri: str, predicate: str, ho
             h + 1) + 'name.'
 
     def _generate_relationships(h: int, pred: str) -> str:
-        relations = '\n    ?c1 ' + pred + ' ?c2.'
+        relations = '\n    << ?c1 ' + pred + ' ?c2 >> data:withCertainty	?certainty1'
         for i in range(2, h + 1):
-            relation = '\n     ?cc' + str(i) + ' ' + pred + ' ?c' + str(i + 1) + '.'
+            relation = f'\n     << ?cc{i} {pred} ?c{i+1}>> data:withCertainty	?certainty{i}.'
             relations += relation
         return relations
 
@@ -383,7 +383,7 @@ def get_path_between(config, start_iri: str, target_iri: str, predicate: str, ho
 
     if show_query:
         print(query)
-    results = execute_query(config, query, return_type='json')
+    results = query_graphdb(config, query, return_type='json')
     bindings = results
     if not bindings:
         return []
@@ -515,7 +515,7 @@ def generate_graphviz(df: pd.DataFrame, predicate: str):
         row_col_ids.append(target_col_id)
 
         establish_relationships(dot_graph, row_col_ids, relations)
-    dot_graph.attr(label='Paths between starting nodes in blue and target nodes in orange', size='8,75,10')
+    dot_graph.attr(label='Paths between starting nodes in blue and target nodes in orange')
 
     return dot_graph
 
@@ -565,7 +565,7 @@ def get_top_scoring_ml_model(config, dataset, show_query):
         ?x rdf:type kglids:Pipeline .
     }
     """
-    return execute_query(config, query)
+    return query_graphdb(config, query)
 
 
 def get_pipelines_info(config, author, show_query):
@@ -590,7 +590,7 @@ def get_pipelines_info(config, author, show_query):
     if show_query:
         print(query)
 
-    return execute_query(config, query)
+    return query_graphdb(config, query)
 
 
 def get_most_recent_pipeline(config, dataset, show_query):
@@ -614,7 +614,7 @@ def get_most_recent_pipeline(config, dataset, show_query):
     """ % dataset
     if show_query:
         print(query)
-    return execute_query(config, query)
+    return query_graphdb(config, query)
 
 
 def get_top_k_scoring_pipelines_for_dataset(config, dataset, k, show_query):
@@ -641,7 +641,7 @@ def get_top_k_scoring_pipelines_for_dataset(config, dataset, k, show_query):
     """ % (dataset, k)
     if show_query:
         print(query)
-    return execute_query(config, query)
+    return query_graphdb(config, query)
 
 
 CLASSIFIERS = {'RandomForestClassifier': '<http://kglids.org/resource/library/sklearn/ensemble/RandomForestClassifier>',
@@ -671,7 +671,7 @@ def search_classifier(config, dataset, show_query):
             query = """
             UNION
                      {
-                        ?Statement_number    pipeline:callsLibrary %s.
+                        ?Statement_number    pipeline:callsClass %s.
                         BIND('%s' as ?Classifier)
                      }
             """ % (classifier_url, classifier)
@@ -692,9 +692,9 @@ def search_classifier(config, dataset, show_query):
                         pipeline:hasScore ?Score         .
        graph ?Pipeline_id 
          {
-            ?x pipeline:callsLibrary ?y
+            ?x pipeline:callsClass ?y
              {
-                ?Statement_number    pipeline:callsLibrary <http://kglids.org/resource/library/sklearn/ensemble/RandomForestClassifier>  .
+                ?Statement_number    pipeline:callsClass <http://kglids.org/resource/library/sklearn/ensemble/RandomForestClassifier>  .
                 BIND('RandomForestClassifier' as ?Classifier)
              }""" + sub_graph_query + """
                           
@@ -705,7 +705,7 @@ def search_classifier(config, dataset, show_query):
     if show_query:
         print(query)
 
-    return execute_query(config, query)
+    return query_graphdb(config, query)
 
 
 def get_hyperparameters(config, pipeline, classifier, show_query):
@@ -720,7 +720,7 @@ def get_hyperparameters(config, pipeline, classifier, show_query):
                             pipeline:hasScore ?Score         .
            graph ?Pipeline_id
              {
-                 ?Statement_number    pipeline:callsLibrary   %s .
+                 ?Statement_number    pipeline:callsClass   %s .
                  << ?Statement_number pipeline:hasParameter %s >> pipeline:withParameterValue ?Value  .
              }
         } ORDER BY DESC(?Score)""" % (parameter_heading, pipeline, classifier_url, parameter_heading)
@@ -728,7 +728,7 @@ def get_hyperparameters(config, pipeline, classifier, show_query):
     if show_query:
         print(query)
 
-    df = execute_query(config, query)
+    df = query_graphdb(config, query)
     if np.shape(df)[0] == 0:
         return 'Using default configurations'
     else:
@@ -747,7 +747,7 @@ def get_library_usage(config, dataset, k, show_query):
         ?Pipeline   rdf:type    kglids:Pipeline                 .
         GRAPH ?Pipeline
         {
-            ?Statement pipeline:callsLibrary ?l                 .
+            ?Statement pipeline:callsClass ?l                 .
             BIND(STRAFTER(str(?l), str(lib:)) as ?l1)      .
             BIND(STRBEFORE(str(?l1), str('/')) as ?Library)     .
         }
@@ -757,7 +757,7 @@ def get_library_usage(config, dataset, k, show_query):
     """ % dataset
     if show_query:
         print(query)
-    df = execute_query(config, query)
+    df = query_graphdb(config, query)
     df['Usage (in %)'] = list(map(lambda x: x * 100, [int(i) / sum(df['Usage'].
                                                                    tolist()) for i in (df['Usage'].tolist())]))
     if len(df) == 0:
@@ -771,8 +771,8 @@ def get_library_usage(config, dataset, k, show_query):
     ax.set_xticklabels(df['Library'].tolist(), rotation=20)
     ax.set_ylabel('Number of Pipelines')
     for i, usage in enumerate(df['Usage']):
-        ax.text(i-0.35, usage + 200, str(usage), color='k', fontweight='bold')
-    ax.set_ylim(0, df['Usage'].max() + 2000)
+        ax.text(i-0.35, usage + int(0.05 * usage), str(usage), color='k', fontweight='bold')
+    ax.set_ylim(0, df['Usage'].max() + int(0.1 * df['Usage'].max()))
     plt.grid(axis='y')
     plt.tight_layout()
     plt.savefig('library_usage_stats.pdf')
@@ -801,27 +801,31 @@ def get_top_used_libraries(config, task, show_query):
         
         GRAPH ?Pipeline_id
         {
-            ?statement  pipeline:callsLibrary    ?l                         .
+            ?statement  pipeline:callsFunction    ?l                         .
             BIND(STRAFTER(str(?l), str(lib:)) as ?l1)                       .
             BIND(STRBEFORE(str(?l1), str('/')) as ?Library)                 .  
-            BIND(STRAFTER(str(?l), str(?Library)) as ?m)                    .     
-            BIND(STRAFTER(str(?m), str('/')) as ?Module)                    .  
+            BIND (REPLACE(STR(?l), "^.*/([^/]*)/([^/]*)$", "$1") as ?Module)        .    
         }    
     
-        FILTER(regex(?l, "%s", "i"))             
+        FILTER(regex(str(?l), "%s", "i"))             
     }""" % task
     if show_query:
         print(query)
 
-    return execute_query(config, query)
+    return query_graphdb(config, query)
 
 
 def get_pipelines_calling_libraries(config, components, show_query):
     sub_query = ''
     for i in range(len(components)):
+        # check if class or function (classes start with an upper case letter (heuristic))
+        if components[i].split('.')[-1][0].isupper(): 
+            predicate = 'pipeline:callsClass'
+        else:
+            predicate = 'pipeline:callsFunction'
         sub_query = sub_query + \
-                    '?Statement_{}   pipeline:callsLibrary   <http://kglids.org/resource/library/{}> .\n        ' \
-                        .format(i + 1, components[i].replace('.', '/'))
+                    '?Statement_{}   {}   <http://kglids.org/resource/library/{}> .\n        ' \
+                        .format(i + 1, predicate, components[i].replace('.', '/'))
 
     query = PREFIXES + """
     SELECT DISTINCT ?Pipeline ?Dataset ?Author ?Score ?Number_of_votes
@@ -845,7 +849,7 @@ def get_pipelines_calling_libraries(config, components, show_query):
     if show_query:
         print(query)
 
-    return execute_query(config, query)
+    return query_graphdb(config, query)
 
 
 def get_pipelines_for_deep_learning(config, show_query):
@@ -869,7 +873,7 @@ def get_pipelines_for_deep_learning(config, show_query):
     if show_query:
         print(query)
 
-    return execute_query(config, query)
+    return query_graphdb(config, query)
 
 
 def recommend_transformations(config, show_query):
@@ -878,30 +882,25 @@ def recommend_transformations(config, show_query):
     WHERE
     {
     ?Pipeline_id    rdf:type                kglids:Pipeline     ;
-                    pipeline:hasVotes       ?Number_of_votes    ;
                     rdfs:label              ?Pipeline           ;
-                    pipeline:isWrittenOn    ?Written_on         ;
-                    pipeline:isWrittenBy    ?Author             ;
-                    pipeline:hasScore       ?Score              ;
-                    pipeline:hasTag         ?Tag                ;
                     kglids:isPartOf         ?Dataset_id         .
     
     ?Dataset_id     schema:name             ?Dataset            . 
     
     graph ?Pipeline_id
     {   
-        ?s          pipeline:callsLibrary    ?l                 . 
+        ?s          pipeline:callsClass    ?l                 . 
         BIND(STRAFTER(str(?l), str(lib:)) as ?Transformation)   . 
         ?Table_id   rdf:type                 kglids:Table       . 
                             
     }
-    FILTER(regex(?l, "preprocessing", "i"))
+    FILTER(regex(str(?l), "preprocessing", "i"))
     } ORDER BY DESC(?Score) """
 
     if show_query:
         print(query)
 
-    df = execute_query(config, query)
+    df = query_graphdb(config, query)
     df['Table'] = df['Table'].apply(lambda x: x.rsplit('/', 1)[-1])
     df['Transformation'] = df['Transformation'].apply(lambda x: x.replace('/', '.'))
     return df
@@ -921,7 +920,7 @@ def get_pipelines_by_tags(config, tag, show_query):
     """ % tag
     if show_query:
         print(query)
-    return execute_query(config, query)
+    return query_graphdb(config, query)
 
 
 def plot_top_k_classifiers(config, k, show_query):
@@ -937,22 +936,21 @@ def plot_top_k_classifiers(config, k, show_query):
     
     GRAPH ?Pipeline_id
     {
-        ?statement  pipeline:callsLibrary    ?l                         .
+        ?statement  pipeline:callsFunction    ?l                         .
         BIND(STRAFTER(str(?l), str(lib:)) as ?l1)                       .
         BIND(STRBEFORE(str(?l1), str('/')) as ?Library)                 .  
-        BIND(STRAFTER(str(?l), str(?Library)) as ?m)                    .     
-        BIND(STRAFTER(str(?m), str('/')) as ?Module)                    .  
+        BIND (REPLACE(STR(?l), "^.*/([^/]*)/([^/]*)$", "$1") as ?Module)                  .  
     }    
     
-    FILTER(regex(?l, "classifier", "i"))
-    FILTER (!regex(?l, "report", "i"))
-    FILTER (!regex(?l, "ROCAUC", "i"))  
-    FILTER (!regex(?l, "threshold", "i"))  
+    FILTER(regex(str(?l), "classifier", "i"))
+    FILTER (!regex(str(?l), "report", "i"))
+    FILTER (!regex(str(?l), "ROCAUC", "i"))  
+    FILTER (!regex(str(?l), "threshold", "i"))  
     } GROUP BY ?Module ORDER BY DESC(?Usage)"""
 
     if show_query:
         print(query)
-    df = execute_query(config, query)
+    df = query_graphdb(config, query)
     df['Usage (in %)'] = list(map(lambda x: x * 100, [int(i) / sum(df['Usage'].
                                                                    tolist()) for i in (df['Usage'].tolist())]))
 
@@ -987,20 +985,19 @@ def plot_top_k_regressors(config, k , show_query):
 
     GRAPH ?Pipeline_id
     {
-        ?statement  pipeline:callsLibrary    ?l                         .
+        ?statement  pipeline:callsFunction    ?l                         .
         BIND(STRAFTER(str(?l), str(lib:)) as ?l1)                       .
         BIND(STRBEFORE(str(?l1), str('/')) as ?Library)                 .  
-        BIND(STRAFTER(str(?l), str(?Library)) as ?m)                    .     
-        BIND(STRAFTER(str(?m), str('/')) as ?Module)                    .  
+        BIND (REPLACE(STR(?l), "^.*/([^/]*)/([^/]*)$", "$1") as ?Module)                    .  
     }    
 
-    FILTER(regex(?l, "regres", "i"))
+    FILTER(regex(str(?l), "regres", "i"))
     } GROUP BY ?Module ORDER BY DESC(?Usage)"""
 
     if show_query:
         print(query)
 
-    df = execute_query(config, query)
+    df = query_graphdb(config, query)
     df['Usage (in %)'] = list(map(lambda x: x * 100, [int(i) / sum(df['Usage'].
                                                                     tolist()) for i in (df['Usage'].tolist())]))
 
