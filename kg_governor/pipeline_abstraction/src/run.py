@@ -53,7 +53,7 @@ def main():
                             if '.py' in file.name:
                                 pipelines.append((working_file, dataset.name, file.path, pipeline_info,
                                                   abstraction_config.output_graphs_path,
-                                                  url_encode(f'{pipeline_info["author"]}.{pipeline_info["title"]}')))
+                                                  f'{pipeline_info["author"]}.{pipeline_info["title"]}'))
                     except FileNotFoundError as e:
                         continue
 
@@ -124,7 +124,7 @@ def pipeline_analysis(args):
 
     os.makedirs(os.path.join(output_path, DATASET_NAME), exist_ok=True)
 
-    with open(os.path.join(output_path, DATASET_NAME, PYTHON_FILE_NAME + '.ttl'), 'w') as f:
+    with open(os.path.join(output_path, DATASET_NAME, url_encode(PYTHON_FILE_NAME) + '.ttl'), 'w') as f:
         f.write(build_pipeline_rdf_page(nodes, file_elements))
 
     pipeline_info['uri'] = util.create_pipeline_uri(SOURCE, DATASET_NAME, PYTHON_FILE_NAME)
