@@ -8,7 +8,7 @@ Hence, this paper presents a scalable system, KGLiDS, that employs machine learn
 Our comprehensive evaluation covers use cases in data discovery, data cleaning, transformation, and AutoML and shows that KGLiDS is significantly faster with a lower memory footprint as the state of the art while achieving comparable or better accuracy.
 
 ## Quickstart on Colab
-Try out our [KGLiDS Colab Demo](https://colab.research.google.com/drive/1dDiGh1KwJibR2pVjiMXFpHIHxfgByYxZ?usp=sharing)
+Try out our [KGLiDS Colab Demo](https://colab.research.google.com/drive/1dDiGh1KwJibR2pVjiMXFpHIHxfgByYxZ?usp=sharing) and [KGLiDS DataPrep Demo](https://colab.research.google.com/drive/1_gjONJlQwumhSOP5k_9b0O6xdTR5Gqbq?usp=sharing).
 that demonstrates our APIs on Kaggle data!
 
 [comment]: <> (## Technical Report)
