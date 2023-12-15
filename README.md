@@ -57,37 +57,11 @@ python pipelines_analysis.py
 ```
 <hr>
 
-<b>Uploading LiDS graph to the graph-engine (we recommend using [Stardog](https://www.stardog.com/)):</b>
-* Create a database 
-Note: enable support for <i>RDF *</i> (example given below) more info [here](https://docs.stardog.com/query-stardog/edge-properties)
-```commandline
-stardog-admin db create -o edge.properties=true -n Database_name
-```
-* Add the dataset-graph to the database
-```commandline
-stardog data add --format turtle Database_name dataset_graph.ttl
-```
-* Add the pipeline default graph and named-graphs to the database
-```commandline
-stardog data add --format turtle Database_name default.ttl library.ttl
-```
-```python
-import os
-import stardog
-database_name = 'Database_name'
-connection_details = {
-      'endpoint': 'http://localhost:5820',
-      'username': 'admin',
-      'password': 'admin'}
+<b>Uploading LiDS graph to the graph-engine (we recommend using [GraphDB](https://graphdb.ontotext.com/) ):</b>
+Please see [populate_graphdb.py](storage/utils/populate_graphdb.py) for an example of uploading graphs to GraphDB.
 
-conn = stardog.Connection(database_name, **connection_details)
-conn.begin()
-ttl_files = [i for i in os.listdir(graphs_dir) if i.endswith('ttl')]
-for ttl in ttl_files:
-    conn.add(stardog.content.File(graphs_dir + ttl), graph_uri= 'http://kglids.org/pipelineResource/'
-conn.commit()
-conn.close()
-```
+
+
 <hr>
 
 <b> Using the KGLiDS APIs</b>: 
