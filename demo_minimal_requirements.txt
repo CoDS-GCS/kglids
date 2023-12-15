@@ -1,5 +1,4 @@
-torch_sparse
-torch_geometric
+torch==1.7.0
 ogb
 pandas
 SPARQLWrapper
@@ -16,3 +15,5 @@ compress_fasttext
 nltk
 fasttext
 dateparser
+torch-sparse -f https://pytorch-geometric.com/whl/torch-1.7.0+cpu.html --no-index 
+torch_geometric
