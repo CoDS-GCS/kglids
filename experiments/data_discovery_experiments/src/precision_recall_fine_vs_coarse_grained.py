@@ -1,3 +1,5 @@
+import argparse
+
 import tqdm
 import time
 import random
@@ -6,51 +8,22 @@ from matplotlib import pyplot as plt
 import pickle
 
 from helper.queries import *
-from helper.config import connect_to_stardog
+from helper.config import connect_to_graphdb
 from helper.cache import cache_score
+from helper.common import load_groundtruth, get_table_mapping
 
 # *************EXPERIMENT PARAMETERS**************
-THRESHOLD = 0.75
+THRESHOLD = 0.9
 NO_RANDOM_QUERY_TABLES = 100
-DATASET = 'smallerReal'   # synthetic
-DATABASE = 'kglids_smaller_real_fine_grained_05'   # synthetic
-MAX_K = 185 if DATASET == 'smallerReal' else 350
+DATASET = 'TUS' # 'smallerReal'   # synthetic, TUS
+# DATABASE = 'kglids_smaller_real_fine_grained_05'   # synthetic
+FINE_GRAINED_DB = 'http://localhost:7200/repositories/tus_fine_grained_09' # 'tus_fine_grained_05' # 'smaller_real_fine_grained_05'
+COARSE_GRAINED_DB = 'http://localhost:7200/repositories/tus_coarse_grained_09' #'tus_coarse_grained_05' #'smaller_real_coarse_grained_05'   # synthetic
+NO_SUB_SAMPLING_DB = 'http://mossad-xps:7200/repositories/tus_fine_grained_no_sub_sampling_05' #'tus_fine_grained_no_sub_sampling_05'
 # ************************************************
 EXPERIMENT_NAME = 'precision_recall'
-SAVE_RESULT_AS = EXPERIMENT_NAME + '_' + DATASET + '_' + DATABASE
-SPARQL = connect_to_stardog(db=DATABASE)
+SAVE_RESULT_AS = EXPERIMENT_NAME + '_' + DATASET + '_' + 'fine_vs_coarse_grained' + '_' + str(THRESHOLD)
 # ************************************************
-
-
-def load_cache(load_as='cache'):
-    with open('../cache/' + load_as, 'rb') as handle:
-        return pickle.load(handle)
-
-
-def load_groundtruth():
-    df = 'null'
-    if DATASET == 'smallerReal':
-        file = 'ds_gt.csv'
-        print('loading {}'.format(file))
-        df = pd.read_csv('../gt_files/' + file)
-        df[df.columns[0]] = df[df.columns[0]] + '.csv'
-        df[df.columns[1]] = df[df.columns[1]] + '.csv'
-    elif DATASET == 'synthetic':
-        file = 'alignment_groundtruth.csv'
-        print('loading {}'.format(file))
-        df = pd.read_csv('../gt_files/' + file)
-    return df
-
-
-def get_table_mapping(df: pd.DataFrame):
-    print("getting mapping between tables from ground truth")
-    query_tables = df[df.columns[0]].to_list()
-    candidate_tables = df[df.columns[1]].to_list()
-    mapping = []
-    for i in range(len(query_tables)):
-        mapping.append([query_tables[i], candidate_tables[i]])
-
-    return mapping
 
 
 def get_n_random_tables(df: pd.DataFrame, n: int):
@@ -80,87 +53,109 @@ def calculate_scores(pred: list, test: list):
     return precision, recall
 
 
-def run_experiment(df, test_mapping: list):
+def run_experiment(df, test_mapping: list, graph_handlers, exp_names, modes):
     query_tables = get_n_random_tables(df, NO_RANDOM_QUERY_TABLES)
-    # query_tables = df[df.columns[0]].to_list()[:100]
+    
     print('\n• running experiment!')
     top_k = []
     if DATASET == 'smallerReal':
         top_k = [5, 20, 35, 50, 65, 80, 95, 110, 125, 140, 155, 170, 185]
     elif DATASET == 'synthetic':
         top_k = [5, 20, 50, 80, 110, 140, 170, 200, 230, 260, 290, 320, 350]
-    res = {}
-    for k in top_k:
-        print("\ncalculating scores for k = {}".format(k))
+    elif DATASET == 'TUS':
+        top_k = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
+    all_results = {}
+    for graph, exp_name, mode in zip(graph_handlers, exp_names, modes):
 
-        precision_per_table = []
-        recall_per_table = []
-
+        precisions = {}
+        recalls = {}
         for table in tqdm.tqdm(query_tables):
-            predicted_mapping = get_top_k_related_tables(SPARQL, table, k, THRESHOLD)
-            precision, recall = calculate_scores(predicted_mapping, test_mapping)
-            precision_per_table.append(precision)
-            recall_per_table.append(recall)
-        print("Avg. precision for k = {} : {}".format(k, np.mean(precision_per_table)))
-        print("Avg. recall for k = {} : {}".format(k, np.mean(recall_per_table)))
-        res[k] = {'precision': np.mean(precision_per_table), 'recall': np.mean(recall_per_table)}
-        cache_score(res, k, top_k, SAVE_RESULT_AS)
+            top_related_tables = get_top_k_related_tables(graph, table, max(top_k), THRESHOLD, mode=mode)
+            precision_per_table = []
+            recall_per_table = []
+
+            for k in top_k:                
+                precision, recall = calculate_scores(top_related_tables[:k], test_mapping)
+                precision_per_table.append(precision)
+                recall_per_table.append(recall)
+            precisions[table] = precision_per_table
+            recalls[table] = recall_per_table
+        
+        precisions_df = pd.DataFrame.from_dict(precisions, orient='index', columns=top_k)
+        recalls_df = pd.DataFrame.from_dict(recalls, orient='index', columns=top_k)
+        print('='*50, exp_name, '='*50)
+        print(exp_name, ': Average Precisions:\n', precisions_df.mean())
+        print(exp_name, ': Average Recalls:\n', recalls_df.mean())
+        
+        
+        res = {k: {'precision': np.mean(precisions_df[k]), 'recall': np.mean(recalls_df[k])} for k in top_k}
+        all_results[exp_name] = res
+        
+    return all_results
 
 
-def visualize(exp_res: dict):
-    def plot_scores(top_k: list, metric: list, metric_name: str, title, d3l, aurum):
-        label_size = 17
+def visualize(exp_results_dict):
+    def plot_scores(top_k: list, exp_scores, exp_labels, colors, linestyles, markers, metric_name: str, title, 
+                    show_legend=True, ymin=None, ymax=None):
+        label_size = 14
         default_ticks = range(len(top_k))
-        plt.plot(default_ticks, d3l, 'cornflowerblue', linestyle='--', label='$D^3L$', marker="o")
-        plt.plot(default_ticks, aurum, 'darkorange', linestyle='--', label='Aurum', marker="x")
-        plt.plot(default_ticks, metric, 'forestgreen', label='KGLiDS', marker="s")
+        for exp_score, exp_label, color, linestyle, marker in zip(exp_scores, exp_labels, colors, linestyles, markers):
+            plt.plot(default_ticks, exp_score, color, label=exp_label, marker=marker, linestyle=linestyle)
         plt.xticks(default_ticks, top_k)
-        plt.ylim(ymin=0)
-        plt.yticks(np.arange(0.0, 1.1, 0.1))
+        plt.ylim(ymin=ymin or 0, ymax= ymax or 1.01)
+        plt.yticks(np.arange(ymin or 0, ymax or 1.1, 0.1))
         plt.xlabel('K', fontsize=label_size)
         plt.ylabel(metric_name, fontsize=label_size)
-        plt.title(title, y=-0.20, fontsize=label_size)
-        plt.legend(loc='lower right')
+        # plt.title(title, y=-0.20, fontsize=label_size)
         plt.grid()
+        if show_legend:
+            plt.legend(loc='lower right')
         return plt
 
-    scores_precision = pd.read_csv('../d3l_scores/precision_{}.csv'.format(DATASET))
-    scores_recall = pd.read_csv('../d3l_scores/recall_{}.csv'.format(DATASET))
-    d3l_precision = scores_precision['D3L']
-    d3l_recall = scores_recall['D3L']
-    aurum_precision = scores_precision['Aurum']
-    aurum_recall = scores_recall['Aurum']
+    exp_names = list(exp_results_dict)
+    k = list(exp_results_dict[exp_names[0]])
+    precisions = []
+    recalls = []
 
-    k = []
-    precision = []
-    recall = []
-    for key, v in exp_res.items():
-        k.append(key)
-        precision.append(v['precision'])
-        recall.append(v['recall'])
+    for exp_name in exp_names:
+        exp_precision = []
+        exp_recall = []
+        for key in exp_results_dict[exp_name].keys():
+            exp_precision.append(exp_results_dict[exp_name][key]['precision'])
+            exp_recall.append(exp_results_dict[exp_name][key]['recall'])
+        precisions.append(exp_precision)
+        recalls.append(exp_recall)
 
-    scores_precision['KGLids'] = precision
-    scores_recall['KGLids'] = recall
 
-    plt.figure(figsize=(12, 5))
+    plt.figure(figsize=(8, 4))
     plt.subplot(1, 2, 1)
-    _ = plot_scores(k, precision, 'Precision', '(a)', d3l_precision, aurum_precision)
+    colors = ['forestgreen', 'black', 'gray', 'black']
+    linestyles = ['solid', 'solid', 'dotted', 'dashed']
+    markers = ['s', 'x', 'o', 'd']
+    _ = plot_scores(k, precisions, exp_names, colors, linestyles, markers, 'Precision', '', ymin=0.4)
     plt.subplot(1, 2, 2)
-    _ = plot_scores(k, recall, 'Recall', '(b)', d3l_recall, aurum_recall)
+    _ = plot_scores(k, recalls, exp_names, colors, linestyles, markers, 'Recall', '', show_legend=False, ymax=0.55)
     plt.tight_layout()
     plt.savefig('../plots/{}.pdf'.format(SAVE_RESULT_AS), dpi=300)
+    plt.show()
 
 
 def main():
-
-    df = load_groundtruth()
-    test_mapping = get_table_mapping(df)
+    
+    ground_truth_df = load_groundtruth(DATASET)
+    ground_truth_set = get_table_mapping(ground_truth_df)
+    
     t1 = time.time()
-    run_experiment(df, test_mapping)
+    fine_grained_graph = connect_to_graphdb(FINE_GRAINED_DB)
+    coarse_grained_graph = connect_to_graphdb(COARSE_GRAINED_DB)
+    no_sub_sampling_graph = connect_to_graphdb(NO_SUB_SAMPLING_DB)
+    results_dict = run_experiment(ground_truth_df, ground_truth_set, 
+                                  [fine_grained_graph, no_sub_sampling_graph, fine_grained_graph, coarse_grained_graph],
+                                  ['KGLiDS', 'Fine-Grained (No Subsampling)', 'Fine-Grained', 'Coarse-Grained'],
+                                  ['both', 'content', 'content', 'content'])
     print('Total time taken: ', time.time()-t1)
 
-    exp_res = load_cache(f'{SAVE_RESULT_AS}_k-{MAX_K}.pkl')
-    visualize(exp_res)
+    visualize(results_dict)
     print('done.')
 
 
