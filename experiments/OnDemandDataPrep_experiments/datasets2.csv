@@ -1,0 +1,14 @@
+﻿Data cleaning dataset,Task,dependent_variable
+adult.csv,binary,class
+titanic.csv,binary,Survived
+jm1.csv,binary,defects
+cleveland_heart_disease.csv,multi-class,num
+breastcancerwisconsin.csv,binary,Class
+credit-g.csv,binary,class
+credit.csv,binary,A16
+housevotes84.csv,binary,Class
+hepatitis.csv,binary,Class
+horsecolic.csv,binary,SurgicalLesion
+higgs.csv,binary,class
+albert.csv,binary,class
+APSFailure.csv,binary,class
