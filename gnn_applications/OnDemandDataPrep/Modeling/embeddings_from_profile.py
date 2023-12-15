@@ -68,7 +68,7 @@ def get_table_embeddings_scaling(graph_name):
     for key, value in profiles.items():
         if isinstance(value, np.ndarray):
             profiles[key] = value.tolist()
-    file_path = "OnDemandDataPrep/Modeling/storage/Embeddings_tables_"+graph_name+".csv"
+    file_path = "gnn_applications/OnDemandDataPrep/Modeling/storage/Embeddings_tables_"+graph_name+".csv"
 
     with open(file_path, "w", newline='') as f:
         writer = csv.writer(f)
@@ -168,7 +168,7 @@ def get_table_embeddings_cleaning(graph_name):
     for key, value in profiles.items():
         if isinstance(value, np.ndarray):
             profiles[key] = value.tolist()
-    file_path = "OnDemandDataPrep/Modeling/storage/Embeddings_tables_"+graph_name+".csv"
+    file_path = "gnn_applications/OnDemandDataPrep/Modeling/storage/Embeddings_tables_"+graph_name+".csv"
 
     #    with open(file_path, "w", newline='') as f:
     #        writer = csv.writer(f)
@@ -217,7 +217,7 @@ def get_column_embeddings(graph_name):
                 embeddings[column_key] = np.concatenate(
                     (np.zeros(300), np.zeros(300), np.zeros(300), np.zeros(300), np.zeros(300), np.zeros(300)))
 
-    file_path = 'OnDemandDataPrep/Modeling/storage/Embeddings_columns_' + graph_name + '.csv'
+    file_path = 'gnn_applications/OnDemandDataPrep/Modeling/storage/Embeddings_columns_' + graph_name + '.csv'
 
     with open(file_path, "w", newline='') as f:
         writer = csv.writer(f)
@@ -238,7 +238,7 @@ def get_column_embeddings_unary(graph_name):
         if profile['embedding'] is not None:
             embeddings[column_key] = profile['embedding']
 
-    file_path = "OnDemandDataPrep/Modeling/storage/Embeddings_columns_"+graph_name+".csv"
+    file_path = "gnn_applications/OnDemandDataPrep/Modeling/storage/Embeddings_columns_"+graph_name+".csv"
 
     with open(file_path, "w", newline='') as f:
         writer = csv.writer(f)

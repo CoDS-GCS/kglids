@@ -23,13 +23,13 @@ def define_rel_types(g_tsv_df):
 
 def triplet_encoding(dataset_name_script,label_node):
     dataset_name = dataset_name_script+"_gnn_"+label_node
-    dataset_name_csv = "OnDemandDataPrep/storage/output_file_"+dataset_name_script+".csv"
-    dataset_types = "OnDemandDataPrep/storage/output_type_"+dataset_name_script+".csv"
+    dataset_name_csv = "gnn_applications/OnDemandDataPrep/storage/output_file_"+dataset_name_script+".csv"
+    dataset_types = "gnn_applications/OnDemandDataPrep/storage/output_type_"+dataset_name_script+".csv"
     split_by = {"folder_name": "random"}
     target_rel="http://kglids.org/ontology/pipeline/HasCleaningOperation"
     dic_results = {}
     Literals2Nodes = True
-    output_root_path = "OnDemandDataPrep/storage/"
+    output_root_path = "gnn_applications/OnDemandDataPrep/storage/"
     g_tsv_df = pd.read_csv(dataset_name_csv,encoding_errors='ignore',sep=",")
     g_tsv_types_df = pd.read_csv(dataset_types, encoding_errors='ignore')
     g_tsv_df = g_tsv_df.dropna()
@@ -214,7 +214,7 @@ def triplet_encoding(dataset_name_script,label_node):
     except IndexError:
         s_type = None
         o_type = None
-        print("Empty 'rel_types' dataframe")
+        # print("Empty 'rel_types' dataframe")
     
     s_label_type = label_node
     o_label_type = o_type

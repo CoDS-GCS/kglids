@@ -97,7 +97,7 @@ def get_pred(pred,subject):
 
 def create_encoding_file(graph_name: str='cleaning_graph', operation: str='cleaning'):
 
-    df = pd.read_csv('OnDemandDataPrep/Modeling/storage/output_' + graph_name + '.csv', quotechar='"')#"output_cleaning_w_extras_profiles_comp.csv"
+    df = pd.read_csv('gnn_applications/OnDemandDataPrep/Modeling/storage/output_' + graph_name + '.csv', quotechar='"')#"output_cleaning_w_extras_profiles_comp.csv"
     op_list = {'cleaning':['http://kglids.org/resource/library/pandas/DataFrame/fillna','http://kglids.org/resource/library/pandas/DataFrame/dropna','http://kglids.org/resource/library/sklearn/impute/SimpleImputer','http://kglids.org/resource/library/sklearn/impute/KNNImputer','http://kglids.org/resource/library/sklearn/impute/IterativeImputer','http://kglids.org/resource/library/pandas/DataFrame/interpolate'],
                'unary_transformation':['sqrt','log'],
                'scaler_transformation':['MinMaxScaler','RobustScaler','StandardScaler']
@@ -122,6 +122,6 @@ def create_encoding_file(graph_name: str='cleaning_graph', operation: str='clean
                                          if isinstance(obj, str) and len(obj.split('/')) == 8
                                          else obj)
 
-    df_type_out.to_csv("OnDemandDataPrep/Modeling/storage/output_" + graph_name + "_type.csv", index=False)
-    df_out.to_csv("OnDemandDataPrep/Modeling/storage/output_" + graph_name + "_file.csv", index=False)
+    df_type_out.to_csv("gnn_applications/OnDemandDataPrep/Modeling/storage/output_" + graph_name + "_type.csv", index=False)
+    df_out.to_csv("gnn_applications/OnDemandDataPrep/Modeling/storage/output_" + graph_name + "_file.csv", index=False)
     print('Encoding files are ready!')

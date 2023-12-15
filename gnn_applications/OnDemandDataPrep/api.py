@@ -19,7 +19,8 @@ from gnn_applications.OnDemandDataPrep.apply_recommendation import apply_cleanin
 
 class KGLiDSDataPrep:
     def __init__(self, endpoint: str = 'http://localhost:7200', db: str = 'kglids'):
-        self.conn = connect_to_graphdb(endpoint, graphdb_repo=db)
+        pass
+        # self.conn = connect_to_graphdb(endpoint, graphdb_repo=db)
 
     def build_cleaning_model(self, graph_name: str):
         # profile_to_csv(graph_name)
@@ -49,7 +50,9 @@ class KGLiDSDataPrep:
         create_triplets(table, name)
         triplet_encoding(name, 'Table')
         cleaning_op = graphSaint_cleaning(table, name)
-        return cleaning_dict[cleaning_op]
+        recommended_op = cleaning_dict[cleaning_op]
+        print('The recommended cleaning operation is: ', recommended_op)
+        return recommended_op
 
     def apply_cleaning_operations(self, operation: str, df: pd.DataFrame):
         clean_df = apply_cleaning(df, operation)
@@ -64,7 +67,7 @@ class KGLiDSDataPrep:
         triplet_encoding(name, 'Column')
         unary_op = graphSaint_unary(name, table)
         data = {'Recommended_transformation': [scaling_op],
-                'Feature': [None]}
+                'Feature': ['All']}
         recommended_scaling_transformations = pd.DataFrame(data)
         recommended_scaling_transformations['Recommended_transformation'] = recommended_scaling_transformations[
             'Recommended_transformation'].replace(scaling_dict)

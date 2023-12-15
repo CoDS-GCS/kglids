@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from memory_profiler import memory_usage
 import pandas as pd
 import numpy as np
+from comet_ml import API
 
 class RGCNConv(MessagePassing):
     def __init__(self, in_channels, out_channels, num_node_types,
@@ -40,7 +41,7 @@ class RGCNConv(MessagePassing):
 def get_column_emb(entity_df, name):
     recommender = EmbeddingCreator()
     df = recommender.new_emb(entity_df,'cleaning-column')
-    file1 = pd.read_csv('OnDemandDataPrep/storage/'+name+'_gnn_Table/mapping/Column_entidx2name.csv')
+    file1 = pd.read_csv('gnn_applications/OnDemandDataPrep/storage/'+name+'_gnn_Table/mapping/Column_entidx2name.csv')
     file1['ent name'] = file1['ent name'].astype(str)
 
     df_emb = pd.merge(file1, df, left_on='ent name', right_index=True, how='left')
@@ -136,13 +137,13 @@ def graphSaint(dataset_to_clean, dataset_name_script):
     gsaint_Final_Test = 0
 
     dataset = PygNodePropPredDataset_hsh(name=GA_dataset_name,
-                                         root='OnDemandDataPrep/storage/',
+                                         root='gnn_applications/OnDemandDataPrep/storage/',
                                          numofClasses=str(5))
     dataset_name = GA_dataset_name + "_GA_" + str(GA_Index)
     data = dataset[0]
     for key, tensor in data.edge_reltype.items():
         data.edge_reltype[key] = np.where(tensor == 0,8, tensor)
-    print(data.edge_reltype)
+    # print(data.edge_reltype)
 
     del dataset
     global subject_node
@@ -197,15 +198,17 @@ def graphSaint(dataset_to_clean, dataset_name_script):
     x_dict = {}
     for key, x in feat_dic.items():
         x_dict[key2int[key]] = x
-        print('key for table is: ',key2int[key])
+        # print('key for table is: ',key2int[key])
 
     model = RGCN(1800, 64, 5, 1, 0.5, {0: 24789, 1: 194, 2: 762, 3: 18561, 4: 25539, 5: 7, 6: 458, 7: 4, 8: 1064}, [1], 54)
     loadTrainedModel=1
     if loadTrainedModel == 1:
         with torch.no_grad():
             model.eval()
+            api = API(api_key="PiFYH5pc2whDBLGded0ItMLTu")
+            api.download_registry_model("nikimonjazeb", "cleaning", version=None, output_path="gnn_applications/OnDemandDataPrep/Models/", expand=True, stage=None)
             model.load_state_dict(torch.load(
-            "OnDemandDataPrep/Models/kgfarm_gnn_GA_0_DBLP_conf_GSAINT_QM_hc64_e30_r3_w4_5targets_col.model"))
+            "gnn_applications/OnDemandDataPrep/Models/kgfarm_gnn_GA_0_DBLP_conf_GSAINT_QM_hc64_e30_r3_w4_5targets_col.model"))
             out = model.inference(dataset_to_clean, dataset_name_script,x_dict, edge_index_dict, key2int)
             out = out[key2int[subject_node]]
             y_pred = out.argmax(dim=-1, keepdim=True).cpu()

@@ -6,7 +6,7 @@ from torch_geometric.utils.hetero import group_hetero_graph
 from torch_geometric.nn import MessagePassing
 import torch
 import torch.nn.functional as F
-
+from comet_ml import API
 import pandas as pd
 import numpy as np
 
@@ -42,7 +42,7 @@ def get_column_emb(dataset_name_script,df_train):
     recommender = EmbeddingCreator()
     entity_df = df_train
     df = recommender.new_emb(entity_df, 'scaling-column')
-    file1 = pd.read_csv('OnDemandDataPrep/storage/'+dataset_name_script+'_gnn_Table/mapping/Column_entidx2name.csv')
+    file1 = pd.read_csv('gnn_applications/OnDemandDataPrep/storage/'+dataset_name_script+'_gnn_Table/mapping/Column_entidx2name.csv')
     file1['ent name'] = file1['ent name'].astype(str)
 
     # Perform a left join on 'Table' column while preserving the order of file1
@@ -134,7 +134,7 @@ def graphSaint(dataset_name_script,df_train):
     GA_dataset_name = dataset_name_script + "_gnn_Table"
     gsaint_Final_Test = 0
     dataset = PygNodePropPredDataset_hsh(name=GA_dataset_name,
-                                         root='OnDemandDataPrep/storage/',
+                                         root='gnn_applications/OnDemandDataPrep/storage/',
                                          numofClasses=str(3))
 
     data = dataset[0]
@@ -196,8 +196,13 @@ def graphSaint(dataset_name_script,df_train):
     if loadTrainedModel == 1:
         with torch.no_grad():
             model.eval()
+            api = API(api_key="PiFYH5pc2whDBLGded0ItMLTu")
+            api.download_registry_model("nikimonjazeb", "scaling-trans", version=None,
+                                        output_path="gnn_applications/OnDemandDataPrep/Models/", expand=True,
+                                        stage=None)
+
             model.load_state_dict(torch.load(
-                "OnDemandDataPrep/Models/kgfarm_gnn_GA_0_DBLP_conf_GSAINT_QM_e30_r3_s30_l1_hc128_w4_lr10_drop5_new_emb_1800.model"))
+                "gnn_applications/OnDemandDataPrep/Models/kgfarm_gnn_GA_0_DBLP_conf_GSAINT_QM_e30_r3_s30_l1_hc128_w4_lr10_drop5_new_emb_1800.model"))
             out = model.inference(dataset_name_script,df_train, x_dict, edge_index_dict, key2int)
             out = out[key2int[subject_node]]
             y_pred = out.argmax(dim=-1, keepdim=True).cpu()

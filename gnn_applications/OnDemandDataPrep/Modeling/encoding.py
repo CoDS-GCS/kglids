@@ -32,7 +32,7 @@ def encode(graph_name, target_rel, label_node):
 
     dic_results = {}
     Literals2Nodes = True
-    output_root_path = 'OnDemandDataPrep/Modeling/storage/'
+    output_root_path = 'gnn_applications/OnDemandDataPrep/Modeling/storage/'
     g_tsv_df = pd.read_csv(output_root_path + dataset_name_csv, encoding_errors='ignore', sep=",")
     g_tsv_types_df = pd.read_csv(output_root_path + dataset_types, encoding_errors='ignore')
 

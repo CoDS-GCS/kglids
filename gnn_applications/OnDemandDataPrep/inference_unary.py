@@ -11,6 +11,7 @@ from gnn_applications.OnDemandDataPrep.dataset_pyg_hsh import PygNodePropPredDat
 import numpy as np
 from memory_profiler import memory_usage
 from gnn_applications.OnDemandDataPrep.calculate_embeddings_kglids import EmbeddingCreator
+from comet_ml import API
 
 class RGCNConv(MessagePassing):
     def __init__(self, in_channels, out_channels, num_node_types,
@@ -59,7 +60,7 @@ def get_column_emb(dataset_name_script,df_train):
     recommender = EmbeddingCreator()
     entity_df = df_train
     df = recommender.new_emb(entity_df,'unary-column')
-    file1 = pd.read_csv('OnDemandDataPrep/storage/'+dataset_name_script+'_gnn_Column/mapping/Column_entidx2name.csv')
+    file1 = pd.read_csv('gnn_applications/OnDemandDataPrep/storage/'+dataset_name_script+'_gnn_Column/mapping/Column_entidx2name.csv')
     file1['ent name'] = file1['ent name'].astype(str)
 
     # Perform a left join on 'Table' column while preserving the order of file1
@@ -182,7 +183,7 @@ def graphSaint(dataset_name_script,df_train):
     gsaint_Final_Test=[]
     for GA_dataset_name in MAG_datasets:
         dataset = PygNodePropPredDataset_hsh(name=GA_dataset_name,
-                                             root='OnDemandDataPrep/storage/',
+                                             root='gnn_applications/OnDemandDataPrep/storage/',
                                              numofClasses=str(3))
         dataset_name=GA_dataset_name+"_GA_"+str(GA_Index)
         dic_results[dataset_name] = {}
@@ -268,7 +269,12 @@ def graphSaint(dataset_name_script,df_train):
                 emb_dict = {}
                 for key in model.emb_dict.keys():
                     emb_dict[key] = model.emb_dict[key].detach().clone()
-                model.load_state_dict(torch.load("OnDemandDataPrep/Models/kgfarm_gnn_GA_0_DBLP_conf_GSAINT_QM_e10_r3_s10_lr005_layer1_w4_hc32_new_emb_v2_82split_3target.model"))
+                api = API(api_key="PiFYH5pc2whDBLGded0ItMLTu")
+                api.download_registry_model("nikimonjazeb", "unary-trans", version=None,
+                                            output_path="gnn_applications/OnDemandDataPrep/Models/", expand=True,
+                                            stage=None)
+
+                model.load_state_dict(torch.load("gnn_applications/OnDemandDataPrep/Models/kgfarm_gnn_GA_0_DBLP_conf_GSAINT_QM_e10_r3_s10_lr005_layer1_w4_hc32_new_emb_v2_82split_3target.model"))
                 out = model.inference(x_dict, edge_index_dict, key2int, new_emb_dict=emb_dict)
                 out = out[key2int[subject_node]]
                 y_pred = out.argmax(dim=-1, keepdim=True).cpu()

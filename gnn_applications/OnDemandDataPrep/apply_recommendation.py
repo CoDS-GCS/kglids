@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
+from sklearn.experimental import enable_iterative_imputer
 from sklearn.impute import SimpleImputer, KNNImputer, IterativeImputer
 
 
@@ -33,7 +34,7 @@ def get_columns_to_be_cleaned(df: pd.DataFrame):
 
 def check_for_uncleaned_features(df: pd.DataFrame):  # clean by recommendations
     uncleaned_features = list(get_columns_to_be_cleaned(df=df)['Feature'])
-    print('check:', df.isna().sum())
+    # print('check:', df.isna().sum())
     if len(uncleaned_features) == 0:
         print('\nall features look clean')
     else:

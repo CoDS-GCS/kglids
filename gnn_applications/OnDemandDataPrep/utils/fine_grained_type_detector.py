@@ -16,10 +16,10 @@ from gnn_applications.OnDemandDataPrep.utils.column_data_type import ColumnDataT
 
 
 class FineGrainedColumnTypeDetector:
-    stanford_ner_model = "OnDemandDataPrep/utils/english.muc.7class.distsim.crf.ser.gz"
-    stanford_jar_file = "OnDemandDataPrep/utils/stanford-ner.jar"
+    stanford_ner_model = "gnn_applications/OnDemandDataPrep/utils/english.muc.7class.distsim.crf.ser.gz"
+    stanford_jar_file = "gnn_applications/OnDemandDataPrep/utils/stanford-ner.jar"
     ner_tagger = StanfordNERTagger(stanford_ner_model, stanford_jar_file)
-    fasttext_model = compress_fasttext.models.CompressedFastTextKeyedVectors.load('OnDemandDataPrep/utils/ft_cc.en.50.bin')
+    fasttext_model = compress_fasttext.models.CompressedFastTextKeyedVectors.load('gnn_applications/OnDemandDataPrep/utils/ft_cc.en.50.bin')
     tokenizer = TweetTokenizer()
 
     @staticmethod

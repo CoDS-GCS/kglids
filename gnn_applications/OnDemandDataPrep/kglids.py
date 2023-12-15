@@ -10,7 +10,7 @@ def create_triplets(df, name):
 
     triplets = column_triplets 
     triplets_df = pd.DataFrame(triplets, columns=['Subject', 'Predicate', 'Object'])
-    triplets_df.to_csv('OnDemandDataPrep/storage/output_file_'+name+'.csv', index=False)
+    triplets_df.to_csv('gnn_applications/OnDemandDataPrep/storage/output_file_'+name+'.csv', index=False)
 
     triplets_df_type = pd.DataFrame(column_triplets_type, columns=['stype', 'ptype', 'otype'])
-    triplets_df_type.to_csv('OnDemandDataPrep/storage/output_type_'+name+'.csv', index=False)
+    triplets_df_type.to_csv('gnn_applications/OnDemandDataPrep/storage/output_type_'+name+'.csv', index=False)
