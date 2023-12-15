@@ -1,22 +1,22 @@
-import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, FunctionTransformer
 
 from api.template import *
 from api.helpers.helper import *
 from collections import Counter
 from tqdm import tqdm
-from OnDemandDataPrep.Modeling.prepare_for_encoding import profile_to_csv, create_encoding_file
-from OnDemandDataPrep.Modeling.encoding import encode
-from OnDemandDataPrep.Modeling.embeddings_from_profile import *
-from OnDemandDataPrep.Modeling.create_cleaning_model import graphSaint as graphSaint_modeling_cleaning
-from OnDemandDataPrep.Modeling.create_scaling_model import graphSaint as graphSaint_modeling_scaler
-from OnDemandDataPrep.Modeling.create_unary_model import graphSaint as graphSaint_modeling_unary
-from OnDemandDataPrep.kglids import create_triplets
-from OnDemandDataPrep.script_transform_biokg_to_ogb_datasets import triplet_encoding
-from OnDemandDataPrep.inference_cleaning import graphSaint as graphSaint_cleaning
-from OnDemandDataPrep.inference_scaling import graphSaint as graphSaint_scaling
-from OnDemandDataPrep.inference_unary import graphSaint as graphSaint_unary
-from OnDemandDataPrep.apply_recommendation import apply_cleaning
+from gnn_applications.OnDemandDataPrep.Modeling.prepare_for_encoding import profile_to_csv, create_encoding_file
+from gnn_applications.OnDemandDataPrep.Modeling.encoding import encode
+from gnn_applications.OnDemandDataPrep.Modeling.embeddings_from_profile import *
+from gnn_applications.OnDemandDataPrep.Modeling.create_cleaning_model import graphSaint as graphSaint_modeling_cleaning
+from gnn_applications.OnDemandDataPrep.Modeling.create_scaling_model import graphSaint as graphSaint_modeling_scaler
+from gnn_applications.OnDemandDataPrep.Modeling.create_unary_model import graphSaint as graphSaint_modeling_unary
+from gnn_applications.OnDemandDataPrep.kglids import create_triplets
+from gnn_applications.OnDemandDataPrep.script_transform_biokg_to_ogb_datasets import triplet_encoding
+from gnn_applications.OnDemandDataPrep.inference_cleaning import graphSaint as graphSaint_cleaning
+from gnn_applications.OnDemandDataPrep.inference_scaling import graphSaint as graphSaint_scaling
+from gnn_applications.OnDemandDataPrep.inference_unary import graphSaint as graphSaint_unary
+from gnn_applications.OnDemandDataPrep.apply_recommendation import apply_cleaning
+
 
 class KGLiDS:
     def __init__(self, endpoint: str = 'http://localhost:7200', db: str = 'kglids'):
@@ -300,7 +300,7 @@ class KGLiDS:
             'Recommended_transformation'].replace(scaling_dict)
 
         df_unary_rec = pd.DataFrame(unary_op, columns=['Recommended_transformation'])
-        df_unary_col = pd.read_csv('OnDemandDataPrep/storage/' + name + '_gnn_Column/mapping/Column_entidx2name.csv')
+        df_unary_col = pd.read_csv('gnn_applications/OnDemandDataPrep/storage/' + name + '_gnn_Column/mapping/Column_entidx2name.csv')
         df_unary_join = df_unary_col.join(df_unary_rec)
         recommended_unary_transformations = df_unary_join.groupby('Recommended_transformation')['ent name'].apply(
             list).reset_index()

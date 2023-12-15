@@ -1,0 +1,9 @@
+pandas
+SPARQLWrapper
+tqdm
+scikit
+seaborn
+numpy
+graphviz
+camelsplit
+matplotlib
