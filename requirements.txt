@@ -35,3 +35,7 @@ jupyter==1.0.0
 pystardog==0.16.1
 typing-inspect==0.8.0
 typing_extensions==4.5.0
+memory_profiler
+ogb
+torch_sparse
+torch_geometric

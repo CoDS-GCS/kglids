@@ -1,5 +1,5 @@
-from OnDemandDataPrep.calculate_embeddings_kglids import EmbeddingCreator
-from OnDemandDataPrep.dataset_pyg_hsh import PygNodePropPredDataset_hsh
+from gnn_applications.OnDemandDataPrep.calculate_embeddings_kglids import EmbeddingCreator
+from gnn_applications.OnDemandDataPrep.dataset_pyg_hsh import PygNodePropPredDataset_hsh
 from torch.nn import ModuleList, Linear, ParameterDict, Parameter
 from torch_sparse import SparseTensor
 from torch_geometric.utils.hetero import group_hetero_graph

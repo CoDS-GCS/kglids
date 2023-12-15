@@ -6,10 +6,10 @@ import pandas as pd
 import dateparser
 import compress_fasttext
 from nltk.tokenize import TweetTokenizer
-from OnDemandDataPrep.utils.column_embeddings import load_numeric_embedding_model, load_string_embedding_model, \
+from gnn_applications.OnDemandDataPrep.utils.column_embeddings import load_numeric_embedding_model, load_string_embedding_model, \
     load_nl_embedding_model
-from OnDemandDataPrep.utils.fine_grained_type_detector import FineGrainedColumnTypeDetector
-from OnDemandDataPrep.utils.column_data_type import ColumnDataType
+from gnn_applications.OnDemandDataPrep.utils.fine_grained_type_detector import FineGrainedColumnTypeDetector
+from gnn_applications.OnDemandDataPrep.utils.column_data_type import ColumnDataType
 
 class EmbeddingCreator:
     def __init__(self):

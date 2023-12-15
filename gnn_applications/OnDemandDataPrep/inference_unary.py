@@ -7,10 +7,10 @@ from torch_sparse import SparseTensor
 from torch_geometric.utils.hetero import group_hetero_graph
 from torch_geometric.nn import MessagePassing
 import pandas as pd
-from OnDemandDataPrep.dataset_pyg_hsh import PygNodePropPredDataset_hsh
+from gnn_applications.OnDemandDataPrep.dataset_pyg_hsh import PygNodePropPredDataset_hsh
 import numpy as np
 from memory_profiler import memory_usage
-from OnDemandDataPrep.calculate_embeddings_kglids import EmbeddingCreator
+from gnn_applications.OnDemandDataPrep.calculate_embeddings_kglids import EmbeddingCreator
 
 class RGCNConv(MessagePassing):
     def __init__(self, in_channels, out_channels, num_node_types,

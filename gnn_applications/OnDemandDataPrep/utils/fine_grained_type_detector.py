@@ -12,7 +12,7 @@ import pandas as pd
 from nltk.tokenize import TweetTokenizer
 import numpy as np
 
-from OnDemandDataPrep.utils.column_data_type import ColumnDataType
+from gnn_applications.OnDemandDataPrep.utils.column_data_type import ColumnDataType
 
 
 class FineGrainedColumnTypeDetector:

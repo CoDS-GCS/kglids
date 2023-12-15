@@ -13,8 +13,8 @@ from torch_geometric.utils.hetero import group_hetero_graph
 from torch_geometric.nn import MessagePassing
 import pandas as pd
 from ogb.nodeproppred import Evaluator
-from OnDemandDataPrep.dataset_pyg_hsh import PygNodePropPredDataset_hsh
-from OnDemandDataPrep.logger import Logger
+from gnn_applications.OnDemandDataPrep.dataset_pyg_hsh import PygNodePropPredDataset_hsh
+from gnn_applications.OnDemandDataPrep.logger import Logger
 import faulthandler
 
 faulthandler.enable()
