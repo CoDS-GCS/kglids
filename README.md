@@ -7,11 +7,15 @@ In recent years, we have witnessed the growing interest from academia and indust
 Hence, this paper presents a scalable system, KGLiDS, that employs machine learning and knowledge graph technologies to abstract and capture the semantics of data science artifacts and their connections. Based on this information KGLiDS enables a variety of downstream applications, such as data discovery and pipelines automation. 
 Our comprehensive evaluation covers use cases in data discovery, data cleaning, transformation, and AutoML and shows that KGLiDS is significantly faster with a lower memory footprint as the state of the art while achieving comparable or better accuracy.
 
-## Technical Report
-Our technical report is available on [ArXiv](https://arxiv.org/abs/2303.02204) and includes more details on our system and interfaces is available
+## Quickstart on Colab
+Try out our [KGLiDS Colab Demo](https://colab.research.google.com/drive/1dDiGh1KwJibR2pVjiMXFpHIHxfgByYxZ?usp=sharing)
+that demonstrates our APIs on Kaggle data!
+
+[comment]: <> (## Technical Report)
+[comment]: <> (Our technical report is available on [ArXiv]&#40;https://arxiv.org/abs/2303.02204&#41; and includes more details on our system and interfaces is available)
 
 ## Linked Data Science: Systems and Applications
-To learn more about Linked Data Science and its applications, please watch Dr. Essam Mansour's talk at Waterloo DSG Seminar ([Here](https://www.youtube.com/watch?v=99wvN04C5fU)). 
+To learn more about Linked Data Science and its applications, please watch Dr. Mansour's talk at Waterloo DSG Seminar ([Here](https://www.youtube.com/watch?v=99wvN04C5fU)). 
 
 ## Installation
 * Clone the `kglids` repo 
@@ -23,11 +27,6 @@ conda activate kglids
 pip install -r requirements.txt
 ```
 
-## Quickstart
-<p>
-<b>Try the Sample <a href="https://colab.research.google.com/drive/1XbjJkppz5_nTufgnD53gEBzxyLYViGAi?usp=sharing" style="color: orange"> KGLiDS Colab notebook</a>
-for a quick hands-on! </b>
-</p>
 
 
 <b>Generating the LiDS graph:</b>
