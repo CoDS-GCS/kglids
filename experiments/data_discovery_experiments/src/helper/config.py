@@ -1,5 +1,5 @@
 import stardog
-from SPARQLWrapper import SPARQLWrapper
+from SPARQLWrapper import SPARQLWrapper, JSON
 
 
 def connect_to_blazegraph(port, namespace):
@@ -15,3 +15,9 @@ def connect_to_stardog(db: str, port: int = 5820):
         'password': 'admin'
     }
     return stardog.Connection(db, **connection_details)
+
+
+def connect_to_graphdb(sparql_endpoint):
+    graphdb = SPARQLWrapper(sparql_endpoint)
+    graphdb.setReturnFormat(JSON)
+    return graphdb

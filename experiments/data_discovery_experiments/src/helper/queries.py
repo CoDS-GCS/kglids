@@ -37,11 +37,11 @@ def get_top_k_tables(pairs: list):
     return top_k
 
 
-def get_similar_relation_tables_query(query_table: str, thresh: float):
-    return get_prefixes() + """
-    SELECT ?table_name1 ?table_name2 ?certainty
-    WHERE
-    {
+def get_similar_relation_tables_query(query_table: str, thresh: float, mode='content'):
+    
+    if mode == 'label':
+        inner_query = """
+        {
         ?table_id	schema:name		"%s"	;
       				schema:name		?table_name1	.
       	?column_id	kglids:isPartOf ?table_id		.
@@ -51,22 +51,69 @@ def get_similar_relation_tables_query(query_table: str, thresh: float):
       	FILTER (?certainty >= %s)					.
       	?column_id2 kglids:isPartOf	?table_id2		.
       	?table_id2	schema:name		?table_name2	.
-    }
-    """ % (query_table, thresh)
+        }
+        """ % (query_table, thresh)
+    elif mode == 'content':
+        inner_query = """
+        {
+        ?table_id	schema:name		"%s"	;
+      				schema:name		?table_name1	.
+      	?column_id	kglids:isPartOf ?table_id		.
+
+      	<<?column_id data:hasContentSimilarity	?column_id2>>	data:withCertainty	?certainty	. 
+
+      	FILTER (?certainty >= %s)					.
+      	?column_id2 kglids:isPartOf	?table_id2		.
+      	?table_id2	schema:name		?table_name2	.
+        }
+        """ % (query_table, thresh)
+    elif mode == 'both':
+        inner_query = """
+        {
+        ?table_id	schema:name		"%s"	;
+      				schema:name		?table_name1	.
+      	?column_id	kglids:isPartOf ?table_id		.
+
+      	<<?column_id data:hasLabelSimilarity	?column_id2>>	data:withCertainty	?certainty	. 
+
+      	FILTER (?certainty >= %s)					.
+      	?column_id2 kglids:isPartOf	?table_id2		.
+      	?table_id2	schema:name		?table_name2	.
+        }
+        UNION
+        {
+        ?table_id	schema:name		"%s"	;
+      				schema:name		?table_name1	.
+      	?column_id	kglids:isPartOf ?table_id		.
+
+      	<<?column_id data:hasContentSimilarity	?column_id2>>	data:withCertainty	?certainty	. 
+
+      	FILTER (?certainty >= %s)					.
+      	?column_id2 kglids:isPartOf	?table_id2		.
+      	?table_id2	schema:name		?table_name2	.
+        }
+        """ % (query_table, thresh, query_table, thresh)
+    
+    return get_prefixes() + """
+    SELECT ?table_name1 ?table_name2 ?certainty
+    WHERE { """ + inner_query + "}" 
 
 
 def get_related_columns_between_2_tables_query(table_name1, table_name2, relationship: str, thresh: float):
-    return get_prefixes() + \
-           'SELECT DISTINCT ?table_id1 ?column_name1 ?table_id2 ?column_name2 \nWHERE\n{\n' \
-           '    ?table_id1   	schema:name					"%s"                                        .\n' \
-           '    ?table_id2   	schema:name					"%s"                                        .\n' \
-           '    ?column_id1		kglids:isPartOf				?table_id1   		                                .\n' \
-           '    ?column_id2		kglids:isPartOf				?table_id2   		                                .\n' \
-           '    <<?column_id1        data:%s            ?column_id2>> data:withCertainty ?c                        .\n' \
-           '    FILTER(?c >= %s)                                                                        .\n' \
-           '    ?column_id1        schema:name             ?column_name1                                           .\n' \
-           '    ?column_id2        schema:name             ?column_name2                                           .\n' \
-           '}' % (table_name1, table_name2, relationship, thresh)
+    return get_prefixes() + """
+        SELECT DISTINCT ?table_id1 ?column_name1 ?table_id2 ?column_name2 
+        WHERE
+        {
+            ?table_id1   	schema:name     "%s".
+            ?table_id2   	schema:name     "%s".
+            ?column_id1     kglids:isPartOf     ?table_id1.
+            ?column_id2     kglids:isPartOf     ?table_id2.
+            <<?column_id1        data:%s            ?column_id2>> data:withCertainty ?c.
+            <<?column_id1        data:hasContentSimilarity            ?column_id2>> data:withCertainty ?c2.
+            FILTER(?c >= %s).
+            ?column_id1        schema:name             ?column_name1.
+            ?column_id2        schema:name             ?column_name2.
+        }""" % (table_name1, table_name2, relationship, thresh)
 
 
 def attribute_precision_j_query(query_table, table, thresh: float):
@@ -154,23 +201,28 @@ def attribute_precision_j_query(query_table, table, thresh: float):
 
 # --------------------QUERY EXEC-------------------------
 
-def execute_query(conn: stardog.Connection, query: str, return_type: str = 'json', timeout: int = 0):
-    if return_type == 'csv':
-        result = conn.select(query, content_type='text/csv', timeout=timeout)
-        return pd.read_csv(io.BytesIO(bytes(result)))
-    elif return_type == 'json':
-        result = conn.select(query)
-        return result['results']['bindings']
-    elif return_type == 'ask':
-        result = conn.select(query)
-        return result['boolean']
-    elif return_type == 'update':
-        result = conn.update(query)
-        return result
-    else:
-        error = return_type + ' not supported!'
-        raise ValueError(error)
+# def execute_query(conn: stardog.Connection, query: str, return_type: str = 'json', timeout: int = 0):
+#     
+#     if return_type == 'csv':
+#         result = conn.select(query, content_type='text/csv', timeout=timeout)
+#         return pd.read_csv(io.BytesIO(bytes(result)))
+#     elif return_type == 'json':
+#         result = conn.select(query)
+#         return result['results']['bindings']
+#     elif return_type == 'ask':
+#         result = conn.select(query)
+#         return result['boolean']
+#     elif return_type == 'update':
+#         result = conn.update(query)
+#         return result
+#     else:
+#         error = return_type + ' not supported!'
+#         raise ValueError(error)
 
+def execute_query(sparql, query):
+    sparql.setQuery(query)
+    results = sparql.query().convert()
+    return results['results']['bindings']
 
 attr_pairs = {}
 
@@ -233,10 +285,10 @@ def get_top_k_related_tables_with_cache(sparql, query_table, k, thresh):
         return top_k_per_target_table.get(query_table)[:k]
 
 
-def get_top_k_related_tables(sparql, query_table, k, thresh):
+def get_top_k_related_tables(sparql, query_table, k, thresh, mode='label'):
 
     result = []
-    res = execute_query(sparql, get_similar_relation_tables_query(query_table, thresh))
+    res = execute_query(sparql, get_similar_relation_tables_query(query_table, thresh, mode=mode))
     for r in res:
         table1 = r["table_name1"]["value"]
         table2 = r["table_name2"]["value"]
