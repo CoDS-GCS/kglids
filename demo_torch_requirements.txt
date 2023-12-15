@@ -1,0 +1,24 @@
+-f https://download.pytorch.org/whl/cpu/torch_stable.html
+-f https://data.pyg.org/whl/torch-2.1.0+cu121.html
+pandas
+SPARQLWrapper
+tqdm
+scikit-learn
+seaborn
+numpy
+graphviz
+camelsplit
+matplotlib
+torch==2.1.0+cu121
+torch-scatter
+torch-sparse
+torch-geometric
+torchvision
+ogb
+memory_profiler
+bitstring
+compress_fasttext
+nltk
+fasttext
+dateparser
+comet_ml

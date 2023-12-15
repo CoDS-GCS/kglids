@@ -5,8 +5,8 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # set tensorflow log level to FATAL
 import nltk
 from nltk.tag import StanfordNERTagger
 import dateparser
-import fasttext
-fasttext.FastText.eprint = lambda *args,**kwargs: None
+# import fasttext
+# fasttext.FastText.eprint = lambda *args,**kwargs: None
 import compress_fasttext
 import pandas as pd
 from nltk.tokenize import TweetTokenizer

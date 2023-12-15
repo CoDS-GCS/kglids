@@ -1,0 +1,1 @@
+Folders and files generated during the cleaning and transformation inference are stored here.
