@@ -8,13 +8,13 @@ import pickle
 from helper.queries import *
 from helper.config import connect_to_stardog
 from helper.cache import cache_score
-from helper.common import get_table_mapping
+from helper.common import load_groundtruth, get_table_mapping
 
 # *************EXPERIMENT PARAMETERS**************
-THRESHOLD = 0.75
+THRESHOLD = 1
 NO_RANDOM_QUERY_TABLES = 100
 DATASET = 'smallerReal'   # synthetic
-DATABASE = 'kglids_smaller_real_fine_grained_075'  
+DATABASE = 'smaller_real_fine_grained_05' # 'kglids_smaller_real_fine_grained_075'  
 MAX_K = 185 if DATASET == 'smallerReal' else 350
 # ************************************************
 EXPERIMENT_NAME = 'precision_recall'
@@ -27,20 +27,6 @@ def load_cache(load_as='cache'):
     with open('../cache/' + load_as, 'rb') as handle:
         return pickle.load(handle)
 
-
-def load_groundtruth():
-    df = 'null'
-    if DATASET == 'smallerReal':
-        file = 'ds_gt.csv'
-        print('loading {}'.format(file))
-        df = pd.read_csv('../gt_files/' + file)
-        df[df.columns[0]] = df[df.columns[0]] + '.csv'
-        df[df.columns[1]] = df[df.columns[1]] + '.csv'
-    elif DATASET == 'synthetic':
-        file = 'alignment_groundtruth.csv'
-        print('loading {}'.format(file))
-        df = pd.read_csv('../gt_files/' + file)
-    return df
 
 
 
@@ -147,12 +133,14 @@ def visualize(exp_res: dict):
     _ = plot_scores(k, recall, 'Recall', '(b)', d3l_recall, aurum_recall)
     plt.tight_layout()
     plt.savefig('../plots/{}.pdf'.format(SAVE_RESULT_AS), dpi=300)
+    plt.show()
 
 
 def main():
-
-    df = load_groundtruth()
+    
+    df = load_groundtruth(DATASET)
     test_mapping = get_table_mapping(df)
+    
     t1 = time.time()
     run_experiment(df, test_mapping)
     print('Total time taken: ', time.time()-t1)
