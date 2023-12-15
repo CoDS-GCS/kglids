@@ -1,7 +1,7 @@
 pandas
 SPARQLWrapper
 tqdm
-scikit
+scikit-learn
 seaborn
 numpy
 graphviz
