@@ -117,7 +117,8 @@ def _compute_content_similarity(col1_profile, col2_profile, ontology, embedding_
         embedding_dist = np.linalg.norm(np.array(col1_profile.get_embedding()) - np.array(col2_profile.get_embedding()))
         colr_distance = embedding_dist + col1_profile.get_embedding_scaling_factor() \
                         + col2_profile.get_embedding_scaling_factor()
-        colr_similarity = max(1 - colr_distance, 0)
+        colr_similarity = 1 - np.tanh(colr_distance)
+        
         if colr_similarity >= embedding_sim_threshold:
             content_sim_triples.extend(_create_column_similarity_triples(col1_profile, col2_profile,
                                                                          'hasContentSimilarity', colr_similarity,
