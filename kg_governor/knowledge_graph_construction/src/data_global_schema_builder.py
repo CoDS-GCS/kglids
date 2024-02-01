@@ -7,13 +7,15 @@ import random
 import shutil
 import string
 import sys
+import requests
+import json
+import shutil
 
 sys.path.append('../../../')
 
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 from tqdm import tqdm
-import stardog as sd
 
 # TODO: [Refactor] project structure needs to be changed. These imports won't work in terminal without the sys call.
 from workers import column_metadata_worker, column_pair_similarity_worker
@@ -195,7 +197,7 @@ def main():
     # TODO: [Refactor] combine with pipeline abstraction KG builder
     # TODO: [Refactor] read column profiles path from project config.py
     # TODO: [Refactor] add graph output path to project config.py
-    
+
     # ************* SYSTEM PARAMETERS**********************
     # TODO: [Refactor] have these inside a global project config
     DEFAULT_LABEL_SIM_THRESHOLD = 0.75
@@ -203,7 +205,7 @@ def main():
     DEFAULT_EMBEDDING_SIM_THRESHOLD = 0.75
     # *****************************************************
     parser = argparse.ArgumentParser()
-    parser.add_argument('--column-profiles-path', type=str,  
+    parser.add_argument('--column-profiles-path', type=str,
                         default='../../../storage/profiles/smaller_real_profiles', help='Path to column profiles')
     parser.add_argument('--out-graph-path', type=str,
                         default='../../../storage/knowledge_graph/data_global_schema/data_global_schema_graph.ttl',
@@ -212,8 +214,9 @@ def main():
     parser.add_argument('--label-sim-threshold', type=float, default=DEFAULT_LABEL_SIM_THRESHOLD)
     parser.add_argument('--embedding-sim-threshold', type=float, default=DEFAULT_EMBEDDING_SIM_THRESHOLD)
     parser.add_argument('--boolean-sim-threshold', type=float, default=DEFAULT_BOOLEAN_SIM_THRESHOLD)
-    # parser.add_argument('--stardog-endpoint', type=str, default='http://localhost:5820')
-    # parser.add_argument('--stardog-db', type=str)
+    parser.add_argument('--graphdb-endpoint', type=str, default='http://localhost:7200')
+    parser.add_argument('--graphdb-import-dir', type=str, default=os.path.expanduser('~/graphdb-import/'))
+    parser.add_argument('--graphdb-repo', type=str)
     args = parser.parse_args()
 
     start_all = datetime.now()
@@ -242,17 +245,59 @@ def main():
 
     print(datetime.now(), f'\n• Graph Saved to: {args.out_graph_path}\n')
 
-    # print(datetime.now(), '• 4. Loading graph to Stardog at:', args.stardog_endpoint, args.stardog_db, '\n')
-    # with sd.Admin(endpoint=args.stardog_endpoint) as admin:
-    #     if args.stardog_db in [db.name for db in admin.databases()]:
-    #         admin.database(args.stardog_db).drop()
-    #     db = admin.new_database(args.stardog_db, {'edge.properties': True})
-    # 
-    # conn = sd.Connection(args.stardog_db, endpoint=args.stardog_endpoint)
-    # conn.begin()
-    # conn.add(sd.content.File(args.out_graph_path))
-    # conn.commit()
-    
+    print(datetime.now(), '• 4. Loading graph to GraphDB at:', args.graphdb_endpoint, args.graphdb_repo, '\n')
+    # check if repo with the same name exists
+    url = args.graphdb_endpoint + '/rest/repositories'
+    graphdb_repos = json.loads(requests.get(url).text)
+    graphdb_repo_ids = [i['id'] for i in graphdb_repos]
+    # remove existing repo if found
+    if args.graphdb_repo in graphdb_repo_ids:
+        url = f"{args.graphdb_endpoint}/rest/repositories/{args.graphdb_repo}"
+        response = requests.delete(url)
+        if response.status_code // 100 != 2:
+            print(datetime.now(), ': Error while deleting GraphDB repo:', args.graphdb_repo, ':', response.text)
+        
+    # create a new repo
+    url = args.graphdb_endpoint + '/rest/repositories'
+    headers = {"Content-Type": "application/json"}
+    data = {
+        "id": args.graphdb_repo,
+        "type": "graphdb",
+        "title": args.graphdb_repo,
+        "params": {
+            "defaultNS": {
+                "name": "defaultNS",
+                "label": "Default namespaces for imports(';' delimited)",
+                "value": ""
+            },
+            "imports": {
+                "name": "imports",
+                "label": "Imported RDF files(';' delimited)",
+                "value": ""
+            },
+            "enableContextIndex": {
+                "name": "enableContextIndex",
+                "label": "Enable context index",
+                "value": "true"
+            }
+        }
+    }
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    if response.status_code // 100 != 2:
+        print(datetime.now(), "Error creating the GraphDB repo:", args.graphdb_repo, ':', response.text)
+    # copy generated file to graphdb-import
+    tmp_file_name = args.graphdb_repo + '_import.ttl'
+    shutil.copy2(args.out_graph_path, os.path.join(args.graphdb_import_dir, tmp_file_name))
+    # import copied graph
+    url = f"{args.graphdb_endpoint}/rest/repositories/{args.graphdb_repo}/import/server"
+    data = {"fileNames": [tmp_file_name]}
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    if response.status_code // 100 != 2:
+        print(datetime.now(), 'Error importing file:', tmp_file_name, 'to GraphDB repo:', args.graphdb_repo, ':',
+              response.text)
+    # remove copied graph
+    # os.remove(os.path.join(args.graphdb_import_dir, tmp_file_name))
+
     end_all = datetime.now()
     print(datetime.now(), "Done. Total time to build graph: " + str(end_all - start_all))
 
