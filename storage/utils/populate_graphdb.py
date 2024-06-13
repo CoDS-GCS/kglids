@@ -4,6 +4,7 @@ import os
 from glob import glob
 import requests
 from urllib.parse import quote
+import json
 
 from tqdm import tqdm
 
@@ -52,6 +53,48 @@ def upload_file(file_path, graphdb_endpoint, graphdb_repo, named_graph_uri=None)
     if response.status_code // 100 != 2:
         print('Error uploading file:', file_path, '. Error:', response.text)
     
+
+def create_or_replace_repo(graphdb_endpoint, graphdb_repo):
+    # check if repo with the same name exists
+    url = graphdb_endpoint + '/rest/repositories'
+    graphdb_repos = json.loads(requests.get(url).text)
+    graphdb_repo_ids = [i['id'] for i in graphdb_repos]
+
+    # remove existing repo if found
+    if graphdb_repo in graphdb_repo_ids:
+        url = f"{graphdb_endpoint}/rest/repositories/{graphdb_repo}"
+        response = requests.delete(url)
+        if response.status_code // 100 != 2:
+            print(datetime.now(), ': Error while deleting GraphDB repo:', graphdb_repo, ':', response.text)
+
+    # create a new repo
+    url = graphdb_endpoint + '/rest/repositories'
+    headers = {"Content-Type": "application/json"}
+    data = {
+        "id": graphdb_repo,
+        "type": "graphdb",
+        "title": graphdb_repo,
+        "params": {
+            "defaultNS": {
+                "name": "defaultNS",
+                "label": "Default namespaces for imports(';' delimited)",
+                "value": ""
+            },
+            "imports": {
+                "name": "imports",
+                "label": "Imported RDF files(';' delimited)",
+                "value": ""
+            },
+            "enableContextIndex": {
+                "name": "enableContextIndex",
+                "label": "Enable context index",
+                "value": "true"
+            }
+        }
+    }
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    if response.status_code // 100 != 2:
+        print(datetime.now(), "Error creating the GraphDB repo:", graphdb_repo, ':', response.text)
 
 def main():
     graphdb_endpoint = 'http://localhost:7200'
