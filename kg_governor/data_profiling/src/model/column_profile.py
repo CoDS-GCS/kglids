@@ -2,6 +2,7 @@ import os
 import random
 import json
 import string
+import hashlib
 from .column_data_type import ColumnDataType
 
 
@@ -59,8 +60,8 @@ class ColumnProfile:
     def save_profile(self, column_profile_base_dir):
         profile_save_path = os.path.join(column_profile_base_dir, self.get_data_type())
         os.makedirs(profile_save_path, exist_ok=True)
-        # random generated name of length 10 to avoid synchronization between threads and profile name collision
-        profile_name = ''.join(random.choices(string.ascii_letters + string.digits, k=10))  
+        # file name is md5 hash of column id
+        profile_name = hashlib.md5(self.column_id.encode()).hexdigest()
         with open(os.path.join(profile_save_path, f'{profile_name}.json'), 'w') as f:
             json.dump(self.to_dict(), f, ensure_ascii=False, indent=4)
     
