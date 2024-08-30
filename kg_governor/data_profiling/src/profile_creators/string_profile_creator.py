@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # set tensorflow log level to FATAL
 
 import pandas as pd
@@ -21,8 +22,9 @@ class StringProfileCreator(TextualProfileCreator):
         # set the data type and load the embedding models
         self.data_type = ColumnDataType.STRING
 
-        embedding_model_path = 'column_embeddings/pretrained_models/string/20230111150300_string_model_embedding_epoch_100.pt'
-        scaling_model_path = 'column_embeddings/pretrained_models/string/20230111150300_string_model_scaling_epoch_100.pt'
+        basedir = Path(__file__).parent.parent.resolve()
+        embedding_model_path = os.path.join(basedir, 'column_embeddings/pretrained_models/string/20230111150300_string_model_embedding_epoch_100.pt')
+        scaling_model_path = os.path.join(basedir, 'column_embeddings/pretrained_models/string/20230111150300_string_model_scaling_epoch_100.pt')
 
         self.embedding_model = load_pretrained_model(StringEmbeddingModel, embedding_model_path)
         self.scaling_model = load_pretrained_model(StringScalingModel, scaling_model_path)

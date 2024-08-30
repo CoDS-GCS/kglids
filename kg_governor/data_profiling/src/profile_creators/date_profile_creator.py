@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 import bitstring
 import dateparser
 import pandas as pd
@@ -17,8 +20,9 @@ class DateProfileCreator(ProfileCreator):
         
         self.data_type = ColumnDataType.DATE
 
-        embedding_model_path = 'column_embeddings/pretrained_models/date/20230113111008_date_model_embedding_epoch_100.pt'
-        scaling_model_path = 'column_embeddings/pretrained_models/date/20230113111008_date_model_scaling_epoch_100.pt'
+        basedir = Path(__file__).parent.parent.resolve()
+        embedding_model_path = os.path.join(basedir, 'column_embeddings/pretrained_models/date/20230113111008_date_model_embedding_epoch_100.pt')
+        scaling_model_path = os.path.join(basedir, 'column_embeddings/pretrained_models/date/20230113111008_date_model_scaling_epoch_100.pt')
 
         self.embedding_model = load_pretrained_model(NumericalEmbeddingModel, embedding_model_path)
         self.scaling_model = load_pretrained_model(NumericalScalingModel, scaling_model_path)
