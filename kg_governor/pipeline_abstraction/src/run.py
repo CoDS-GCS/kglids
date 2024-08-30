@@ -36,7 +36,11 @@ def main():
 
             for table in tables:
                 try:
-                    working_file[Path(table).name] = pd.read_csv(table, nrows=1)
+                    try:
+                        working_file[Path(table).name] = pd.read_csv(table, nrows=1)
+                    except:
+                        working_file[Path(table).name] = pd.read_csv(table, nrows=1,
+                                                                     engine='python', encoding_errors='replace')
                 except Exception as e:
                     print("-<>", table, e)
 
@@ -53,7 +57,7 @@ def main():
                             if '.py' in file.name:
                                 pipelines.append((working_file, dataset.name, file.path, pipeline_info,
                                                   abstraction_config.output_graphs_path,
-                                                  f'{pipeline_info["author"]}.{pipeline_info["title"]}'))
+                                                  pipeline_info['id']))
                     except FileNotFoundError as e:
                         continue
 
