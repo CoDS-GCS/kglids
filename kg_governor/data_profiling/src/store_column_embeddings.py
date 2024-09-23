@@ -7,7 +7,7 @@ import os
 from tqdm import tqdm
 import psycopg
 
-def create_db(db_name):
+def create_embedding_db(db_name):
     try:
         conn = psycopg.connect(dbname='postgres', user='postgres', password='postgres', autocommit=True)
 
@@ -31,6 +31,7 @@ def create_db(db_name):
         );''')
 
         cursor.execute(f'CREATE INDEX ON {db_name} (data_type);')
+        cursor.execute(f'CREATE INDEX ON {db_name} (dataset_name);')
         cursor.execute(f'CREATE INDEX ON {db_name} USING hnsw (content_embedding vector_cosine_ops);')
         cursor.execute(f'CREATE INDEX ON {db_name} USING hnsw (label_embedding vector_cosine_ops);')
         cursor.execute(f'CREATE INDEX ON {db_name} USING hnsw (content_label_embedding vector_cosine_ops);')
@@ -54,13 +55,14 @@ def insert_columns(column_data, db_name):
 
 
 def main():
+
     column_profiles_path = os.path.expanduser('~/projects/kglids/storage/profiles/kaggle_eda')
     fasttext_path = os.path.expanduser('~/projects/kglids/kg_governor/data_profiling/src/fasttext_embeddings/cc.en.300.bin')
     embedding_db_name = 'kaggle_eda_column_embeddings'
     batch_size = 1000
 
     # create postgres pgvector db
-    create_db(embedding_db_name)
+    create_embedding_db(embedding_db_name)
 
     print(datetime.now() ,': Loading Fasttext embeddings...')
     ft = fasttext.load_model(fasttext_path)
@@ -77,7 +79,7 @@ def main():
             content_embedding = profile['embedding'] #+ [0] + [math.sqrt(profile['embedding_scaling_factor'])]
         else:
             # boolean column
-            content_embedding = [0]*299 + [profile['true_ratio']]
+            content_embedding = [profile['true_ratio']] * 300
 
         # generate name embeddings and name + value embeddings
         sanitized_name = profile['column_name'].replace('\n', ' ').replace('_', ' ').strip()

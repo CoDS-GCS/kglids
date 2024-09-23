@@ -1,5 +1,6 @@
 import bitstring
 import torch
+import numpy as np
 
 from profile_creators.profile_creator import ProfileCreator
 from model.column_profile import ColumnProfile
@@ -33,11 +34,13 @@ class NumericalProfileCreator(ProfileCreator):
     
     def _preprocess_column_for_embedding_model(self, device='cpu') -> torch.tensor:
         non_missing = self.column.dropna()
+        non_missing = non_missing.astype(np.float32)
         if len(non_missing) > 10000:
             sample = non_missing.sample(int(0.1 * len(non_missing)))
         else:
             sample = non_missing.sample(min(len(non_missing), 1000))
-        bin_repr = [[int(j) for j in bitstring.BitArray(float=float(i), length=32).bin] 
+
+        bin_repr = [[int(j) for j in bitstring.BitArray(float=i, length=32).bin]
                     for i in sample.values]
         input_tensor = torch.FloatTensor(bin_repr).to(device)
         return input_tensor

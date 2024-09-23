@@ -98,8 +98,12 @@ def create_or_replace_repo(graphdb_endpoint, graphdb_repo):
 
 def main():
     graphdb_endpoint = 'http://localhost:7200'
-    graphdb_repo = 'kaggle_demo'
-    pipeline_graphs_base_dir = os.path.expanduser('~/projects/kglids/storage/pipeline_graphs/kaggle_demo')
+    graphdb_repo = 'kaggle_eda'
+    replace_existing_repo = False
+    pipeline_graphs_base_dir = os.path.expanduser('~/projects/kglids/storage/knowledge_graph/pipeline_abstraction/kaggle_eda/')
+
+    if replace_existing_repo:
+        create_or_replace_repo(graphdb_endpoint, graphdb_repo)
     populate_pipeline_graphs(pipeline_graphs_base_dir, graphdb_endpoint, graphdb_repo)
     
 
