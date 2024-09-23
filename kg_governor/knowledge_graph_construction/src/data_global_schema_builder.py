@@ -217,6 +217,7 @@ def main():
     parser.add_argument('--graphdb-endpoint', type=str, default='http://localhost:7200')
     parser.add_argument('--graphdb-import-dir', type=str, default=os.path.expanduser('~/graphdb-import/'))
     parser.add_argument('--graphdb-repo', type=str)
+    parser.add_argument('--replace-existing-repo', type=bool, default=False)
     args = parser.parse_args()
 
     start_all = datetime.now()
@@ -251,40 +252,41 @@ def main():
     graphdb_repos = json.loads(requests.get(url).text)
     graphdb_repo_ids = [i['id'] for i in graphdb_repos]
     # remove existing repo if found
-    if args.graphdb_repo in graphdb_repo_ids:
-        url = f"{args.graphdb_endpoint}/rest/repositories/{args.graphdb_repo}"
-        response = requests.delete(url)
-        if response.status_code // 100 != 2:
-            print(datetime.now(), ': Error while deleting GraphDB repo:', args.graphdb_repo, ':', response.text)
-        
-    # create a new repo
-    url = args.graphdb_endpoint + '/rest/repositories'
     headers = {"Content-Type": "application/json"}
-    data = {
-        "id": args.graphdb_repo,
-        "type": "graphdb",
-        "title": args.graphdb_repo,
-        "params": {
-            "defaultNS": {
-                "name": "defaultNS",
-                "label": "Default namespaces for imports(';' delimited)",
-                "value": ""
-            },
-            "imports": {
-                "name": "imports",
-                "label": "Imported RDF files(';' delimited)",
-                "value": ""
-            },
-            "enableContextIndex": {
-                "name": "enableContextIndex",
-                "label": "Enable context index",
-                "value": "true"
+    if args.graphdb_repo in graphdb_repo_ids:
+        if args.replace_existing_repo:
+            url = f"{args.graphdb_endpoint}/rest/repositories/{args.graphdb_repo}"
+            response = requests.delete(url)
+            if response.status_code // 100 != 2:
+                print(datetime.now(), ': Error while deleting GraphDB repo:', args.graphdb_repo, ':', response.text)
+    else:
+        # create a new repo
+        url = args.graphdb_endpoint + '/rest/repositories'
+        data = {
+            "id": args.graphdb_repo,
+            "type": "graphdb",
+            "title": args.graphdb_repo,
+            "params": {
+                "defaultNS": {
+                    "name": "defaultNS",
+                    "label": "Default namespaces for imports(';' delimited)",
+                    "value": ""
+                },
+                "imports": {
+                    "name": "imports",
+                    "label": "Imported RDF files(';' delimited)",
+                    "value": ""
+                },
+                "enableContextIndex": {
+                    "name": "enableContextIndex",
+                    "label": "Enable context index",
+                    "value": "true"
+                }
             }
         }
-    }
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-    if response.status_code // 100 != 2:
-        print(datetime.now(), "Error creating the GraphDB repo:", args.graphdb_repo, ':', response.text)
+        response = requests.post(url, headers=headers, data=json.dumps(data))
+        if response.status_code // 100 != 2:
+            print(datetime.now(), "Error creating the GraphDB repo:", args.graphdb_repo, ':', response.text)
     # copy generated file to graphdb-import
     tmp_file_name = args.graphdb_repo + '_import.ttl'
     shutil.copy2(args.out_graph_path, os.path.join(args.graphdb_import_dir, tmp_file_name))
@@ -299,7 +301,7 @@ def main():
     # os.remove(os.path.join(args.graphdb_import_dir, tmp_file_name))
 
     end_all = datetime.now()
-    print(datetime.now(), "Done. Total time to build graph: " + str(end_all - start_all))
+    print(datetime.now(), "Done. Graph is being uploaded to GraphDB. Total time to build graph: " + str(end_all - start_all))
 
 
 if __name__ == '__main__':
