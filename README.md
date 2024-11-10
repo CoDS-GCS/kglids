@@ -90,12 +90,14 @@ See the full list of supported APIs [here](docs/KGLiDS_apis.md).
 ## Citing Our Work
 If you find our work useful, please cite it in your research.
 ```
-@article{kglids,
-         title={Linked Data Science Powered by Knowledge Graphs}, 
-         author={Mossad Helali and Shubham Vashisth and Philippe Carrier and Katja Hose and Essam Mansour},
-         year={2023},
-         journal={ArXiv},
-         url = {https://arxiv.org/abs/2303.02204}
+@INPROCEEDINGS{kglids,
+  author={Helali, Mossad and Monjazeb, Niki and Vashisth, Shubham and Carrier, Philippe and Helal, Ahmed and Cavalcante, Antonio and Ammar, Khaled and Hose, Katja and Mansour, Essam},
+  booktitle={2024 IEEE 40th International Conference on Data Engineering (ICDE)}, 
+  title={KGLiDS: A Platform for Semantic Abstraction, Linking, and Automation of Data Science}, 
+  year={2024},
+  pages={179-192},
+  url={https://doi.org/10.1109/ICDE60146.2024.00021},
+  ISSN={2375-026X},
 }
 ```
 
