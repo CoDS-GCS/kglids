@@ -19,7 +19,7 @@ from kg_governor.data_profiling.src.model.table import Table
 
 flask_app = flask.Flask(__name__)
 
-fasttext_path = './kg_governor/data_profiling/src/fasttext_embeddings/cc.en.300.bin'
+fasttext_path = './storage/embeddings/cc.en.300.bin'
 ft = fasttext.load_model(fasttext_path)
 
 
