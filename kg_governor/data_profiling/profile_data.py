@@ -19,16 +19,15 @@ from kg_governor.data_profiling.utils import generate_column_id
 from kglids_config import KGLiDSConfig
 
 
-def profile_data(data_source, data_source_path, profiles_out_path, replace_existing_profiles, is_spark_local_mode,
-                 spark_n_workers, spark_max_memory):
+def profile_data():
 
     start_time = datetime.now()
     print(datetime.now(), ': Initializing Spark')
 
     # initialize spark
-    if is_spark_local_mode:
-        spark = SparkContext(conf=SparkConf().setMaster(f'local[{spark_n_workers}]')
-                             .set('spark.driver.memory', f'{spark_max_memory//2}g'))
+    if KGLiDSConfig.is_spark_local_mode:
+        spark = SparkContext(conf=SparkConf().setMaster(f'local[{KGLiDSConfig.spark_n_workers}]')
+                             .set('spark.driver.memory', f'{KGLiDSConfig.spark_max_memory//2}g'))
     else:
         spark = SparkSession.builder.appName("KGLiDSProfiler").getOrCreate().sparkContext
         # add python dependencies
@@ -48,10 +47,10 @@ def profile_data(data_source, data_source_path, profiles_out_path, replace_exist
     print(datetime.now(), ': Creating tables, Getting columns')
     columns_and_tables = []
 
-    for dataset in os.listdir(data_source_path):
-        for filename in glob.glob(os.path.join(data_source_path, dataset, '**', '*.csv'), recursive=True):
+    for dataset in os.listdir(KGLiDSConfig.data_source_path):
+        for filename in glob.glob(os.path.join(KGLiDSConfig.data_source_path, dataset, '**', '*.csv'), recursive=True):
             if os.path.isfile(filename) and os.path.getsize(filename) > 0:   # if not an empty file
-                table = Table(data_source=data_source,
+                table = Table(data_source=KGLiDSConfig.data_source,
                               table_path=filename,
                               dataset_name=dataset)
                 # read only the header
@@ -59,16 +58,16 @@ def profile_data(data_source, data_source_path, profiles_out_path, replace_exist
                     header = pd.read_csv(table.get_table_path(), nrows=0, engine='python', encoding_errors='replace')
                 except:
                     continue
-                columns_and_tables.extend([(col, table, profiles_out_path) for col in header.columns])
+                columns_and_tables.extend([(col, table, KGLiDSConfig.profiles_out_path) for col in header.columns])
 
     # delete existing profiles if necessary
-    if os.path.exists(profiles_out_path):
-        if replace_existing_profiles:
-            print(datetime.now(), ': Deleting existing column profiles in:', profiles_out_path)
-            shutil.rmtree(profiles_out_path)
+    if os.path.exists(KGLiDSConfig.profiles_out_path):
+        if KGLiDSConfig.replace_existing_profiles:
+            print(datetime.now(), ': Deleting existing column profiles in:', KGLiDSConfig.profiles_out_path)
+            shutil.rmtree(KGLiDSConfig.profiles_out_path)
         else:
             # skip existing profiles
-            existing_profiles = set([Path(p).stem for p in glob.glob(os.path.join(profiles_out_path, '**', '*.json'),
+            existing_profiles = set([Path(p).stem for p in glob.glob(os.path.join(KGLiDSConfig.profiles_out_path, '**', '*.json'),
                                                                      recursive=True)])
             print(datetime.now(), f': Skipping {len(existing_profiles)} existing profiles.')
             for i in range(len(columns_and_tables)):
@@ -82,7 +81,7 @@ def profile_data(data_source, data_source_path, profiles_out_path, replace_exist
             columns_and_tables = [i for i in columns_and_tables if i]
 
 
-    os.makedirs(profiles_out_path, exist_ok=True)
+    os.makedirs(KGLiDSConfig.profiles_out_path, exist_ok=True)
 
 
     # profile the columns with Spark.
@@ -90,7 +89,7 @@ def profile_data(data_source, data_source_path, profiles_out_path, replace_exist
     print(datetime.now(), f': Profiling {len(columns_and_tables)} columns')
     columns_and_tables_rdd.map(column_worker).collect()
 
-    print(datetime.now(), f': {len(columns_and_tables)} columns profiled and saved to {profiles_out_path}')
+    print(datetime.now(), f': {len(columns_and_tables)} columns profiled and saved to {KGLiDSConfig.profiles_out_path}')
     print(datetime.now(), ': Total time to profile: ', datetime.now() - start_time)
 
 
