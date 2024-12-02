@@ -7,12 +7,12 @@ import numpy as np
 from tqdm import tqdm
 
 from model.column_data_type import ColumnDataType
-from config import profiler_config
+from kglids_config import KGLiDSConfig
 
 
 def main():
-    profiles_path = profiler_config.output_path
-    profile_paths = glob.glob(os.path.join(profiles_path, '**/*.json'), recursive=True)
+
+    profile_paths = glob.glob(os.path.join(KGLiDSConfig.profiles_out_path, '**/*.json'), recursive=True)
     
     embedding_types = [ColumnDataType.DATE.value, ColumnDataType.INT.value, ColumnDataType.FLOAT.value,
                        ColumnDataType.NATURAL_LANGUAGE_NAMED_ENTITY.value, ColumnDataType.NATURAL_LANGUAGE_TEXT.value,
@@ -38,7 +38,7 @@ def main():
             if table_embeddings_count[table][dtype] != 0:
                 table_embeddings_per_dtype[table][dtype] /= table_embeddings_count[table][dtype]
         table_embeddings[table] = np.concatenate([table_embeddings_per_dtype[table][dtype] for dtype in embedding_types])
-    with open(os.path.expanduser('~/projects/kglids/storage/embeddings/smaller_real_table_embeddings.pickle'), 'wb') as f:
+    with open(os.path.join(KGLiDSConfig.base_dir, 'storage/embeddings/smaller_real_table_embeddings.pickle'), 'wb') as f:
         pickle.dump(table_embeddings, f)
 
 

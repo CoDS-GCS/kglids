@@ -1,17 +1,17 @@
 import os
-from pathlib import Path
 
 import bitstring
 import dateparser
 import pandas as pd
 import torch
 
-from profile_creators.profile_creator import ProfileCreator
-from model.column_profile import ColumnProfile
-from model.table import Table
-from model.column_data_type import ColumnDataType
-from column_embeddings.numerical_model import NumericalEmbeddingModel, NumericalScalingModel
-from column_embeddings.column_embeddings_utils import load_pretrained_model
+from kg_governor.data_profiling.profile_creators.profile_creator import ProfileCreator
+from kg_governor.data_profiling.model.column_profile import ColumnProfile
+from kg_governor.data_profiling.model.table import Table
+from kg_governor.data_profiling.model.column_data_type import ColumnDataType
+from kg_governor.data_profiling.column_embeddings.numerical_model import NumericalEmbeddingModel, NumericalScalingModel
+from kg_governor.data_profiling.column_embeddings.column_embeddings_utils import load_pretrained_model
+from kglids_config import KGLiDSConfig
 
 class DateProfileCreator(ProfileCreator):
     
@@ -20,9 +20,8 @@ class DateProfileCreator(ProfileCreator):
         
         self.data_type = ColumnDataType.DATE
 
-        basedir = Path(__file__).parent.parent.resolve()
-        embedding_model_path = os.path.join(basedir, 'column_embeddings/pretrained_models/date/20230113111008_date_model_embedding_epoch_100.pt')
-        scaling_model_path = os.path.join(basedir, 'column_embeddings/pretrained_models/date/20230113111008_date_model_scaling_epoch_100.pt')
+        embedding_model_path = os.path.join(KGLiDSConfig.base_dir, 'kg_governor/data_profiling/column_embeddings/pretrained_models/date/20230113111008_date_model_embedding_epoch_100.pt')
+        scaling_model_path = os.path.join(KGLiDSConfig.base_dir, 'kg_governor/data_profiling/column_embeddings/pretrained_models/date/20230113111008_date_model_scaling_epoch_100.pt')
 
         self.embedding_model = load_pretrained_model(NumericalEmbeddingModel, embedding_model_path)
         self.scaling_model = load_pretrained_model(NumericalScalingModel, scaling_model_path)

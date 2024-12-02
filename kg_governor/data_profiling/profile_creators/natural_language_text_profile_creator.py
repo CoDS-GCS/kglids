@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -8,12 +7,12 @@ import fasttext
 fasttext.FastText.eprint = lambda *args,**kwargs: None
 from nltk.tokenize import TweetTokenizer
 
-from profile_creators.textual_profile_creator import TextualProfileCreator
-from model.table import Table
-from model.column_data_type import ColumnDataType
-from column_embeddings.natural_language_model import NaturalLanguageEmbeddingModel, NaturalLanguageScalingModel
-from column_embeddings.column_embeddings_utils import load_pretrained_model
-
+from kg_governor.data_profiling.profile_creators.textual_profile_creator import TextualProfileCreator
+from kg_governor.data_profiling.model.table import Table
+from kg_governor.data_profiling.model.column_data_type import ColumnDataType
+from kg_governor.data_profiling.column_embeddings.natural_language_model import NaturalLanguageEmbeddingModel, NaturalLanguageScalingModel
+from kg_governor.data_profiling.column_embeddings.column_embeddings_utils import load_pretrained_model
+from kglids_config import KGLiDSConfig
 
 class NaturalLanguageTextProfileCreator(TextualProfileCreator):
 
@@ -23,9 +22,8 @@ class NaturalLanguageTextProfileCreator(TextualProfileCreator):
         # set the data type and load the embedding models
         self.data_type = ColumnDataType.NATURAL_LANGUAGE_TEXT
 
-        basedir = Path(__file__).parent.parent.resolve()
-        embedding_model_path = os.path.join(basedir, 'column_embeddings/pretrained_models/natural_language_text/20230113132355_natural_language_text_model_embedding_epoch_94.pt')
-        scaling_model_path = os.path.join(basedir, 'column_embeddings/pretrained_models/natural_language_text/20230113132355_natural_language_text_model_scaling_epoch_94.pt')
+        embedding_model_path = os.path.join(KGLiDSConfig.base_dir, 'kg_governor/data_profiling/column_embeddings/pretrained_models/natural_language_text/20230113132355_natural_language_text_model_embedding_epoch_94.pt')
+        scaling_model_path = os.path.join(KGLiDSConfig.base_dir, 'kg_governor/data_profiling/column_embeddings/pretrained_models/natural_language_text/20230113132355_natural_language_text_model_scaling_epoch_94.pt')
 
         self.embedding_model = load_pretrained_model(NaturalLanguageEmbeddingModel, embedding_model_path)
         self.scaling_model = load_pretrained_model(NaturalLanguageScalingModel, scaling_model_path)
@@ -36,7 +34,7 @@ class NaturalLanguageTextProfileCreator(TextualProfileCreator):
             sample = non_missing.sample(int(0.1*len(non_missing)))
         else:
             sample = non_missing.sample(min(len(non_missing), 1000))
-        fasttext_path = str(Path(__file__).parent.parent) + '/fasttext_embeddings/cc.en.50.bin'
+        fasttext_path = os.path.join(KGLiDSConfig.base_dir, 'storage/embeddings/cc.en.50.bin')
         fasttext_model = fasttext.load_model(fasttext_path)
         tokenizer = TweetTokenizer()
 

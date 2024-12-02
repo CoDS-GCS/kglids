@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # set tensorflow log level to FATAL
 
 import pandas as pd
@@ -7,11 +6,13 @@ import torch
 
 import chars2vec
 
-from profile_creators.textual_profile_creator import TextualProfileCreator
-from model.table import Table
-from model.column_data_type import ColumnDataType
-from column_embeddings.string_model import StringEmbeddingModel, StringScalingModel
-from column_embeddings.column_embeddings_utils import load_pretrained_model
+from kg_governor.data_profiling.profile_creators.textual_profile_creator import TextualProfileCreator
+from kg_governor.data_profiling.model.table import Table
+from kg_governor.data_profiling.model.column_data_type import ColumnDataType
+from kg_governor.data_profiling.column_embeddings.string_model import StringEmbeddingModel, StringScalingModel
+from kg_governor.data_profiling.column_embeddings.column_embeddings_utils import load_pretrained_model
+from kglids_config import KGLiDSConfig
+
 
 
 class StringProfileCreator(TextualProfileCreator):
@@ -22,9 +23,8 @@ class StringProfileCreator(TextualProfileCreator):
         # set the data type and load the embedding models
         self.data_type = ColumnDataType.STRING
 
-        basedir = Path(__file__).parent.parent.resolve()
-        embedding_model_path = os.path.join(basedir, 'column_embeddings/pretrained_models/string/20230111150300_string_model_embedding_epoch_100.pt')
-        scaling_model_path = os.path.join(basedir, 'column_embeddings/pretrained_models/string/20230111150300_string_model_scaling_epoch_100.pt')
+        embedding_model_path = os.path.join(KGLiDSConfig.base_dir, 'kg_governor/data_profiling/column_embeddings/pretrained_models/string/20230111150300_string_model_embedding_epoch_100.pt')
+        scaling_model_path = os.path.join(KGLiDSConfig.base_dir, 'kg_governor/data_profiling/column_embeddings/pretrained_models/string/20230111150300_string_model_scaling_epoch_100.pt')
 
         self.embedding_model = load_pretrained_model(StringEmbeddingModel, embedding_model_path)
         self.scaling_model = load_pretrained_model(StringScalingModel, scaling_model_path)

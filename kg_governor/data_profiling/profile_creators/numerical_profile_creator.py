@@ -2,8 +2,8 @@ import bitstring
 import torch
 import numpy as np
 
-from profile_creators.profile_creator import ProfileCreator
-from model.column_profile import ColumnProfile
+from kg_governor.data_profiling.profile_creators.profile_creator import ProfileCreator
+from kg_governor.data_profiling.model.column_profile import ColumnProfile
 
 
 class NumericalProfileCreator(ProfileCreator):

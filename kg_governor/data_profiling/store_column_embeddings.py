@@ -7,6 +7,9 @@ import os
 from tqdm import tqdm
 import psycopg
 
+from kglids_config import KGLiDSConfig
+
+
 def create_embedding_db(db_name):
     try:
         conn = psycopg.connect(dbname='postgres', user='postgres', password='postgres', autocommit=True)
@@ -56,9 +59,9 @@ def insert_columns(column_data, db_name):
 
 def main():
 
-    column_profiles_path = os.path.expanduser('~/projects/kglids/storage/profiles/kaggle_eda')
-    fasttext_path = os.path.expanduser('~/projects/kglids/kg_governor/data_profiling/src/fasttext_embeddings/cc.en.300.bin')
-    embedding_db_name = 'kaggle_eda_column_embeddings'
+    column_profiles_path = KGLiDSConfig.profiles_out_path
+    fasttext_path = os.path.join(KGLiDSConfig.base_dir, 'storage/embeddings/cc.en.300.bin')
+    embedding_db_name = KGLiDSConfig.pgvector_db_name
     batch_size = 1000
 
     # create postgres pgvector db

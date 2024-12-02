@@ -1,7 +1,5 @@
 import os
-import random
 import json
-import string
 import hashlib
 from .column_data_type import ColumnDataType
 

@@ -1,8 +1,7 @@
 import warnings
 warnings.simplefilter('ignore')
 import os
-from pathlib import Path
-
+from kglids_config import KGLiDSConfig
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # set tensorflow log level to FATAL
 
 
@@ -14,7 +13,7 @@ import pandas as pd
 from nltk.tokenize import TweetTokenizer
 import numpy as np
 
-from model.column_data_type import ColumnDataType
+from kg_governor.data_profiling.model.column_data_type import ColumnDataType
 
 
 class FineGrainedColumnTypeDetector:
@@ -25,7 +24,7 @@ class FineGrainedColumnTypeDetector:
         subprocess.call('python -m spacy download en_core_web_sm'.split(), shell=False)
         ner_model = spacy.load('en_core_web_sm')
     
-    fasttext_model = fasttext.load_model(str(Path(__file__).parent) + '/fasttext_embeddings/cc.en.50.bin')
+    fasttext_model = fasttext.load_model(os.path.join(KGLiDSConfig.base_dir, 'storage/embeddings/cc.en.50.bin'))
     tokenizer = TweetTokenizer()
 
     @staticmethod
