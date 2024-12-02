@@ -2,9 +2,9 @@ import ast
 import astor
 from typing import cast
 
-import src.Calls as Calls
-from src.util import format_node_text
-from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
+import kg_governor.pipeline_abstraction.Calls as Calls
+from kg_governor.pipeline_abstraction.util import format_node_text
+from kg_governor.pipeline_abstraction.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
     AttributeComponents
 
 

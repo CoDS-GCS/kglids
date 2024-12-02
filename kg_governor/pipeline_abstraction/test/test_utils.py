@@ -1,6 +1,6 @@
 import unittest
-from src.Calls import pd_dataframe
-import src.util as util
+from kg_governor.pipeline_abstraction.Calls import pd_dataframe
+import kg_governor.pipeline_abstraction.util as util
 
 
 class TestUtilsFunctions(unittest.TestCase):

@@ -31,6 +31,7 @@ class KGLiDSConfig:
 
 
     ####### Pipeline abstraction configs #######
+    pipeline_graphs_out_path = os.path.join(base_dir, 'storage', 'pipeline_graphs', f'{data_source}_pipeline_graphs')
 
 
     ####### KG construction configs #######

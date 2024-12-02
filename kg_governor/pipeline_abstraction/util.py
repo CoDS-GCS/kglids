@@ -4,8 +4,8 @@ import astor
 import ast
 from enum import Enum
 
-import src.Calls as Calls
-from src.Calls import packages
+import kg_governor.pipeline_abstraction.Calls as Calls
+from kg_governor.pipeline_abstraction.Calls import packages
 
 
 def is_file(string):

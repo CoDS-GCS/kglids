@@ -1,8 +1,8 @@
 import unittest
 
-import src.util as util
-from src.Calls import CallType
-from src.datatypes import GraphInformation
+import kg_governor.pipeline_abstraction.util as util
+from kg_governor.pipeline_abstraction.Calls import CallType
+from kg_governor.pipeline_abstraction.datatypes import GraphInformation
 
 PYTHON_FILE = 'test.py'
 SOURCE = 'kaggle'

@@ -14,13 +14,12 @@ from collections import deque
 
 import pandas as pd
 
-import src.Calls as Calls
-from src.datatypes import GraphInformation
-from src.Calls import File, pd_dataframe, packages
-from src.util import is_file, ControlFlow, format_node_text, get_package
-from src.ast_package import AstPackage, get_ast_package
-from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
-    AttributeComponents
+import kg_governor.pipeline_abstraction.Calls as Calls
+from kg_governor.pipeline_abstraction.datatypes import GraphInformation
+from kg_governor.pipeline_abstraction.Calls import File, pd_dataframe, packages
+from kg_governor.pipeline_abstraction.util import is_file, ControlFlow, format_node_text, get_package
+from kg_governor.pipeline_abstraction.ast_package import AstPackage, get_ast_package
+from kg_governor.pipeline_abstraction.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, AttributeComponents
 
 
 def insert_parameter(parameters: dict, is_block: bool, parameter: str, value):

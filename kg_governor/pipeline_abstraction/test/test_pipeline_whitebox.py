@@ -1,14 +1,14 @@
 import unittest
 import ast
 import pandas as pd
-from src.datatypes import GraphInformation, File as DataFile
-from src.pipeline_abstraction import NodeVisitor
-from src.ast_package import (Name, Attribute, Constant, Call, List, Dict, Subscript, Lambda, BinOp, Tuple,
+from kg_governor.pipeline_abstraction.datatypes import GraphInformation, File as DataFile
+from kg_governor.pipeline_abstraction.pipeline_abstraction import NodeVisitor
+from kg_governor.pipeline_abstraction.ast_package import (Name, Attribute, Constant, Call, List, Dict, Subscript, Lambda, BinOp, Tuple,
                              get_ast_package, Compare)
-from src.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
+from kg_governor.pipeline_abstraction.ast_package.types import CallComponents, CallArgumentsComponents, AssignComponents, BinOpComponents, \
     AttributeComponents
-from src.Calls import packages, pd_dataframe, File
-import src.util as util
+from kg_governor.pipeline_abstraction.Calls import packages, pd_dataframe, File
+import kg_governor.pipeline_abstraction.util as util
 
 kglids_library = "http://kglids.org/pipeline/library/"
 FILENAME = "test.py"

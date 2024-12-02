@@ -1,10 +1,9 @@
 from typing import Dict, Optional
 
-import src.Calls as Calls
-import src.util as util
-from src.Calls import packages
-from src.util import (parse_line_text, create_import_uri, create_file_uri, create_column_name,
-                      extract_library_dependencies, create_built_in_uri)
+import kg_governor.pipeline_abstraction.Calls as Calls
+import kg_governor.pipeline_abstraction.util as util
+from kg_governor.pipeline_abstraction.Calls import packages
+from kg_governor.pipeline_abstraction.util import parse_line_text, create_import_uri, create_file_uri, create_column_name, extract_library_dependencies, create_built_in_uri
 
 
 class Node:

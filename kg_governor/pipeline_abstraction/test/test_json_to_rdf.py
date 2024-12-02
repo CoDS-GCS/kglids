@@ -1,5 +1,5 @@
 import unittest
-from src.json_to_rdf import (create_prefix, library_call_to_rdf, read_to_rdf, has_text_to_rdf,
+from kg_governor.pipeline_abstraction.json_to_rdf import (create_prefix, library_call_to_rdf, read_to_rdf, has_text_to_rdf,
                              has_parameter_to_rdf, has_dataflow_to_rdf, next_statement_to_rdf,
                              create_statement_uri, control_flow_to_rdf, build_statement_rdf,
                              build_table_rdf, build_column_rdf, build_parameter_rdf, build_library_rdf,

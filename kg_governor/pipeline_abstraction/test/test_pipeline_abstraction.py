@@ -2,13 +2,13 @@ import unittest
 import ast
 import pandas as pd
 
-import src.Calls as Calls
-import src.util as util
-import src.datatypes as DataTypes
-from src.datatypes import GraphInformation
-from src.Calls import pd_dataframe, File, packages
-from src.pipeline_abstraction import NodeVisitor, insert_parameter
-from src.util import ControlFlow
+import kg_governor.pipeline_abstraction.Calls as Calls
+import kg_governor.pipeline_abstraction.util as util
+import kg_governor.pipeline_abstraction.datatypes as DataTypes
+from kg_governor.pipeline_abstraction.datatypes import GraphInformation
+from kg_governor.pipeline_abstraction.Calls import pd_dataframe, File, packages
+from kg_governor.pipeline_abstraction.pipeline_abstraction import NodeVisitor, insert_parameter
+from kg_governor.pipeline_abstraction.util import ControlFlow
 
 kglids_library = "http://kglids.org/pipeline/library/"
 FILENAME = "test.py"
