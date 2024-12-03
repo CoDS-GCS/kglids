@@ -43,7 +43,7 @@ data_sources = [DataSource(name='benchmark',
 cd kg_governor/data_profiling/src/
 python main.py
 ```
-* Run the [Knowledge graph builder](kg_governor/knowledge_graph_construction/src/data_global_schema_builder.py) to generate the data_items graph 
+* Run the [Knowledge graph builder](kg_governor/data_global_schema_builder/src/data_global_schema_builder.py) to generate the data_items graph 
 ```commandline/
 cd kg_governor/knowledge_graph_construction/src/
 python data_global_schema_builder.py

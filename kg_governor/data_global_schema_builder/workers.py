@@ -1,14 +1,10 @@
-# TODO: [Refactor] Where is the best place to have this file/functions?
 import os
 import random
 import string
-# TODO: [Refactor] Get rid of this hack
-import sys
-sys.path.append('../../../')
 
 import numpy as np
 
-from kg_governor.knowledge_graph_construction.src.utils.utils import generate_label, RDFResource, Triplet
+from kg_governor.data_global_schema_builder.utils.utils import generate_label, RDFResource, Triplet
 
 
 def column_metadata_worker(column_profiles,  ontology, triples_output_tmp_dir):

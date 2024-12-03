@@ -4,31 +4,22 @@ import glob
 import multiprocessing as mp
 import os
 import random
-import shutil
 import string
-import sys
-import requests
-import json
 import shutil
-
-sys.path.append('../../../')
 
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 from tqdm import tqdm
 
-# TODO: [Refactor] project structure needs to be changed. These imports won't work in terminal without the sys call.
-from workers import column_metadata_worker, column_pair_similarity_worker
-from kg_governor.knowledge_graph_construction.src.utils.word_embeddings import WordEmbeddings
-from kg_governor.knowledge_graph_construction.src.utils.utils import generate_label, RDFResource, Triplet
-from kg_governor.data_profiling.src.model.column_profile import ColumnProfile
+from kg_governor.data_global_schema_builder.workers import column_metadata_worker, column_pair_similarity_worker
+from kg_governor.data_global_schema_builder.utils.word_embeddings import WordEmbeddings
+from kg_governor.data_global_schema_builder.utils.utils import generate_label, RDFResource, Triplet
+from kg_governor.data_profiling.model.column_profile import ColumnProfile
+from kglids_config import KGLiDSConfig
 
 
 class DataGlobalSchemaBuilder:
-    # TODO: [Refactor] add all kglids URIs to knowledge graph config.py
-    # TODO: [Refactor] have Spark configuration read from the global project config
-    # TODO: [Refactor] read raw word embeddings path from global project config
-    def __init__(self, column_profiles_path, out_graph_path, spark_mode, label_sim_threshold,
+    def __init__(self, column_profiles_path, out_graph_path, is_spark_local_mode, label_sim_threshold,
                  embedding_sim_threshold, boolean_sim_threshold):
         self.column_profiles_base_dir = column_profiles_path
         self.graph_output_path = out_graph_path
@@ -42,13 +33,14 @@ class DataGlobalSchemaBuilder:
             shutil.rmtree(self.tmp_graph_base_dir)
         os.makedirs(self.tmp_graph_base_dir)
 
-        self.memory_size = (os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') // 1024**3) - 1 # total RAM - 1 GB
-        self.is_cluster_mode = spark_mode == 'cluster'
+        self.memory_size = (os.sysconf('SC_PAGE_SIZE') * os.sysconf(
+            'SC_PHYS_PAGES') // 1024 ** 3) - 1  # total RAM - 1 GB
+        self.is_spark_local_mode = is_spark_local_mode
 
         self.label_sim_threshold = label_sim_threshold
         self.embedding_sim_threshold = embedding_sim_threshold
         self.boolean_sim_threshold = boolean_sim_threshold
-        
+
         self.ontology = {'kglids': 'http://kglids.org/ontology/',
                          'kglidsData': 'http://kglids.org/ontology/data/',
                          'kglidsResource': 'http://kglids.org/resource/',
@@ -70,18 +62,16 @@ class DataGlobalSchemaBuilder:
         pool = mp.Pool(os.cpu_count() - 1)
         self.column_profiles = list(tqdm(pool.imap_unordered(ColumnProfile.load_profile, column_profile_paths),
                                          total=len(column_profile_paths)))
-        
 
-        # TODO: [Refactor] Read this from project config
-        self.word_embedding_path = 'utils/glove_embeddings/glove.6B.100d.txt'
+        self.word_embedding_path = os.path.join(KGLiDSConfig.base_dir, 'storage/embeddings/glove.6B.100d.txt')
         # make sure the word embeddings are initialized
         self.word_embedding = WordEmbeddings(self.word_embedding_path)
-        
-        if self.is_cluster_mode:
+
+        if not self.is_spark_local_mode:
             self.spark = (SparkSession.builder
-                                      .appName("KGBuilder") 
-                                      .getOrCreate()
-                                      .sparkContext)
+                          .appName("KGBuilder")
+                          .getOrCreate()
+                          .sparkContext)
             # TODO: [Refactor] make sure this is updated. 
             # add python dependencies
             for pyfile in glob.glob('./**/*.py', recursive=True):
@@ -89,22 +79,19 @@ class DataGlobalSchemaBuilder:
             # self.spark.addPyFile('../../data_profiling/src/data/column_profile.py')
         else:
             self.spark = SparkContext(conf=SparkConf().setMaster(f'local[*]')
-                                                      .set('spark.driver.memory', f'{self.memory_size}g'))
-
+                                      .set('spark.driver.memory', f'{self.memory_size}g'))
 
     def build_membership_and_metadata_subgraph(self):
-        
+
         # generate column metadata triples in parallel
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
-        column_profiles_base_dir = self.column_profiles_base_dir
-        is_cluster_mode = self.is_cluster_mode
         # mapPartitions so we don't end up with too many subgraph files (compared to .map())
         column_profile_paths_rdd = self.spark.parallelize(self.column_profiles)
         column_profile_paths_rdd.mapPartitions(lambda x: column_metadata_worker(column_profiles=x,
                                                                                 ontology=ontology,
-                                                                                triples_output_tmp_dir=tmp_graph_dir))\
-                                .collect()
+                                                                                triples_output_tmp_dir=tmp_graph_dir)) \
+            .collect()
         # generate table and dataset membership triples
         membership_triples = []
         tables = set()
@@ -161,7 +148,7 @@ class DataGlobalSchemaBuilder:
                 f.write(f"{triple}\n")
 
     def generate_similarity_triples(self):
-        
+
         column_profiles = self.column_profiles
         ontology = self.ontology
         tmp_graph_dir = self.tmp_graph_base_dir
@@ -181,7 +168,7 @@ class DataGlobalSchemaBuilder:
                                                     embedding_sim_threshold=embedding_sim_threshold,
                                                     boolean_sim_threshold=boolean_sim_threshold,
                                                     word_embedding=word_embedding)) \
-                                .collect()
+            .collect()
 
     def build_graph(self):
         for tmp_file in os.listdir(self.tmp_graph_base_dir):
@@ -193,40 +180,14 @@ class DataGlobalSchemaBuilder:
         shutil.rmtree(self.tmp_graph_base_dir)
 
 
-def main():
-    # TODO: [Refactor] combine with pipeline abstraction KG builder
-    # TODO: [Refactor] read column profiles path from project config.py
-    # TODO: [Refactor] add graph output path to project config.py
-
-    # ************* SYSTEM PARAMETERS**********************
-    # TODO: [Refactor] have these inside a global project config
-    DEFAULT_LABEL_SIM_THRESHOLD = 0.75
-    DEFAULT_BOOLEAN_SIM_THRESHOLD = 0.75
-    DEFAULT_EMBEDDING_SIM_THRESHOLD = 0.75
-    # *****************************************************
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--column-profiles-path', type=str,
-                        default='../../../storage/profiles/smaller_real_profiles', help='Path to column profiles')
-    parser.add_argument('--out-graph-path', type=str,
-                        default='../../../storage/knowledge_graph/data_global_schema/data_global_schema_graph.ttl',
-                        help='Path to save the graph, including graph file name.')
-    parser.add_argument('--spark-mode', type=str, default='local', help="Possible values: 'local' or 'cluster'")
-    parser.add_argument('--label-sim-threshold', type=float, default=DEFAULT_LABEL_SIM_THRESHOLD)
-    parser.add_argument('--embedding-sim-threshold', type=float, default=DEFAULT_EMBEDDING_SIM_THRESHOLD)
-    parser.add_argument('--boolean-sim-threshold', type=float, default=DEFAULT_BOOLEAN_SIM_THRESHOLD)
-    parser.add_argument('--graphdb-endpoint', type=str, default='http://localhost:7200')
-    parser.add_argument('--graphdb-import-dir', type=str, default=os.path.expanduser('~/graphdb-import/'))
-    parser.add_argument('--graphdb-repo', type=str)
-    parser.add_argument('--replace-existing-repo', type=bool, default=False)
-    args = parser.parse_args()
-
+def build_data_global_schema():
     start_all = datetime.now()
-    knowledge_graph_builder = DataGlobalSchemaBuilder(column_profiles_path=args.column_profiles_path,
-                                                      out_graph_path=args.out_graph_path,
-                                                      spark_mode=args.spark_mode,
-                                                      label_sim_threshold=args.label_sim_threshold,
-                                                      embedding_sim_threshold=args.embedding_sim_threshold,
-                                                      boolean_sim_threshold=args.boolean_sim_threshold)
+    knowledge_graph_builder = DataGlobalSchemaBuilder(column_profiles_path=KGLiDSConfig.profiles_out_path,
+                                                      out_graph_path=KGLiDSConfig.data_global_schema_graph_out_path,
+                                                      is_spark_local_mode=KGLiDSConfig.is_spark_local_mode,
+                                                      label_sim_threshold=KGLiDSConfig.col_label_sim_threshold,
+                                                      embedding_sim_threshold=KGLiDSConfig.col_embedding_sim_threshold,
+                                                      boolean_sim_threshold=KGLiDSConfig.col_boolean_sim_threshold)
 
     # Membership (e.g. table -> dataset) and metadata (e.g. min, max) triples
     print(datetime.now(), "• 1. Building Membership and Metadata triples\n")
@@ -244,65 +205,7 @@ def main():
     print(datetime.now(), '• 3. Combining intermediate subgraphs from workers\n')
     knowledge_graph_builder.build_graph()
 
-    print(datetime.now(), f'\n• Graph Saved to: {args.out_graph_path}\n')
-
-    print(datetime.now(), '• 4. Loading graph to GraphDB at:', args.graphdb_endpoint, args.graphdb_repo, '\n')
-    # check if repo with the same name exists
-    url = args.graphdb_endpoint + '/rest/repositories'
-    graphdb_repos = json.loads(requests.get(url).text)
-    graphdb_repo_ids = [i['id'] for i in graphdb_repos]
-    # remove existing repo if found
-    headers = {"Content-Type": "application/json"}
-    if args.graphdb_repo in graphdb_repo_ids:
-        if args.replace_existing_repo:
-            url = f"{args.graphdb_endpoint}/rest/repositories/{args.graphdb_repo}"
-            response = requests.delete(url)
-            if response.status_code // 100 != 2:
-                print(datetime.now(), ': Error while deleting GraphDB repo:', args.graphdb_repo, ':', response.text)
-    else:
-        # create a new repo
-        url = args.graphdb_endpoint + '/rest/repositories'
-        data = {
-            "id": args.graphdb_repo,
-            "type": "graphdb",
-            "title": args.graphdb_repo,
-            "params": {
-                "defaultNS": {
-                    "name": "defaultNS",
-                    "label": "Default namespaces for imports(';' delimited)",
-                    "value": ""
-                },
-                "imports": {
-                    "name": "imports",
-                    "label": "Imported RDF files(';' delimited)",
-                    "value": ""
-                },
-                "enableContextIndex": {
-                    "name": "enableContextIndex",
-                    "label": "Enable context index",
-                    "value": "true"
-                }
-            }
-        }
-        response = requests.post(url, headers=headers, data=json.dumps(data))
-        if response.status_code // 100 != 2:
-            print(datetime.now(), "Error creating the GraphDB repo:", args.graphdb_repo, ':', response.text)
-    # copy generated file to graphdb-import
-    tmp_file_name = args.graphdb_repo + '_import.ttl'
-    shutil.copy2(args.out_graph_path, os.path.join(args.graphdb_import_dir, tmp_file_name))
-    # import copied graph
-    url = f"{args.graphdb_endpoint}/rest/repositories/{args.graphdb_repo}/import/server"
-    data = {"fileNames": [tmp_file_name]}
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-    if response.status_code // 100 != 2:
-        print(datetime.now(), 'Error importing file:', tmp_file_name, 'to GraphDB repo:', args.graphdb_repo, ':',
-              response.text)
-    # remove copied graph
-    # os.remove(os.path.join(args.graphdb_import_dir, tmp_file_name))
-
     end_all = datetime.now()
-    print(datetime.now(), "Done. Graph is being uploaded to GraphDB. Total time to build graph: " + str(end_all - start_all))
+    print(datetime.now(), f'\n• Done. Graph Saved to: {KGLiDSConfig.data_global_schema_graph_out_path}.')
 
-
-if __name__ == '__main__':
-    main()
+    print(datetime.now(), "Done. Total time to build graph: " + str(end_all - start_all))

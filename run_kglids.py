@@ -1,21 +1,26 @@
+from kglids_config import KGLiDSConfig
 from kg_governor.data_profiling.profile_data import profile_data
 from kg_governor.pipeline_abstraction.abstract_pipelines import abstract_pipelines
-from kglids_config import KGLiDSConfig
+from kg_governor.data_global_schema_builder.build_data_global_schema import build_data_global_schema
 
 
 def main():
     # run profiler
-    # profile_data()
+    profile_data()
 
-    # TODO: load embeddings into pgvector
 
-    # run pipeline abstraction
+    # # run pipeline abstraction
     abstract_pipelines()
+
+    # run kg construction
+    build_data_global_schema()
+
+
 
 # create graphdb repo
 # create postgres db
-# run kg construction
 # load graph into graphdb
+# load embeddings into pgvector
 
 if __name__ == '__main__':
     main()

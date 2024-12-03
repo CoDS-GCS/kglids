@@ -6,7 +6,7 @@ import seaborn as sns
 from graphviz import Digraph
 from camelsplit import camelsplit
 from matplotlib import pyplot as plt
-from kg_governor.knowledge_graph_construction.src.utils.utils import Label
+from kg_governor.data_global_schema_builder.src.utils.utils import Label
 from api.helpers.helper import query_graphdb
 
 PREFIXES = """
