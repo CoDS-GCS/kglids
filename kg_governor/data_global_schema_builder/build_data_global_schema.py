@@ -33,8 +33,7 @@ class DataGlobalSchemaBuilder:
             shutil.rmtree(self.tmp_graph_base_dir)
         os.makedirs(self.tmp_graph_base_dir)
 
-        self.memory_size = (os.sysconf('SC_PAGE_SIZE') * os.sysconf(
-            'SC_PHYS_PAGES') // 1024 ** 3) - 1  # total RAM - 1 GB
+        self.memory_size = (os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES') // 1024 ** 3) - 1  # total RAM - 1 GB
         self.is_spark_local_mode = is_spark_local_mode
 
         self.label_sim_threshold = label_sim_threshold
@@ -72,9 +71,10 @@ class DataGlobalSchemaBuilder:
                           .appName("KGBuilder")
                           .getOrCreate()
                           .sparkContext)
-            # TODO: [Refactor] make sure this is updated. 
             # add python dependencies
-            for pyfile in glob.glob('./**/*.py', recursive=True):
+            for pyfile in glob.glob(
+                    os.path.join(KGLiDSConfig.base_dir, 'kg_governor/data_global_schema_builder/**/*.py'),
+                    recursive=True):
                 self.spark.addPyFile(pyfile)
             # self.spark.addPyFile('../../data_profiling/src/data/column_profile.py')
         else:
