@@ -1,11 +1,3 @@
-import warnings
-warnings.simplefilter('ignore')
-import os
-from kglids_config import KGLiDSConfig
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # set tensorflow log level to FATAL
-
-
-import spacy
 import dateparser
 import fasttext
 fasttext.FastText.eprint = lambda *args,**kwargs: None
@@ -17,18 +9,11 @@ from kg_governor.data_profiling.model.column_data_type import ColumnDataType
 
 
 class FineGrainedColumnTypeDetector:
-    try:
-        ner_model = spacy.load('en_core_web_sm')
-    except:
-        import subprocess
-        subprocess.call('python -m spacy download en_core_web_sm'.split(), shell=False)
-        ner_model = spacy.load('en_core_web_sm')
-    
-    fasttext_model = fasttext.load_model(os.path.join(KGLiDSConfig.base_dir, 'storage/embeddings/cc.en.50.bin'))
+
     tokenizer = TweetTokenizer()
 
     @staticmethod
-    def detect_column_data_type(column: pd.Series):
+    def detect_column_data_type(column: pd.Series, fasttext_model, ner_model):
         if column.dtype.type == np.bool_:
             return ColumnDataType.BOOLEAN
         
@@ -47,8 +32,8 @@ class FineGrainedColumnTypeDetector:
             if FineGrainedColumnTypeDetector.__is_date(sample):
                 return ColumnDataType.DATE
             
-            elif FineGrainedColumnTypeDetector.__is_natural_language(sample):
-                if FineGrainedColumnTypeDetector.__is_named_entity(sample):
+            elif FineGrainedColumnTypeDetector.__is_natural_language(sample, fasttext_model):
+                if FineGrainedColumnTypeDetector.__is_named_entity(sample, ner_model):
                     return ColumnDataType.NATURAL_LANGUAGE_NAMED_ENTITY
                 
                 return ColumnDataType.NATURAL_LANGUAGE_TEXT
@@ -57,11 +42,11 @@ class FineGrainedColumnTypeDetector:
     
     
     @staticmethod
-    def __is_natural_language(column: pd.Series):
+    def __is_natural_language(column: pd.Series, fasttext_model):
         num_natural_language_values = 0
         for value in column.values:
             tokens = FineGrainedColumnTypeDetector.tokenizer.tokenize(value)
-            num_tokens_in_fasttext = sum([FineGrainedColumnTypeDetector.fasttext_model.get_word_id(token) != -1
+            num_tokens_in_fasttext = sum([fasttext_model.get_word_id(token) != -1
                                           for token in tokens])
             if num_tokens_in_fasttext > 0.5 * len(tokens):
                 num_natural_language_values += 1
@@ -70,10 +55,10 @@ class FineGrainedColumnTypeDetector:
         return False
     
     @staticmethod
-    def __is_named_entity(column: pd.Series):
+    def __is_named_entity(column: pd.Series, ner_model):
         num_named_entity_values = 0
         for value in column.values:
-            tokens = FineGrainedColumnTypeDetector.ner_model(value)
+            tokens = ner_model(value)
             non_puncts = len([token for token in tokens if not token.is_punct and not token.is_space])
             if len(tokens.ents) == non_puncts:
                 num_named_entity_values += 1

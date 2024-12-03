@@ -36,7 +36,7 @@ class KGLiDSConfig:
     # directory to save the generated column profiles.
     profiles_out_path = os.path.join(base_dir, 'storage', 'profiles', f'{data_source}_profiles')
     # whether to replace existing profiles if found
-    replace_existing_profiles = True
+    replace_existing_profiles = False
 
     ####### Pipeline abstraction configs #######
     # path to generate the pipeline subgraphs before loading it to GraphDB

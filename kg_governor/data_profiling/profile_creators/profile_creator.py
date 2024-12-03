@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 import torch
+import fasttext
 
 from kg_governor.data_profiling.model.column_data_type import ColumnDataType
 from kg_governor.data_profiling.model.table import Table
@@ -13,7 +14,7 @@ class ProfileCreator(ABC):
     
     # Profile Creator Factory
     @staticmethod
-    def get_profile_creator(column: pd.Series, data_type: ColumnDataType, table: Table):
+    def get_profile_creator(column: pd.Series, data_type: ColumnDataType, table: Table, fasttext_model: fasttext.FastText):
         if data_type == ColumnDataType.INT:
             from kg_governor.data_profiling.profile_creators.int_profile_creator import IntProfileCreator
             return IntProfileCreator(column, table)
@@ -28,10 +29,10 @@ class ProfileCreator(ABC):
             return DateProfileCreator(column, table)
         elif data_type == ColumnDataType.NATURAL_LANGUAGE_NAMED_ENTITY:
             from kg_governor.data_profiling.profile_creators.named_entity_profile_creator import NamedEntityProfileCreator
-            return NamedEntityProfileCreator(column, table)
+            return NamedEntityProfileCreator(column, table, fasttext_model)
         elif data_type == ColumnDataType.NATURAL_LANGUAGE_TEXT:
             from kg_governor.data_profiling.profile_creators.natural_language_text_profile_creator import NaturalLanguageTextProfileCreator
-            return NaturalLanguageTextProfileCreator(column, table)
+            return NaturalLanguageTextProfileCreator(column, table, fasttext_model)
         elif data_type == ColumnDataType.STRING:
             from kg_governor.data_profiling.profile_creators.string_profile_creator import StringProfileCreator
             return StringProfileCreator(column, table)

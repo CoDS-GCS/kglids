@@ -16,11 +16,13 @@ from kglids_config import KGLiDSConfig
 
 class NaturalLanguageTextProfileCreator(TextualProfileCreator):
 
-    def __init__(self, column: pd.Series, table: Table):
+    def __init__(self, column: pd.Series, table: Table, fasttext_model: fasttext.FastText):
         super().__init__(column, table)
 
         # set the data type and load the embedding models
         self.data_type = ColumnDataType.NATURAL_LANGUAGE_TEXT
+
+        self.fasttext_model = fasttext_model
 
         embedding_model_path = os.path.join(KGLiDSConfig.base_dir, 'kg_governor/data_profiling/column_embeddings/pretrained_models/natural_language_text/20230113132355_natural_language_text_model_embedding_epoch_94.pt')
         scaling_model_path = os.path.join(KGLiDSConfig.base_dir, 'kg_governor/data_profiling/column_embeddings/pretrained_models/natural_language_text/20230113132355_natural_language_text_model_scaling_epoch_94.pt')
@@ -34,15 +36,13 @@ class NaturalLanguageTextProfileCreator(TextualProfileCreator):
             sample = non_missing.sample(int(0.1*len(non_missing)))
         else:
             sample = non_missing.sample(min(len(non_missing), 1000))
-        fasttext_path = os.path.join(KGLiDSConfig.base_dir, 'storage/embeddings/cc.en.50.bin')
-        fasttext_model = fasttext.load_model(fasttext_path)
         tokenizer = TweetTokenizer()
 
         input_values = []
         for text in sample.values:
-            fasttext_words = [word for word in tokenizer.tokenize(text) if fasttext_model.get_word_id(word) != -1]
+            fasttext_words = [word for word in tokenizer.tokenize(text) if self.fasttext_model.get_word_id(word) != -1]
             if fasttext_words:
-                input_values.append(np.average([fasttext_model.get_word_vector(word) for word in fasttext_words],
+                input_values.append(np.average([self.fasttext_model.get_word_vector(word) for word in fasttext_words],
                                                axis=0))
         input_tensor = torch.FloatTensor(input_values).to(device)
         return input_tensor
