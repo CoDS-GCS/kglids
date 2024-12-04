@@ -120,7 +120,6 @@ def populate_data_global_schema_graph(data_global_schema_graph_path, graphdb_rep
     import_completed = False
     while not import_completed:
         time.sleep(5)  # Wait for 5 seconds before checking again
-        print('GraphDB upload check ...')
         status_url = f"{graphdb_endpoint}/rest/repositories/{graphdb_repo_name}/import/server/{response.json()['taskId']}"
         status_response = requests.get(status_url, headers=headers)
         if status_response.status_code == 200:
@@ -137,4 +136,5 @@ def populate_data_global_schema_graph(data_global_schema_graph_path, graphdb_rep
             print(datetime.now(), "Error checking import status:", status_response.text)
 
     # remove copied graph
-    # os.remove(os.path.join(graphdb_import_path, tmp_file_name))
+    if import_completed:
+        os.remove(os.path.join(graphdb_import_path, tmp_file_name))
