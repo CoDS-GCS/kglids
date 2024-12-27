@@ -13,9 +13,7 @@ kg_governor/data_global_schema_builder/utils/glove_embeddings/*
 
 
 /storage/
-!/storage/**/*.py
-#!/storage/**/README.md
-#!/storage/**/*.py
+
 
 .idea/
 __pycache__/
