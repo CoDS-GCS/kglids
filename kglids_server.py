@@ -1,6 +1,5 @@
-import sys
-
-sys.path.append('./kg_governor/data_profiling/src')
+import os
+import spacy
 import fasttext
 import flask
 from flask.globals import request
@@ -10,18 +9,19 @@ from tqdm import tqdm
 from datetime import datetime
 import multiprocessing as mp
 
+from kglids_config import KGLiDSConfig
 from server_utils import query_graph, upload_graph, get_graph_content, create_evaluation_embedding_dbs, add_has_eda_ops_column_to_embedding_db
 from storage.utils.populate_graphdb import create_or_replace_repo
-from kg_governor.data_profiling.src.fine_grained_type_detector import FineGrainedColumnTypeDetector
-from kg_governor.data_profiling.src.profile_creators.profile_creator import ProfileCreator
-from kg_governor.data_profiling.src.model.column_profile import ColumnProfile
-from kg_governor.data_profiling.src.model.table import Table
+from kg_governor.data_profiling.fine_grained_type_detector import FineGrainedColumnTypeDetector
+from kg_governor.data_profiling.profile_creators.profile_creator import ProfileCreator
+from kg_governor.data_profiling.model.column_profile import ColumnProfile
+from kg_governor.data_profiling.model.table import Table
 
 flask_app = flask.Flask(__name__)
 
-fasttext_path = './storage/embeddings/cc.en.300.bin'
-ft = fasttext.load_model(fasttext_path)
-
+fasttext_model_300 = fasttext.load_model(os.path.join(KGLiDSConfig.base_dir, 'storage/embeddings/cc.en.300.bin'))
+fasttext_model_50 = fasttext.load_model(os.path.join(KGLiDSConfig.base_dir, 'storage/embeddings/cc.en.50.bin'))
+ner_model = spacy.load('en_core_web_sm')
 
 def initialize_autoeda():
     graphdb_endpoint = 'http://localhost:7200/repositories/kaggle_eda'
@@ -37,10 +37,11 @@ def profile_column(args):
     column = column.convert_dtypes()
     column = column.astype(str) if column.dtype == object else column
 
-    column_type = FineGrainedColumnTypeDetector.detect_column_data_type(column)
+    column_type = FineGrainedColumnTypeDetector.detect_column_data_type(column, fasttext_model_50, ner_model)
     column_profile_creator = ProfileCreator.get_profile_creator(column, column_type, Table('query',
                                                                                            'query.csv',
-                                                                                           'query'))
+                                                                                           'query'),
+                                                                fasttext_model_50)
     column_profile: ColumnProfile = column_profile_creator.create_profile()
 
     if column_profile.get_embedding():
@@ -50,7 +51,7 @@ def profile_column(args):
         content_embedding = [column_profile.get_true_ratio()] * 300
 
     sanitized_name = column_name.replace('\n', ' ').replace('_', ' ').strip()
-    label_embedding = ft.get_sentence_vector(sanitized_name).tolist()
+    label_embedding = fasttext_model_300.get_sentence_vector(sanitized_name).tolist()
 
     content_label_embedding = content_embedding + label_embedding
     column_info = {'column_id': column_profile.get_column_id(),
