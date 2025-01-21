@@ -16,53 +16,77 @@ Try out our [KGLiDS Colab Demo](https://colab.research.google.com/drive/1dDiGh1K
 ## Linked Data Science: Systems and Applications
 To learn more about Linked Data Science and its applications, please watch Dr. Mansour's talk at Waterloo DSG Seminar ([Here](https://www.youtube.com/watch?v=99wvN04C5fU)). 
 
+## Requirements
+* Conda
+* Java (make sure `$JAVA_HOME` env variable is set. [See Tutorial Here](https://www.digitalocean.com/community/tutorials/how-to-install-java-with-apt-on-ubuntu-22-04))
+* Docker
+
 ## Installation
-* Clone the `kglids` repo 
-* Create `kglids` Conda environment (Python 3.8) and install pip requirements.
-* Activate the `kglids` environment
+Run the project initialization script, which does the following:
+* Creates `kglids` Conda environment.
+* Downloads necessary pip packages.
+* Downloads necessary word embedding models.
+* Downloads and runs GraphDB docker container.
+* Install Postgresql and pgvector (sets default password to `postgres`).
+
 ```commandline
-conda create -n kglids python=3.8 -y
-conda activate kglids
-pip install -r requirements.txt
+bash init.sh
 ```
 
+## Setting Up The Data
 
-
-<b>Generating the LiDS graph:</b>
-* Add the data sources to [config.py](kg_governor/data_profiling/src/config.py):
-```python
-# sample configuration
-# list of data sources to process
-data_sources = [DataSource(name='benchmark',
-                           path='/home/projects/sources/kaggle',
-                           file_type='csv')]
+KGLiDS expects to set up the pipeline and csv files into the following directory structure:
 
 ```
-* Run the [Data profiler](kg_governor/data_profiling/src/main.py)
+<DATA SOURCE NAME>/
+├── <DATASET 1 ID>/
+│   ├── data/
+│   │   ├── <TABLE NAME>.csv
+│   │   ├── <TABLE NAME>.csv
+│   │   └── ...
+│   └── notebooks/
+│       ├── <NOTEBOOK 1 ID>/
+│       │   ├── <NOTEBOOK PYTHON FILE>.py
+│       │   └── pipeline_info.json
+│       ├── <NOTEBOOK 2 ID>
+│       └── ...      
+├── <DATASET 2 ID>
+└── ...
+```
+
+The following is an example dataset under the `kaggle_small` data source:
+```
+kaggle_small
+  └──antfarol.car-sale-advertisements
+      ├── data
+      │ └── car_ad.csv
+      └── notebooks
+          └── aidenchoi-notebooke85a1481e0
+             ├── kernel-metadata.json
+             ├── notebooke85a1481e0.py
+             └── pipeline_info.json
+```
+
+Where `pipeline_info.json` files contain Kaggle pipeline details (see [setup_kaggle_data.py](storage_utils/setup_kaggle_data.py))
+
+## Generating the KGLiDS graph:
+* Add the data sources to [kglids_config.py](kglids_config.py).
+
+* Run KGLiDS:
+
 ```commandline
-cd kg_governor/data_profiling/src/
-python main.py
+python run_kglids.py
 ```
-* Run the [Knowledge graph builder](kg_governor/data_global_schema_builder/src/data_global_schema_builder.py) to generate the data_items graph 
-```commandline/
-cd kg_governor/knowledge_graph_construction/src/
-python data_global_schema_builder.py
-```
-* Run the [Pipeline abstractor](kg_governor/pipeline_abstraction/pipelines_analysis.py) to generate the pipeline named graph(s)
-```
-cd kg_governor/pipeline_abstraction/
-python pipelines_analysis.py
-```
-<hr>
 
-<b>Uploading LiDS graph to the graph-engine (we recommend using [GraphDB](https://graphdb.ontotext.com/) ):</b>
-Please see [populate_graphdb.py](storage/utils/populate_graphdb.py) for an example of uploading graphs to GraphDB.
+This script does the following:
+* Profiles the datasets and creates the dataset graph.
+* Analyzes pipeline scripts and creates pipeline graphs.
+* Loads the constructed graphs into GraphDB.
+* Loads the dataset embeddings into pgvector.
 
 
 
-<hr>
-
-<b> Using the KGLiDS APIs</b>: 
+## Using the KGLiDS APIs</b>: 
 
 KGLiDS provides predefined operations in form of python apis that allow seamless integration with a conventional data science pipeline.
 Checkout the full list of [KGLiDS APIs](docs/KGLiDS_apis.md)
