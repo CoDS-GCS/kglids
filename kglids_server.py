@@ -11,7 +11,7 @@ import multiprocessing as mp
 
 from kglids_config import KGLiDSConfig
 from server_utils import query_graph, upload_graph, get_graph_content, create_evaluation_embedding_dbs, add_has_eda_ops_column_to_embedding_db
-from storage.utils.populate_graphdb import create_or_replace_repo
+from storage_utils.graphdb_utils import create_graphdb_repo
 from kg_governor.data_profiling.fine_grained_type_detector import FineGrainedColumnTypeDetector
 from kg_governor.data_profiling.profile_creators.profile_creator import ProfileCreator
 from kg_governor.data_profiling.model.column_profile import ColumnProfile
@@ -297,7 +297,7 @@ def create_evaluation_graphs_and_databases():
 
     # A. GraphDB Repos
     print('Creating GraphDB repos...')
-    create_or_replace_repo(graphdb_endpoint, graphdb_autoeda_repo)
+    create_graphdb_repo(graphdb_endpoint, graphdb_autoeda_repo)
 
     data_source_query = """
     PREFIX kglids: <http://kglids.org/ontology/>
