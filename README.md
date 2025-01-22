@@ -73,14 +73,6 @@ Where `pipeline_info.json` files contain Kaggle pipeline details (see [setup_kag
 
 * Run KGLiDS:
 
-To run the KGLiDS components, use `run_kglids.py`, which does the following: 
-
-  * Profile the datasets using fine-grained embedding models.
-  * Analyze pipeline scripts with static code analysis.
-  * Constrcut the knowledge graphs corresponding to both items.
-  * Create a GraphDB repository and load the knowledge graphs into it.
-  * Create a pgvector DB and load the column embeddings into it.
-
 
 ```commandline
 python run_kglids.py
