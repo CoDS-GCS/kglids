@@ -11,7 +11,7 @@ from urllib.parse import quote
 from kglids_config import KGLiDSConfig
 
 
-def create_graphdb_repo(graphdb_repo_name, graphdb_endpoint):
+def create_graphdb_repo(graphdb_endpoint, graphdb_repo_name):
     # check if repo with the same name exists
     url = graphdb_endpoint + '/rest/repositories'
     graphdb_repos = json.loads(requests.get(url).text)
