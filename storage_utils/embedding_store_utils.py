@@ -57,15 +57,10 @@ def insert_columns(column_data, db_name):
     cursor.close()
 
 
-def main():
+def populate_column_embeddings(column_profiles_path, embedding_db_name):
 
-    column_profiles_path = KGLiDSConfig.profiles_out_path
     fasttext_path = os.path.join(KGLiDSConfig.base_dir, 'storage/embeddings/cc.en.300.bin')
-    embedding_db_name = KGLiDSConfig.pgvector_db_name
     batch_size = 1000
-
-    # create postgres pgvector db
-    create_embedding_db(embedding_db_name)
 
     print(datetime.now() ,': Loading Fasttext embeddings...')
     ft = fasttext.load_model(fasttext_path)
@@ -101,7 +96,3 @@ def main():
         insert_columns(batch, embedding_db_name)
 
     print(datetime.now(), ': Database populated with', len(profile_paths), 'columns.')
-
-
-if __name__ == '__main__':
-    main()
