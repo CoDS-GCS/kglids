@@ -35,6 +35,7 @@ def create_embedding_db(db_name):
 
         cursor.execute(f'CREATE INDEX ON {db_name} (data_type);')
         cursor.execute(f'CREATE INDEX ON {db_name} (dataset_name);')
+        cursor.execute(f'CREATE INDEX ON {db_name} (table_name);')
         cursor.execute(f'CREATE INDEX ON {db_name} USING hnsw (content_embedding vector_cosine_ops);')
         cursor.execute(f'CREATE INDEX ON {db_name} USING hnsw (label_embedding vector_cosine_ops);')
         cursor.execute(f'CREATE INDEX ON {db_name} USING hnsw (content_label_embedding vector_cosine_ops);')

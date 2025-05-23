@@ -91,6 +91,9 @@ def add_has_eda_ops_column_to_embedding_db(embedding_db_name, graphdb_endpoint):
     column_uris = [result['col']['value'] for result in results]
     column_ids = [column_uri.split('/resource/')[1] for column_uri in column_uris]
 
+    if not column_uris:
+        print('No EDA operations in the graph. Terminating ...')
+        exit()
     # add has_eda_ops column and populate it
     db_query = f"""
         ALTER TABLE {embedding_db_name}

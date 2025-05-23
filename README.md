@@ -62,6 +62,7 @@ kaggle_small
       │ └── car_ad.csv
       └── notebooks
           └── aidenchoi-notebooke85a1481e0
+             ├── kernel-metadata.json
              ├── notebooke85a1481e0.py
              └── pipeline_info.json
 ```
@@ -72,7 +73,6 @@ Where `pipeline_info.json` files contain Kaggle pipeline details (see [setup_kag
 * Add the data sources to [kglids_config.py](kglids_config.py).
 
 * Run KGLiDS:
-
 
 ```commandline
 python run_kglids.py

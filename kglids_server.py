@@ -30,7 +30,8 @@ def initialize_autoeda():
     add_has_eda_ops_column_to_embedding_db(embedding_db_name, graphdb_endpoint)
 
 
-def profile_column(column):
+def profile_column(args):
+    column, query_table_name = args
     # profiles each column by analyzing its fine-grained type and generating the embedding
     # profile the column and generate its embeddings
     column = pd.to_numeric(column, errors='ignore')
@@ -39,11 +40,10 @@ def profile_column(column):
 
     column_type = FineGrainedColumnTypeDetector.detect_column_data_type(column, fasttext_model_50, ner_model)
     column_profile_creator = ProfileCreator.get_profile_creator(column, column_type, Table('query',
-                                                                                           'query.csv',
+                                                                                           query_table_name,
                                                                                            'query'),
                                                                 fasttext_model_50)
     column_profile: ColumnProfile = column_profile_creator.create_profile()
-    print('2-', column.name)
     if column_profile.get_embedding():
         content_embedding = column_profile.get_embedding()
     else:
@@ -70,25 +70,25 @@ def profile_column(column):
 @app.route('/profile_query_table', methods=['POST'])
 def profile_query_table():
     embedding_db_name = request.args.get('embedding_db_name')
-    print(embedding_db_name)
+    query_table_name = request.args.get('query_table_name')
     file = request.files['query_table']
     df = pd.read_csv(file)
 
     print(datetime.now(), 'Received CSV file. Profiling and storing embeddings...')
-    columns = [df[column_name] for column_name in df.columns]
+    args = [(df[column_name], query_table_name) for column_name in df.columns]
     pool = mp.Pool()
-    column_info = list(tqdm(pool.imap_unordered(profile_column, columns), total=len(columns)))
+    column_info = list(tqdm(pool.imap_unordered(profile_column, args), total=len(args)))
 
     # query vector DB
     conn = psycopg.connect(dbname=embedding_db_name, user='postgres', password='postgres', autocommit=True)
     cursor = conn.cursor()
     # remove previous query table if exists
-    cursor.execute(f"DELETE FROM {embedding_db_name} WHERE dataset_name = 'query' AND table_name = 'query.csv'")
+    cursor.execute(f"DELETE FROM {embedding_db_name} WHERE dataset_name = 'query' AND table_name = '{query_table_name}'")
     # add new query table to embedding store
     insert_query = f'''INSERT INTO {embedding_db_name} (id, name, data_type, dataset_name, table_name, has_eda_ops, 
                        content_embedding, label_embedding, content_label_embedding) 
                        VALUES (%s, %s, %s, %s, %s, FALSE, %s, %s, %s);'''
-    insert_data = [(i['column_id'], i['column_name'], i['data_type'], i['dataset_name'], i['table_name'],
+    insert_data = [(i['column_id'], i['column_name'], i['data_type'], 'query', query_table_name,
                     i['content_embedding'], i['label_embedding'], i['content_label_embedding'])
                    for i in column_info]
     cursor.executemany(insert_query, insert_data)
@@ -105,6 +105,7 @@ def find_similar_columns():
     column_name = request.get_json().get('main_column_name', '')
     embedding_db_name = request.get_json().get('embedding_db_name', '')
     criteria = request.get_json().get('criteria', '') # has to be 'content', 'label', or 'content_label'
+    query_table_name = request.get_json().get('query_table_name')
     n = request.get_json().get('n', 3)
 
     # query vector DB
@@ -112,7 +113,7 @@ def find_similar_columns():
     cursor = conn.cursor()
     column_fetch_query = f"""SELECT data_type, content_embedding, label_embedding, content_label_embedding
                             FROM {embedding_db_name} 
-                            WHERE dataset_name = 'query' AND table_name = 'query.csv' and name = '{column_name.replace("'", "''")}'"""
+                            WHERE dataset_name = 'query' AND table_name = '{query_table_name}' and name = '{column_name.replace("'", "''")}'"""
     results = cursor.execute(column_fetch_query)
     data_type, content_embedding, label_embedding, content_label_embedding = results.fetchone()
 
@@ -136,152 +137,153 @@ def find_similar_columns():
 def fetch_eda_operations():
     similar_column_id = request.get_json().get('similar_column_id', '')
     main_column_name = request.get_json().get('main_column_name', '')
-    analysis_type = request.get_json().get('analysis_type', '')
+    query_table_name = request.get_json().get('query_table_name')
     graphdb_repo = request.get_json().get('graphdb_repo', '')
     embedding_db_name = request.get_json().get('embedding_db_name', '')
+    embedding_criteria = request.get_json().get('embedding_criteria', 'content_label')
+
 
     graphdb_endpoint = 'http://localhost:7200'
     graphdb_url = f'{graphdb_endpoint}/repositories/{graphdb_repo}'
 
-    if analysis_type == 'univariate':
-        graph_query = """
-        PREFIX kglids: <http://kglids.org/ontology/>
-        PREFIX pipeline: <http://kglids.org/ontology/pipeline/>
-        
-        SELECT ?eda ?chart_type WHERE {
-            ?eda a kglids:EDAOperation.
-            ?eda pipeline:hasAnalysisType "univariate".
-            ?eda pipeline:hasChartType ?chart_type.
-            <http://kglids.org/resource/%s> pipeline:hasEDAOperation ?eda.
-        }
-        """ % similar_column_id
+    univariate_eda_ops = []
+    # Univariate EDA Ops
+    graph_query = """
+    PREFIX kglids: <http://kglids.org/ontology/>
+    PREFIX pipeline: <http://kglids.org/ontology/pipeline/>
+    
+    SELECT ?eda ?chart_type WHERE {
+        ?eda a kglids:EDAOperation.
+        ?eda pipeline:hasAnalysisType "univariate".
+        ?eda pipeline:hasChartType ?chart_type.
+        <http://kglids.org/resource/%s> pipeline:hasEDAOperation ?eda.
+    }
+    """ % similar_column_id
 
-        results = query_graph(graph_query, graphdb_url)
-        eda_operations = []
-        for result in results:
-            eda_operations.append({'eda_id': result['eda']['value'],
-                                   'chart_type': result['chart_type']['value'],
-                                   'chart_columns': [main_column_name],
-                                   'grouping_column': None})
+    results = query_graph(graph_query, graphdb_url)
 
-    elif analysis_type == 'bivariate':
-        graph_query = """
+    for result in results:
+        univariate_eda_ops.append({'eda_id': result['eda']['value'],
+                               'chart_type': result['chart_type']['value'],
+                               'chart_columns': [main_column_name],
+                               'grouping_column': None})
+
+    # Bivariate  EDA Ops
+
+    graph_query = """
+    PREFIX kglids: <http://kglids.org/ontology/>
+    PREFIX pipeline: <http://kglids.org/ontology/pipeline/>
+    PREFIX data: <http://kglids.org/ontology/data/>
+    
+    SELECT distinct ?eda ?chart_type ?similar_secondary_column ?similar_secondary_column_type WHERE {
+        ?eda a kglids:EDAOperation.
+        ?eda pipeline:hasAnalysisType "bivariate".
+        ?eda pipeline:hasChartType ?chart_type.
+        <http://kglids.org/resource/%s> pipeline:hasEDAOperation ?eda.
+        ?similar_secondary_column pipeline:hasEDAOperation ?eda.
+        ?similar_secondary_column a kglids:Column.
+        ?similar_secondary_column data:hasDataType ?similar_secondary_column_type.
+        FILTER (?similar_secondary_column != <http://kglids.org/resource/%s>).
+    }
+    """ % (similar_column_id, similar_column_id)
+    results = query_graph(graph_query, graphdb_url)
+    bivariate_eda_ops = []
+    for result in results:
+        bivariate_eda_ops.append({'eda_id': result['eda']['value'],
+                               'chart_type': result['chart_type']['value'],
+                               'chart_columns': [main_column_name],
+                               'similar_secondary_column_id': result['similar_secondary_column']['value'],
+                               'similar_secondary_column_type': result['similar_secondary_column_type']['value'],
+                               'grouping_column': None})
+
+    # find columns in query table that have the same data type as secondary_column and have closest embedding (must not be the main column)
+    # query vector DB
+    conn = psycopg.connect(dbname=embedding_db_name, user='postgres', password='postgres', autocommit=True)
+    cursor = conn.cursor()
+    for eda_operation in bivariate_eda_ops:
+        results = cursor.execute(
+            f"""SELECT e.name FROM {embedding_db_name} e
+                       WHERE e.dataset_name = 'query' 
+                             AND e.table_name = '{query_table_name}'
+                             AND e.data_type=%s
+                             AND e.name != %s
+                       ORDER BY e.{embedding_criteria}_embedding <=>  (
+                            SELECT e2.{embedding_criteria}_embedding
+                            FROM {embedding_db_name} e2
+                            WHERE e2.id = %s)
+                       LIMIT 1;""",
+            (eda_operation['similar_secondary_column_type'], main_column_name,
+             eda_operation['similar_secondary_column_id'].replace('http://kglids.org/resource/', '')))
+        secondary_column_name = results.fetchone()
+        if secondary_column_name:
+            eda_operation['chart_columns'].append(secondary_column_name[0])
+            eda_operation['chart_columns'] = sorted(eda_operation['chart_columns'])
+
+    bivariate_eda_ops = [operation for operation in bivariate_eda_ops if len(operation['chart_columns']) > 1]
+
+    # multivariate EDA ops
+
+    graph_query = """
         PREFIX kglids: <http://kglids.org/ontology/>
         PREFIX pipeline: <http://kglids.org/ontology/pipeline/>
         PREFIX data: <http://kglids.org/ontology/data/>
         
-        SELECT distinct ?eda ?chart_type ?similar_secondary_column ?similar_secondary_column_type WHERE {
+        SELECT ?eda ?chart_type (GROUP_CONCAT(?other_column_info; SEPARATOR = ",") AS ?other_columns)  
+        WHERE {
             ?eda a kglids:EDAOperation.
-            ?eda pipeline:hasAnalysisType "bivariate".
+            ?eda pipeline:hasAnalysisType "multivariate".
             ?eda pipeline:hasChartType ?chart_type.
             <http://kglids.org/resource/%s> pipeline:hasEDAOperation ?eda.
-            ?similar_secondary_column pipeline:hasEDAOperation ?eda.
-            ?similar_secondary_column a kglids:Column.
-            ?similar_secondary_column data:hasDataType ?similar_secondary_column_type.
-            FILTER (?similar_secondary_column != <http://kglids.org/resource/%s>).
+            ?other_column pipeline:hasEDAOperation ?eda.
+            ?other_column data:hasDataType ?other_column_type .
+            BIND(CONCAT(STR(?other_column), ";" , ?other_column_type) AS ?other_column_info).
+            FILTER(?other_column != <http://kglids.org/resource/%s>) .
         }
-        """ % (similar_column_id, similar_column_id)
-        results = query_graph(graph_query, graphdb_url)
-        eda_operations = []
-        for result in results:
-            eda_operations.append({'eda_id': result['eda']['value'],
-                                   'chart_type': result['chart_type']['value'],
-                                   'chart_columns': [main_column_name],
-                                   'similar_secondary_column_id': result['similar_secondary_column']['value'],
-                                   'similar_secondary_column_type': result['similar_secondary_column_type']['value'],
-                                   'grouping_column': None})
+        GROUP BY ?eda ?chart_type
+    """ % (similar_column_id, similar_column_id)
+    results = query_graph(graph_query, graphdb_url)
+    multivariate_eda_ops = []
+    for result in results:
+        similar_columns_ids_and_types = [tuple(i.split(';')) for i in result['other_columns']['value'].split(',')]
+        eda_operation = {'eda_id': result['eda']['value'],
+                         'chart_type': result['chart_type']['value'],
+                         'other_similar_columns': similar_columns_ids_and_types,
+                         'chart_columns': [main_column_name],
+                         'grouping_column': None}
+        if result['chart_type']['value'] in ['heatmap', 'pairwise']:
+            eda_operation['other_similar_columns'] = []
+            eda_operation['chart_columns'] = []
 
-        # find columns in query table that have the same data type as secondary_column and have closest embedding (must not be the main column)
-        # query vector DB
-        conn = psycopg.connect(dbname=embedding_db_name, user='postgres', password='postgres', autocommit=True)
-        cursor = conn.cursor()
-        for eda_operation in eda_operations:
+        multivariate_eda_ops.append(eda_operation)
+
+    # find columns in query table that have the same data type as secondary columns and have closest embedding (must not be the main column)
+    # query vector DB
+    for eda_operation in multivariate_eda_ops:
+        for other_similar_column_id, other_similar_column_type in eda_operation['other_similar_columns']:
+            chart_columns_str = [i.replace('%','%%').replace("'", "''") for i in eda_operation['chart_columns']]
+            matched_columns_str = '(' + ','.join([f"'{i}'" for i in chart_columns_str]) + ')'
             results = cursor.execute(
                 f"""SELECT e.name FROM {embedding_db_name} e
-                           WHERE e.dataset_name = 'query' 
-                                 AND e.table_name = 'query.csv'
-                                 AND e.data_type=%s
-                                 AND e.name != %s
-                           ORDER BY e.content_label_embedding <=>  (
-                                SELECT e2.content_label_embedding
-                                FROM {embedding_db_name} e2
-                                WHERE e2.id = %s)
-                           LIMIT 1;""",
-                (eda_operation['similar_secondary_column_type'], main_column_name,
-                 eda_operation['similar_secondary_column_id'].replace('http://kglids.org/resource/', '')))
-            secondary_column_name = results.fetchone()
-            if secondary_column_name:
-                eda_operation['chart_columns'].append(secondary_column_name[0])
-                eda_operation['chart_columns'] = sorted(eda_operation['chart_columns'])
+                       WHERE e.dataset_name = 'query' 
+                            AND e.table_name = '{query_table_name}'
+                            AND e.data_type=%s
+                            AND e.name NOT IN {matched_columns_str}
+                       ORDER BY e.{embedding_criteria}_embedding <=>  (
+                            SELECT e2.{embedding_criteria}_embedding
+                            FROM {embedding_db_name} e2
+                            WHERE e2.id = %s)
+                            LIMIT 1;""",
+            (other_similar_column_type, other_similar_column_id.replace('http://kglids.org/resource/', '')))
+            matched_column_name = results.fetchone()
+            if matched_column_name:
+                eda_operation['chart_columns'].append(matched_column_name[0])
 
-        eda_operations = [operation for operation in eda_operations if len(operation['chart_columns']) > 1]
+        eda_operation['chart_columns'] = sorted(eda_operation['chart_columns'])
+    # keep only successful multivariate EDA OPs. Either heatmap/pairwise or ones with more than two columns
+    multivariate_eda_ops = [i for i in multivariate_eda_ops
+                      if i['chart_type'] in ['heatmap', 'pairwise'] or len(i['chart_columns']) > 2]
 
-    elif analysis_type == 'multivariate':
-
-        graph_query = """
-            PREFIX kglids: <http://kglids.org/ontology/>
-            PREFIX pipeline: <http://kglids.org/ontology/pipeline/>
-            PREFIX data: <http://kglids.org/ontology/data/>
-            
-            SELECT ?eda ?chart_type (GROUP_CONCAT(?other_column_info; SEPARATOR = ",") AS ?other_columns)  
-            WHERE {
-                ?eda a kglids:EDAOperation.
-                ?eda pipeline:hasAnalysisType "multivariate".
-                ?eda pipeline:hasChartType ?chart_type.
-                <http://kglids.org/resource/%s> pipeline:hasEDAOperation ?eda.
-                ?other_column pipeline:hasEDAOperation ?eda.
-                ?other_column data:hasDataType ?other_column_type .
-                BIND(CONCAT(STR(?other_column), ";" , ?other_column_type) AS ?other_column_info).
-                FILTER(?other_column != <http://kglids.org/resource/%s>) .
-            }
-            GROUP BY ?eda ?chart_type
-        """ % (similar_column_id, similar_column_id)
-        results = query_graph(graph_query, graphdb_url)
-        eda_operations = []
-        for result in results:
-            similar_columns_ids_and_types = [tuple(i.split(';')) for i in result['other_columns']['value'].split(',')]
-            eda_operation = {'eda_id': result['eda']['value'],
-                                   'chart_type': result['chart_type']['value'],
-                                   'other_similar_columns': similar_columns_ids_and_types,
-                                   'chart_columns': [main_column_name],
-                                   'grouping_column': None}
-            if result['chart_type']['value'] in ['heatmap', 'pairwise']:
-                eda_operation['other_similar_columns'] = []
-                eda_operation['chart_columns'] = []
-
-            eda_operations.append(eda_operation)
-
-        # find columns in query table that have the same data type as secondary columns and have closest embedding (must not be the main column)
-        # query vector DB
-        conn = psycopg.connect(dbname=embedding_db_name, user='postgres', password='postgres', autocommit=True)
-        cursor = conn.cursor()
-        for eda_operation in eda_operations:
-            for other_similar_column_id, other_similar_column_type in eda_operation['other_similar_columns']:
-                chart_columns_str = [i.replace('%','%%').replace("'", "''") for i in eda_operation['chart_columns']]
-                matched_columns_str = '(' + ','.join([f"'{i}'" for i in chart_columns_str]) + ')'
-                results = cursor.execute(
-                    f"""SELECT e.name FROM {embedding_db_name} e
-                           WHERE e.dataset_name = 'query' 
-                                AND e.table_name = 'query.csv'
-                                AND e.data_type=%s
-                                AND e.name NOT IN {matched_columns_str}
-                           ORDER BY e.content_label_embedding <=>  (
-                                SELECT e2.content_label_embedding
-                                FROM {embedding_db_name} e2
-                                WHERE e2.id = %s)
-                                LIMIT 1;""",
-                (other_similar_column_type, other_similar_column_id.replace('http://kglids.org/resource/', '')))
-                matched_column_name = results.fetchone()
-                if matched_column_name:
-                    eda_operation['chart_columns'].append(matched_column_name[0])
-
-            eda_operation['chart_columns'] = sorted(eda_operation['chart_columns'])
-        # keep only successful multivariate EDA OPs. Either heatmap/pairwise or ones with more than two columns
-        eda_operations = [i for i in eda_operations
-                          if i['chart_type'] in ['heatmap', 'pairwise'] or len(i['chart_columns']) > 2]
-    else:
-        eda_operations = []
-    return flask.jsonify(eda_operations)
+    return flask.jsonify(univariate_eda_ops + bivariate_eda_ops + multivariate_eda_ops)
 
 
 @app.route('/create_evaluation_graphs_and_databases', methods=['POST'])
@@ -342,11 +344,6 @@ def create_evaluation_graphs_and_databases():
     args = [(graph, graphdb_endpoint, graphdb_all_kaggle_repo, graphdb_autoeda_repo) for graph in autoeda_graphs]
     pool = mp.Pool()
     list(tqdm(pool.imap_unordered(upload_pipeline_subgraph_to_evaluation_graph, args), total=len(args)))
-    # for graph in tqdm(autoeda_graphs):
-    #     graph_content = get_graph_content(
-    #         graphdb_endpoint, graphdb_all_kaggle_repo, named_graph_uri=graph
-    #     )
-    #     upload_graph(graph_content, graphdb_endpoint, graphdb_autoeda_repo, graph)
 
     # B. Postgres DBs
     print('Creating Embedding database')
